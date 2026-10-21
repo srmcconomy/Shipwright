@@ -39,6 +39,22 @@ desktop drag-and-drop. Because they are stored, a path the game remembers still 
 For local testing you can copy `oot.o2r` next to the page and open
 `/?archive=oot.o2r` to skip the file picker. Never host a ROM archive publicly.
 
+## Playing gz macros
+
+The start page takes a gz savestate (`.gzs`) and, optionally, the macro (`.gzm`) recorded from
+it, picked with its buttons or dropped anywhere on the page. Play then boots straight into the
+savestate and plays the macro: no title screen, file select or save file. The game runs on a
+temporary file that is never written to disk.
+
+The page exposes the same through JavaScript, for a site built around the player:
+
+```js
+await SohWeb.playGz({ state, macro, speed });  // File, Blob, ArrayBuffer, Uint8Array or URL
+SohWeb.status();      // { macro: { playing, frame, frameCount, rngMismatches }, scene, room, pos, ... }
+SohWeb.setSpeed(8);   // game updates per browser frame; above 1 fast-forwards without sound
+SohWeb.stopMacro();
+```
+
 ## How it differs from the desktop build
 
 - **No ROM extraction.** Generate `oot.o2r` with the desktop version first.

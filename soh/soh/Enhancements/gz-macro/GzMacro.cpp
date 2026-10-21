@@ -246,6 +246,23 @@ bool GzMacro_IsPlaying(void) {
 
 } // extern "C"
 
+bool GzMacro_Load(const std::string& path) {
+    return LoadMacro(path);
+}
+
+void GzMacro_Play() {
+    Start();
+}
+
+void GzMacro_Stop() {
+    Stop();
+}
+
+GzMacroStatus GzMacro_GetStatus() {
+    return { sPlayback.loaded, sPlayback.playing, sPlayback.frame, (int32_t)sPlayback.macro.inputs.size(),
+             sPlayback.rngMismatches };
+}
+
 void GzMacro_OnSaveStateLoaded() {
     if (sPlayback.loaded && CVarGetInteger(CVAR_PLAY_ON_STATE_LOAD_NAME, 0)) {
         Start();

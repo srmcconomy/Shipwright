@@ -22,6 +22,7 @@ extern "C" {
 #include "variables.h"
 #include "functions.h"
 extern PlayState* gPlayState;
+void Sram_InitDebugSave(void);
 }
 
 #define CVAR_STATE_PATH_NAME CVAR_DEVELOPER_TOOLS("GzMacro.StatePath")
@@ -247,6 +248,7 @@ struct PendingArrival {
 };
 
 PendingArrival sPending;
+void (*sOnArrived)() = nullptr;
 HOOK_ID sSceneInitHook = 0;
 HOOK_ID sPlayerUpdateHook = 0;
 
@@ -279,23 +281,53 @@ void ApplyArrival() {
     gSaveContext.respawn[RESPAWN_MODE_DOWN] = sPending.voidOutRespawn;
     gPlayState->actorCtx.flags.tempClear = sPending.tempClearFlags;
     Notify("gz savestate imported");
+    if (sOnArrived != nullptr) {
+        void (*onArrived)() = sOnArrived;
+        sOnArrived = nullptr;
+        onArrived();
+    }
 }
 
-void Import() {
-    if (!sStateLoaded) {
-        return;
+// Starts a temporary file that is never written to disk (SaveManager skips 0xFF), the same way Warping.cpp boots
+// to a warp point. The imported state then replaces its gameplay data.
+void InitTemporaryFile() {
+    gSaveContext.gameMode = GAMEMODE_NORMAL;
+    gSaveContext.fileNum = 0xFE;
+    Sram_InitDebugSave();
+    gSaveContext.fileNum = 0xFF;
+    gSaveContext.sceneLayer = 0;
+    for (int i = 0; i < ARRAY_COUNT(gSaveContext.buttonStatus); i++) {
+        gSaveContext.buttonStatus[i] = BTN_ENABLED;
     }
-    if (gPlayState == nullptr || !GameInteractor::IsSaveLoaded()) {
+    gSaveContext.nextHudVisibilityMode = gSaveContext.hudVisibilityMode = gSaveContext.hudVisibilityModeTimer = 0;
+    gSaveContext.forceRisingButtonAlphas = 0;
+    gSaveContext.showTitleCard = false;
+    gWeatherMode = 0;
+}
+
+// With a file loaded, imports into it. Otherwise, when boot is set, starts gameplay from the state on a temporary
+// file instead, from wherever the game is (the title screen, file select).
+bool Import(bool boot = false) {
+    if (!sStateLoaded) {
+        return false;
+    }
+    bool fileLoaded = gPlayState != nullptr && GameInteractor::IsSaveLoaded(true);
+    if (!fileLoaded && (!boot || gGameState == nullptr)) {
         Notify("load a file before importing a gz savestate");
-        return;
+        return false;
     }
     const GzMacro::StateFile& st = sState;
     SaveReader r(st.saveContext);
 
+    if (!fileLoaded) {
+        InitTemporaryFile();
+    }
     ApplySaveContext(r);
     // Leaving the current scene resets linkAge to linkAgeOnLoad, and swaps the age equipment when they differ.
     // The imported equipment already matches the imported age, so make both agree.
-    gPlayState->linkAgeOnLoad = gSaveContext.linkAge;
+    if (gPlayState != nullptr) {
+        gPlayState->linkAgeOnLoad = gSaveContext.linkAge;
+    }
     // The current scene's flags are live in the play state, merge them in so the scene reloads with them.
     if (st.sceneId >= 0 && st.sceneId < ARRAY_COUNT(gSaveContext.sceneFlags)) {
         SavedSceneFlags& flags = gSaveContext.sceneFlags[st.sceneId];
@@ -342,9 +374,11 @@ void Import() {
     Audio_QueueSeqCmd(SEQ_PLAYER_BGM_MAIN << 24 | NA_BGM_STOP);
     gSaveContext.seqId = (u8)NA_BGM_DISABLED;
     gSaveContext.natureAmbienceId = 0xFF;
-    gPlayState->transitionTrigger = TRANS_TRIGGER_OFF;
-    gPlayState->state.running = false;
-    SET_NEXT_GAMESTATE(&gPlayState->state, Play_Init, PlayState);
+    if (gPlayState != nullptr) {
+        gPlayState->transitionTrigger = TRANS_TRIGGER_OFF;
+    }
+    gGameState->running = false;
+    SET_NEXT_GAMESTATE(gGameState, Play_Init, PlayState);
 
     static HOOK_ID voidDamageHook = 0;
     voidDamageHook = REGISTER_VB_SHOULD(VB_INFLICT_VOID_DAMAGE, {
@@ -368,9 +402,32 @@ void Import() {
             ApplyArrival();
         });
     });
+    return true;
 }
 
 } // namespace
+
+bool GzState_GetSummary(int* sceneId, int* roomNum, float pos[3]) {
+    if (!sStateLoaded) {
+        return false;
+    }
+    *sceneId = sState.sceneId;
+    *roomNum = sState.roomNum;
+    const GzMacro::Vec3fBE& p = sState.linkFound ? sState.link.worldPos : sState.cameraPlayerPos;
+    pos[0] = p.x;
+    pos[1] = p.y;
+    pos[2] = p.z;
+    return true;
+}
+
+bool GzState_Import(void (*onArrived)(), bool boot) {
+    sOnArrived = onArrived;
+    if (!Import(boot)) {
+        sOnArrived = nullptr;
+        return false;
+    }
+    return true;
+}
 
 bool GzState_Load(const std::string& path) {
     GzMacro::StateFile state;

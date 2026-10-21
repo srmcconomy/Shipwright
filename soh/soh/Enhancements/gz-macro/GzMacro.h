@@ -31,6 +31,21 @@ bool GzMacro_IsPlaying(void);
 
 void GzMacro_OnSaveStateLoaded();
 
+#include <string>
+
+bool GzMacro_Load(const std::string& path);
+void GzMacro_Play();
+void GzMacro_Stop();
+
+struct GzMacroStatus {
+    bool loaded;
+    bool playing;
+    int32_t frame;
+    int32_t frameCount;
+    int32_t rngMismatches;
+};
+GzMacroStatus GzMacro_GetStatus();
+
 class GzMacroWindow final : public Ship::GuiWindow {
   public:
     using GuiWindow::GuiWindow;

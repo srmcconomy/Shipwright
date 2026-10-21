@@ -511,11 +511,28 @@ static void RunFrame() {
 
 #ifdef __EMSCRIPTEN__
 static double sNextWebFrameTime;
+static s32 sWebSpeed = 1;
+
+// Game updates per browser frame. Above 1 the game runs as fast as it can, for fast-forwarding a gz macro.
+void Graph_SetWebSpeed(s32 speed) {
+    sWebSpeed = CLAMP(speed, 1, 64);
+}
+
+s32 Graph_GetWebSpeed(void) {
+    return sWebSpeed;
+}
 
 // Called on every browser animation frame. RunFrame does one game update, so only run it
 // at the game's own rate (20 updates a second for most scenes).
 static void Graph_WebFrame(void) {
     double now = emscripten_get_now();
+    if (sWebSpeed > 1) {
+        for (s32 i = 0; i < sWebSpeed; i++) {
+            RunFrame();
+        }
+        sNextWebFrameTime = now;
+        return;
+    }
     double interval = 1000.0 / (60.0 / (R_UPDATE_RATE > 0 ? R_UPDATE_RATE : 1));
 
     // A little slack so a 60Hz animation frame landing just early doesn't skip a whole update

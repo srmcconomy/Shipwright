@@ -17,8 +17,9 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
   #canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; background: #000; }
-  #launcher { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; background: var(--bg); z-index: 1; }
-  .panel { width: 100%; max-width: 440px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+  #launcher { position: fixed; inset: 0; display: flex; padding: 16px; overflow-y: auto; background: var(--bg); z-index: 1; }
+  /* auto margins center the panel, and let the launcher scroll instead of clipping it on short screens */
+  .panel { width: 100%; max-width: 440px; margin: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
   h1 { margin: 0 0 4px; font-size: 22px; }
   p { margin: 0 0 16px; color: var(--muted); }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
@@ -33,6 +34,12 @@
   #play:disabled { opacity: .4; cursor: default; }
   .links { margin-top: 14px; display: flex; justify-content: space-between; font-size: 13px; }
   .links button { border: none; padding: 0; color: var(--muted); text-decoration: underline; }
+  h2 { margin: 8px 0 2px; font-size: 15px; }
+  .hint { font-size: 13px; margin-bottom: 8px; }
+  .panel.dragging { border-color: var(--accent); }
+  .row .actions { display: flex; gap: 8px; align-items: center; }
+  .row .clear { border: none; padding: 0 4px; color: var(--muted); }
+  .row .clear[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -50,6 +57,23 @@
     <div class="row">
       <div><div class="label">Mods</div><div class="status" id="mods-status">None</div></div>
       <label class="btn">Add…<input type="file" id="mods-input" accept=".o2r,.otr,.zip" multiple></label>
+    </div>
+
+    <h2>gz macro <span class="status">(optional)</span></h2>
+    <p class="hint">Choose a savestate from gz, the practice ROM, and the macro recorded from it, or drop them anywhere on this page. Play then starts right at the savestate.</p>
+    <div class="row">
+      <div><div class="label">Savestate</div><div class="status" id="gzs-status">None</div></div>
+      <div class="actions">
+        <button class="clear" id="gzs-clear" title="Remove" hidden>✕</button>
+        <label class="btn">Choose…<input type="file" id="gzs-input" accept=".gzs"></label>
+      </div>
+    </div>
+    <div class="row">
+      <div><div class="label">Macro</div><div class="status" id="gzm-status">None</div></div>
+      <div class="actions">
+        <button class="clear" id="gzm-clear" title="Remove" hidden>✕</button>
+        <label class="btn">Choose…<input type="file" id="gzm-input" accept=".gzm"></label>
+      </div>
     </div>
 
     <button id="play" disabled>Play</button>
@@ -105,14 +129,52 @@
     refreshLauncher();
   }
 
-  document.getElementById("rom-input").addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  async function loadArchive(file) {
     setStatus(romStatus, "Loading " + file.name + "…");
     // The desktop version names Master Quest archives oot-mq.o2r
     const name = /mq/i.test(file.name) ? "oot-mq.o2r" : "oot.o2r";
     await writeUploads([file], HOME, () => name);
+  }
+
+  document.getElementById("rom-input").addEventListener("change", (e) => {
+    if (e.target.files[0]) loadArchive(e.target.files[0]);
   });
+
+  // The gz savestate and macro to play, kept as files until the game starts
+  const gzFiles = { gzs: null, gzm: null };
+
+  function setGzFile(kind, file) {
+    gzFiles[kind] = file;
+    setStatus(document.getElementById(kind + "-status"), file ? file.name : "None", file ? "ok" : "");
+    document.getElementById(kind + "-clear").hidden = !file;
+    document.getElementById(kind + "-input").value = "";
+    if (!started) {
+      playButton.textContent = playLabel();
+    }
+  }
+
+  function playLabel() {
+    return gzFiles.gzs ? (gzFiles.gzm ? "Play macro" : "Play savestate") : "Play";
+  }
+
+  for (const kind of ["gzs", "gzm"]) {
+    document.getElementById(kind + "-input").addEventListener("change", (e) => {
+      if (e.target.files[0]) setGzFile(kind, e.target.files[0]);
+    });
+    document.getElementById(kind + "-clear").addEventListener("click", () => setGzFile(kind, null));
+  }
+
+  // Before the game starts, dropped files fill in the launcher
+  function dropOnLauncher(files) {
+    for (const file of files) {
+      const extension = file.name.split(".").pop().toLowerCase();
+      if (extension === "gzs" || extension === "gzm") {
+        setGzFile(extension, file);
+      } else if (extension === "o2r" || extension === "otr") {
+        loadArchive(file);
+      }
+    }
+  }
 
   document.getElementById("mods-input").addEventListener("change", async (e) => {
     setStatus(modsStatus, "Loading…");
@@ -153,12 +215,69 @@
       await syncToDisk();
       Module.ccall("SohWeb_FileDropped", null, ["string"], [path]);
     },
+
+    // Plays a gz macro from its savestate, booting straight into gameplay on a temporary file if no
+    // file is loaded. state and macro are File/Blob/ArrayBuffer/Uint8Array or URLs; macro is optional.
+    async playGz({ state, macro, speed = 1 }) {
+      if (!running) throw new Error("the game is not running");
+      const bytesOf = async (src) => {
+        if (typeof src === "string") {
+          const response = await fetch(src);
+          if (!response.ok) throw new Error("could not fetch " + src + " (" + response.status + ")");
+          return new Uint8Array(await response.arrayBuffer());
+        }
+        if (src instanceof Blob) return new Uint8Array(await src.arrayBuffer());
+        return new Uint8Array(src);
+      };
+      const dir = HOME + "/player";
+      if (!exists(dir)) FS.mkdir(dir);
+      FS.writeFile(dir + "/state.gzs", await bytesOf(state));
+      if (!Module.ccall("SohWeb_GzLoad", "boolean", ["string"], [dir + "/state.gzs"])) {
+        throw new Error("not a valid gz savestate");
+      }
+      if (macro) {
+        FS.writeFile(dir + "/macro.gzm", await bytesOf(macro));
+        if (!Module.ccall("SohWeb_GzLoad", "boolean", ["string"], [dir + "/macro.gzm"])) {
+          throw new Error("not a valid gz macro");
+        }
+      }
+      // The game needs a running game state to boot from, which takes a frame or two after main
+      for (let tries = 0; !Module.ccall("SohWeb_GzImport", "boolean", ["boolean"], [!!macro]); tries++) {
+        if (tries > 100) throw new Error("the game did not start");
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      Module.ccall("SohWeb_SetSpeed", null, ["number"], [speed]);
+    },
+
+    // Where the macro and Link are: { macro: { playing, frame, frameCount, ... }, scene, room, pos, ... }
+    status() {
+      return JSON.parse(Module.ccall("SohWeb_GzStatus", "string", [], []));
+    },
+    setSpeed(speed) {
+      Module.ccall("SohWeb_SetSpeed", null, ["number"], [speed]);
+    },
+    stopMacro() {
+      Module.ccall("SohWeb_GzStop", null, [], []);
+    },
   };
 
+
   // Always cancel the browser's default, which would navigate away from the game to the file
-  window.addEventListener("dragover", (e) => e.preventDefault());
+  const panel = document.querySelector(".panel");
+  window.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    if (!running) panel.classList.add("dragging");
+  });
+  window.addEventListener("dragleave", (e) => {
+    if (!e.relatedTarget) panel.classList.remove("dragging");
+  });
   window.addEventListener("drop", async (e) => {
     e.preventDefault();
+    panel.classList.remove("dragging");
+    if (!running) {
+      dropOnLauncher(e.dataTransfer.files);
+      return;
+    }
     for (const file of e.dataTransfer.files) {
       await SohWeb.importFile(file);
     }
@@ -178,7 +297,7 @@
       alert(err.message);
       started = false;
       playButton.disabled = false;
-      playButton.textContent = "Play";
+      playButton.textContent = playLabel();
       return;
     }
     document.getElementById("launcher").remove();
@@ -192,6 +311,10 @@
 
     running = true;
     Module.callMain([]);
+    if (gzFiles.gzs) {
+      SohWeb.playGz({ state: gzFiles.gzs, macro: gzFiles.gzm })
+        .catch((err) => alert("Could not play the gz files: " + err.message));
+    }
   });
 
   var Module = {

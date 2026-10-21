@@ -1075,6 +1075,9 @@ extern "C" void AudioMgr_CreateNextAudioBuffer(s16* samples, u32 num_samples);
 extern "C" void AudioPlayer_Play(const uint8_t* buf, uint32_t len);
 int AudioPlayer_Buffered(void);
 extern "C" int AudioPlayer_GetDesiredBuffered(void);
+#ifdef __EMSCRIPTEN__
+extern "C" s32 Graph_GetWebSpeed(void);
+#endif
 std::unordered_map<std::string, ExtensionEntry> ExtensionCache;
 
 // AudioMgr_ThreadEntry(&gAudioMgr);
@@ -1097,6 +1100,12 @@ static void OTRAudio_ProcessFrame() {
                                        num_audio_samples);
     }
 
+#ifdef __EMSCRIPTEN__
+    // Still mixed while fast-forwarding, so the audio state keeps pace with the game, but not queued
+    if (Graph_GetWebSpeed() > 1) {
+        return;
+    }
+#endif
     AudioPlayer_Play((u8*)audio_buffer,
                      num_audio_samples * (sizeof(int16_t) * NUM_AUDIO_CHANNELS * AUDIO_FRAMES_PER_UPDATE));
 }
