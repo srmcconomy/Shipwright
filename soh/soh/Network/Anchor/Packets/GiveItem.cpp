@@ -56,7 +56,11 @@ void Anchor::HandlePacket_GiveItem(nlohmann::json payload) {
     if (modId == MOD_NONE) {
         getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(MOD_NONE, getItemId);
     } else {
+#ifdef SOH_DISABLE_RANDOMIZER
+        return; // randomizer items can't be given without the randomizer
+#else
         getItemEntry = Rando::StaticData::RetrieveItem(static_cast<RandomizerGet>(getItemId)).GetGIEntry_Copy();
+#endif
     }
 
     if (getItemEntry.modIndex == MOD_NONE) {
@@ -95,12 +99,15 @@ void Anchor::HandlePacket_GiveItem(nlohmann::json payload) {
                 .message = "found",
                 .suffix = SohUtils::GetItemName(getItemEntry.itemId),
             });
-        } else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
+        }
+#ifndef SOH_DISABLE_RANDOMIZER
+        else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
             Notification::Emit({
                 .prefix = client.name,
                 .message = "found",
                 .suffix = Rando::StaticData::RetrieveItem((RandomizerGet)getItemEntry.getItemId).GetName().english,
             });
         }
+#endif
     }
 }

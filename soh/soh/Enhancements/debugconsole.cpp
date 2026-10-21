@@ -387,8 +387,10 @@ static bool GiveItemHandler(std::shared_ptr<Ship::Console> Console, const std::v
 
     if (args[1].compare("vanilla") == 0) {
         getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(MOD_NONE, std::stoi(args[2]));
+#ifndef SOH_DISABLE_RANDOMIZER
     } else if (args[1].compare("randomizer") == 0) {
         getItemEntry = Rando::StaticData::RetrieveItem((RandomizerGet)std::stoi(args[2])).GetGIEntry_Copy();
+#endif
     } else {
         ERROR_MESSAGE("[SOH] Invalid argument passed, must be 'vanilla' or 'randomizer'");
         return 1;
@@ -1306,6 +1308,10 @@ static bool CuccoStormHandler(std::shared_ptr<Ship::Console> Console, const std:
 
 static bool GenerateRandoHandler(std::shared_ptr<Ship::Console> Console, const std::vector<std::string>& args,
                                  std::string* output) {
+#ifdef SOH_DISABLE_RANDOMIZER
+    ERROR_MESSAGE("[SOH] This build has no randomizer");
+    return 1;
+#else
     if (args.size() == 1) {
         if (GenerateRandomizer()) {
             return 0;
@@ -1330,6 +1336,7 @@ static bool GenerateRandoHandler(std::shared_ptr<Ship::Console> Console, const s
 
     ERROR_MESSAGE("[SOH] Rando generation already in progress");
     return 1;
+#endif
 }
 
 static constexpr std::array<std::pair<const char*, CosmeticGroup>, COSMETICS_GROUP_MAX> cosmetic_groups = { {
@@ -1446,6 +1453,10 @@ static bool SfxHandler(std::shared_ptr<Ship::Console> Console, const std::vector
 
 static bool AvailableChecksProcessUndiscoveredExitsHandler(std::shared_ptr<Ship::Console> Console,
                                                            const std::vector<std::string>& args, std::string* output) {
+#ifdef SOH_DISABLE_RANDOMIZER
+    ERROR_MESSAGE("[SOH] This build has no randomizer");
+    return 1;
+#else
     const auto& logic = Rando::Context::GetInstance()->GetLogic();
     bool enabled = false;
 
@@ -1466,10 +1477,15 @@ static bool AvailableChecksProcessUndiscoveredExitsHandler(std::shared_ptr<Ship:
 
     CheckTracker::RecalculateAvailableChecks();
     return 0;
+#endif
 }
 
 static bool AvailableChecksRecalculateHandler(std::shared_ptr<Ship::Console> Console,
                                               const std::vector<std::string>& args, std::string* output) {
+#ifdef SOH_DISABLE_RANDOMIZER
+    ERROR_MESSAGE("[SOH] This build has no randomizer");
+    return 1;
+#else
     RandomizerRegion startingRegion = RR_ROOT;
     RandoAgeTime startingAgeTime = RAT_NONE;
 
@@ -1503,6 +1519,7 @@ static bool AvailableChecksRecalculateHandler(std::shared_ptr<Ship::Console> Con
 
     CheckTracker::RecalculateAvailableChecks(startingRegion, startingAgeTime);
     return 0;
+#endif
 }
 
 void DebugConsole_Init(void) {

@@ -969,12 +969,14 @@ void OTRGlobals::Initialize() {
     Lang::LoadLangs();
 
     gSaveStateMgr = std::make_shared<SaveStateMgr>();
+#ifndef SOH_DISABLE_RANDOMIZER
     gRandoContext->InitStaticData();
     gRandoContext = Rando::Context::CreateInstance();
     Rando::Settings::GetInstance()->AssignContext(gRandoContext);
     Rando::StaticData::InitItemTable(); // RANDOTODO make this not rely on context's logic so it can be initialised in
                                         // InitStaticData
     gRandomizer = std::make_shared<Randomizer>();
+#endif
 
     hasMasterQuest = hasOriginal = false;
 
@@ -1653,8 +1655,10 @@ extern "C" void InitOTR(int argc, char* argv[]) {
     // Restores settings left over from a run that never exited cleanly, so it must come after other setup.
     Speedrun_Register();
     ShipInit::InitAll();
+#ifndef SOH_DISABLE_RANDOMIZER
     Rando::StaticData::InitHashMaps();
     OTRGlobals::Instance->gRandoContext->AddExcludedOptions();
+#endif
 }
 
 extern "C" void SaveManager_ThreadPoolWait() {
@@ -1663,7 +1667,9 @@ extern "C" void SaveManager_ThreadPoolWait() {
 
 extern "C" void DeinitOTR() {
     SaveManager_ThreadPoolWait();
+#ifndef SOH_DISABLE_RANDOMIZER
     WaitForRandoGeneration();
+#endif
     OTRAudio_Exit();
     if (CVarGetInteger(CVAR_REMOTE_CROWD_CONTROL("Enabled"), 0)) {
         CrowdControl::Instance->Disable();
@@ -1953,6 +1959,7 @@ extern "C" uint16_t OTRGetPixelDepth(float x, float y) {
     return wnd->GetPixelDepth(x, y);
 }
 
+#ifndef SOH_DISABLE_RANDOMIZER
 extern "C" Sprite* GetSeedTexture(uint8_t index) {
     return OTRGlobals::Instance->gRandoContext->GetSeedTexture(index);
 }
@@ -1960,6 +1967,7 @@ extern "C" Sprite* GetSeedTexture(uint8_t index) {
 extern "C" uint8_t GetSeedIconIndex(uint8_t index) {
     return OTRGlobals::Instance->gRandoContext->hashIconIndexes[index];
 }
+#endif
 
 std::map<std::string, SoundFontSample*> cachedCustomSFs;
 
@@ -2398,6 +2406,8 @@ extern "C" size_t GetEquipNowMessage(char* buffer, char* src, const size_t maxBu
     return 0;
 }
 
+// Built without the randomizer, RandomizerDisabled.cpp supplies these.
+#ifndef SOH_DISABLE_RANDOMIZER
 extern "C" void Randomizer_ParseSpoiler(const char* fileLoc) {
     OTRGlobals::Instance->gRandoContext->ParseSpoiler(fileLoc);
 }
@@ -2418,6 +2428,8 @@ extern "C" ShopItemIdentity Randomizer_IdentifyShopItem(s32 sceneNum, u8 slotInd
     return OTRGlobals::Instance->gRandomizer->IdentifyShopItem(sceneNum, slotIndex);
 }
 
+#endif
+
 extern "C" GetItemEntry ItemTable_Retrieve(int16_t getItemID) {
     // A negative getItemId makes the vanilla lookup `sGetItemTable[getItemId - 1]` read out of
     // bounds below the table (Get Item Manipulation); reproduce the console result of that read.
@@ -2429,12 +2441,15 @@ extern "C" GetItemEntry ItemTable_Retrieve(int16_t getItemID) {
 }
 
 extern "C" GetItemEntry ItemTable_RetrieveEntry(s16 tableID, s16 getItemID) {
+#ifndef SOH_DISABLE_RANDOMIZER
     if (tableID == MOD_RANDOMIZER) {
         return Rando::StaticData::RetrieveItem(static_cast<RandomizerGet>(getItemID)).GetGIEntry_Copy();
     }
+#endif
     return ItemTableManager::Instance->RetrieveItemEntry(tableID, getItemID);
 }
 
+#ifndef SOH_DISABLE_RANDOMIZER
 extern "C" GetItemEntry Randomizer_GetItemFromKnownCheck(RandomizerCheck randomizerCheck, GetItemID ogId) {
     return OTRGlobals::Instance->gRandomizer->GetItemFromKnownCheck(randomizerCheck, ogId);
 }
@@ -2452,10 +2467,13 @@ extern "C" bool Randomizer_IsCheckShuffled(RandomizerCheck rc) {
     return CheckTracker::IsCheckShuffled(rc);
 }
 
+#endif
+
 extern "C" GetItemEntry GetItemMystery() {
     return GET_ITEM_MYSTERY;
 }
 
+#ifndef SOH_DISABLE_RANDOMIZER
 extern "C" uint8_t Randomizer_IsSeedGenerated() {
     return OTRGlobals::Instance->gRandoContext->IsSeedGenerated() ? 1 : 0;
 }
@@ -2479,6 +2497,8 @@ extern "C" bool Randomizer_IsGenerating() {
 extern "C" void Randomizer_WaitForGeneration() {
     WaitForRandoGeneration();
 }
+
+#endif
 
 extern "C" void Randomizer_ShowRandomizerMenu() {
     SohGui::ShowRandomizerSettingsMenu();
@@ -2596,8 +2616,10 @@ bool SoH_HandleConfigDrop(char* filePath) {
         gui->GetGuiWindow("Stats")->Hide();
         std::dynamic_pointer_cast<Ship::ConsoleWindow>(gui->GetGuiWindow("Console"))->ClearBindings();
 
+#ifndef SOH_DISABLE_RANDOMIZER
         Rando::Settings::GetInstance()->UpdateAllOptions();
         SohGui::MarkRandomizerMenusDirty();
+#endif
         gui->SaveConsoleVariablesNextFrame();
         ShipInit::Init("*");
 

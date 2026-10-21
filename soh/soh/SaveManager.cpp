@@ -223,6 +223,7 @@ SaveManager::SaveManager() {
 }
 
 void SaveManager::LoadRandomizer() {
+#ifndef SOH_DISABLE_RANDOMIZER
     if (gSaveContext.ship.quest.id != QUEST_RANDOMIZER) {
         return;
     }
@@ -359,9 +360,11 @@ void SaveManager::LoadRandomizer() {
         SaveManager::Instance->LoadData("", value);
         randoContext->GetTrickOption(RandomizerTrick(i)).Set(value);
     });
+#endif
 }
 
 void SaveManager::SaveRandomizer(const SaveContext& saveContext, int sectionID, bool fullSave) {
+#ifndef SOH_DISABLE_RANDOMIZER
     if (saveContext.ship.quest.id != QUEST_RANDOMIZER) {
         return;
     }
@@ -546,6 +549,7 @@ void SaveManager::SaveRandomizer(const SaveContext& saveContext, int sectionID, 
     SaveManager::Instance->SaveArray("trickOptions", RT_MAX, [&](size_t i) {
         SaveManager::Instance->SaveData("", randoContext->GetTrickOption(RandomizerTrick(i)).Get());
     });
+#endif
 }
 
 // Init() here is an extension of InitSram, and thus not truly an initializer for SaveManager itself. don't put any
@@ -605,7 +609,9 @@ void SaveManager::Init() {
         }
     }
     saveBlock = nlohmann::json::object();
+#ifndef SOH_DISABLE_RANDOMIZER
     OTRGlobals::Instance->gRandoContext->ClearItemLocations();
+#endif
 }
 
 static void RegisterUnreadableSavePopup(int fileNum) {
@@ -797,6 +803,13 @@ void SaveManager::InitMeta(int fileNum) {
     fileMetaInfo[fileNum].hasFishingRod = Flags_GetRandomizerInf(RAND_INF_FISHING_POLE_FOUND) || !IS_RANDO;
     fileMetaInfo[fileNum].defense = gSaveContext.inventory.defenseHearts;
     fileMetaInfo[fileNum].health = gSaveContext.health;
+#ifdef SOH_DISABLE_RANDOMIZER
+    fileMetaInfo[fileNum].maxTriforcePieces = 0;
+    fileMetaInfo[fileNum].fishingPoleShuffled = false;
+    fileMetaInfo[fileNum].quest = gSaveContext.ship.quest.id;
+    fileMetaInfo[fileNum].requiresMasterQuest = IS_MASTER_QUEST;
+    fileMetaInfo[fileNum].requiresOriginal = !IS_MASTER_QUEST;
+#else
     auto randoContext = Rando::Context::GetInstance();
 
     fileMetaInfo[fileNum].maxTriforcePieces =
@@ -817,6 +830,7 @@ void SaveManager::InitMeta(int fileNum) {
     // in which case we don't actually require a vanilla OTR.
     fileMetaInfo[fileNum].requiresOriginal =
         !IS_MASTER_QUEST && (!IS_RANDO || randoContext->GetDungeons()->CountMQ() < 12);
+#endif
 
     fileMetaInfo[fileNum].buildVersionMajor = gSaveContext.ship.stats.buildVersionMajor;
     fileMetaInfo[fileNum].buildVersionMinor = gSaveContext.ship.stats.buildVersionMinor;
@@ -2887,6 +2901,7 @@ extern "C" void Save_SaveGlobal(void) {
 
 extern "C" void Save_LoadFile(void) {
     // Handle vanilla context reset
+#ifndef SOH_DISABLE_RANDOMIZER
     OTRGlobals::Instance->gRandoContext->GetLogic()->SetContext(nullptr);
     Rando::Settings::GetInstance()->ClearContext();
     OTRGlobals::Instance->gRandoContext.reset();
@@ -2894,6 +2909,7 @@ extern "C" void Save_LoadFile(void) {
     OTRGlobals::Instance->gRandoContext->GetLogic()->SetSaveContext(&gSaveContext);
     Rando::Settings::GetInstance()->AssignContext(OTRGlobals::Instance->gRandoContext);
     OTRGlobals::Instance->gRandoContext->AddExcludedOptions();
+#endif
     SaveManager::Instance->LoadFile(gSaveContext.fileNum);
 }
 

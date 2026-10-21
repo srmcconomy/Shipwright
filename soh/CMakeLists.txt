@@ -164,6 +164,27 @@ if (NOT ESPEAK)
     list(FILTER soh__ EXCLUDE REGEX "soh/Enhancements/speechsynthesizer/ESpeak")
 endif()
 
+# The browser build leaves the randomizer out: it is about a quarter of the code, and its generated tables are
+# the slowest part of the build and of loading the module. SOH_DISABLE_RANDOMIZER makes IS_RANDO a constant 0.
+if(EMSCRIPTEN)
+    set(SOH_DISABLE_RANDOMIZER_DEFAULT ON)
+else()
+    set(SOH_DISABLE_RANDOMIZER_DEFAULT OFF)
+endif()
+option(SOH_DISABLE_RANDOMIZER "Build without the randomizer" ${SOH_DISABLE_RANDOMIZER_DEFAULT})
+if(SOH_DISABLE_RANDOMIZER)
+    list(FILTER soh__ EXCLUDE REGEX "soh/Enhancements/randomizer/.*\\.(c|cpp)$")
+    list(FILTER soh__ EXCLUDE REGEX "soh/SohGui/SohMenuRandomizer\\.cpp$")
+    # Kept: the stand-ins, and small pieces that vanilla enhancements use (chest size matching contents, item
+    # cycling on the pause screen)
+    list(APPEND soh__
+        soh/Enhancements/randomizer/RandomizerDisabled.cpp
+        soh/Enhancements/randomizer/item_category_adj.cpp
+        soh/Enhancements/randomizer/RocsFeatherCycle.c
+        soh/Enhancements/randomizer/ShuffleTradeItems.c
+    )
+endif()
+
 # soh/Extractor {{{
 list(FILTER ship__ EXCLUDE REGEX "soh/Extractor/*")
 if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
@@ -318,6 +339,10 @@ endif()
 ################################################################################
 # Compile definitions
 ################################################################################
+
+if(SOH_DISABLE_RANDOMIZER)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE SOH_DISABLE_RANDOMIZER)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/

@@ -369,14 +369,22 @@ void Kaleido::Update(PlayState* play) {
 }
 
 extern "C" void RandoKaleido_DrawMiscCollectibles(PlayState* play) {
+#ifdef SOH_DISABLE_RANDOMIZER
+
+#else
     OTRGlobals::Instance->gRandoContext->GetKaleido()->Draw(play);
+#endif
 }
 
 extern "C" void RandoKaleido_UpdateMiscCollectibles(int16_t inDungeonScene) {
+#ifdef SOH_DISABLE_RANDOMIZER
+
+#else
     PauseContext* pauseCtx = &gPlayState->pauseCtx;
     if (pauseCtx->randoQuestMode && pauseCtx->pageIndex == PAUSE_QUEST) {
         OTRGlobals::Instance->gRandoContext->GetKaleido()->Update(gPlayState);
     }
+#endif
 }
 
 KaleidoEntryIconFlag::KaleidoEntryIconFlag(const char* iconResourceName, int iconFormat, int iconSize, int iconWidth,

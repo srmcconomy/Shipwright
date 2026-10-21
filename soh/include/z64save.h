@@ -411,7 +411,12 @@ typedef enum {
 #define IS_VANILLA (gSaveContext.ship.quest.id == QUEST_NORMAL || gSaveContext.ship.quest.id == QUEST_SPEEDRUN)
 #define IS_MASTER_QUEST \
     (gSaveContext.ship.quest.id == QUEST_MASTER || gSaveContext.ship.quest.id == QUEST_SPEEDRUN_MASTER)
+#ifdef SOH_DISABLE_RANDOMIZER
+// Built without the randomizer: every randomizer branch compiles away
+#define IS_RANDO 0
+#else
 #define IS_RANDO (gSaveContext.ship.quest.id == QUEST_RANDOMIZER)
+#endif
 #define IS_BOSS_RUSH (gSaveContext.ship.quest.id == QUEST_BOSSRUSH)
 #define IS_SPEEDRUN \
     (gSaveContext.ship.quest.id == QUEST_SPEEDRUN || gSaveContext.ship.quest.id == QUEST_SPEEDRUN_MASTER)

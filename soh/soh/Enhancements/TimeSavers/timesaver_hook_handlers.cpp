@@ -1049,7 +1049,7 @@ void TimeSaverOnActorInitHandler(void* actorRef) {
                     return;
                 }
 
-                bool shouldKeepOpen = RAND_GET_OPTION(RSK_SLEEPING_WATERFALL) && IS_RANDO;
+                bool shouldKeepOpen = IS_RANDO && RAND_GET_OPTION(RSK_SLEEPING_WATERFALL);
                 if (!shouldKeepOpen) {
                     int enhancement = CVarGetInteger(CVAR_ENHANCEMENT("TimeSavers.SleepingWaterfall"), 0);
                     shouldKeepOpen =
@@ -1230,9 +1230,73 @@ void TimeSaverOnSceneInitHandler(int16_t sceneNum) {
 
 static GetItemEntry vanillaQueuedItemEntry = GET_ITEM_NONE;
 
+#ifdef SOH_DISABLE_RANDOMIZER
+// Built without the randomizer there is no get-item entry for most of these (songs, medallions, magic), so give them
+// straight away, as the skipped cutscene would have, without a get-item message.
+extern void TimeSaverQueueItem(RandomizerGet randoGet) {
+    static const std::unordered_map<RandomizerGet, ItemID> sItems = {
+        { RG_FAIRY_OCARINA, ITEM_OCARINA_FAIRY },
+        { RG_KOKIRI_EMERALD, ITEM_KOKIRI_EMERALD },
+        { RG_GORON_RUBY, ITEM_GORON_RUBY },
+        { RG_ZORA_SAPPHIRE, ITEM_ZORA_SAPPHIRE },
+        { RG_FOREST_MEDALLION, ITEM_MEDALLION_FOREST },
+        { RG_FIRE_MEDALLION, ITEM_MEDALLION_FIRE },
+        { RG_WATER_MEDALLION, ITEM_MEDALLION_WATER },
+        { RG_SPIRIT_MEDALLION, ITEM_MEDALLION_SPIRIT },
+        { RG_SHADOW_MEDALLION, ITEM_MEDALLION_SHADOW },
+        { RG_LIGHT_MEDALLION, ITEM_MEDALLION_LIGHT },
+        { RG_LIGHT_ARROWS, ITEM_ARROW_LIGHT },
+        { RG_FARORES_WIND, ITEM_FARORES_WIND },
+        { RG_DINS_FIRE, ITEM_DINS_FIRE },
+        { RG_NAYRUS_LOVE, ITEM_NAYRUS_LOVE },
+        { RG_DEKU_STICK_CAPACITY_20, ITEM_STICK_UPGRADE_20 },
+        { RG_DEKU_STICK_CAPACITY_30, ITEM_STICK_UPGRADE_30 },
+        { RG_DEKU_NUT_CAPACITY_30, ITEM_NUT_UPGRADE_30 },
+        { RG_DEKU_NUT_CAPACITY_40, ITEM_NUT_UPGRADE_40 },
+        { RG_ZELDAS_LULLABY, ITEM_SONG_LULLABY },
+        { RG_MINUET_OF_FOREST, ITEM_SONG_MINUET },
+        { RG_BOLERO_OF_FIRE, ITEM_SONG_BOLERO },
+        { RG_SERENADE_OF_WATER, ITEM_SONG_SERENADE },
+        { RG_REQUIEM_OF_SPIRIT, ITEM_SONG_REQUIEM },
+        { RG_NOCTURNE_OF_SHADOW, ITEM_SONG_NOCTURNE },
+        { RG_PRELUDE_OF_LIGHT, ITEM_SONG_PRELUDE },
+        { RG_SARIAS_SONG, ITEM_SONG_SARIA },
+        { RG_SONG_OF_TIME, ITEM_SONG_TIME },
+        { RG_SONG_OF_STORMS, ITEM_SONG_STORMS },
+        { RG_SUNS_SONG, ITEM_SONG_SUN },
+        { RG_EPONAS_SONG, ITEM_SONG_EPONA },
+    };
+
+    // The Great Fairy upgrades are save flags rather than items, as in z_bg_dy_yoseizo.c
+    switch (randoGet) {
+        case RG_MAGIC_SINGLE:
+            gSaveContext.isMagicAcquired = true;
+            gSaveContext.magicFillTarget = MAGIC_NORMAL_METER;
+            return;
+        case RG_MAGIC_DOUBLE:
+            gSaveContext.isMagicAcquired = true;
+            gSaveContext.isDoubleMagicAcquired = true;
+            gSaveContext.magicFillTarget = MAGIC_DOUBLE_METER;
+            gSaveContext.magicLevel = 0;
+            return;
+        case RG_DOUBLE_DEFENSE:
+            gSaveContext.isDoubleDefenseAcquired = true;
+            gSaveContext.inventory.defenseHearts = 20;
+            return;
+        default:
+            break;
+    }
+
+    auto it = sItems.find(randoGet);
+    if (it != sItems.end() && gPlayState != nullptr) {
+        Item_Give(gPlayState, it->second);
+    }
+}
+#else
 extern void TimeSaverQueueItem(RandomizerGet randoGet) {
     vanillaQueuedItemEntry = Rando::StaticData::RetrieveItem(randoGet).GetGIEntry_Copy();
 }
+#endif
 
 void TimeSaverOnFlagSetHandler(int16_t flagType, int16_t flag) {
     // Do nothing when in a boss rush

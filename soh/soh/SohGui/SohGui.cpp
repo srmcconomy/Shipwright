@@ -232,6 +232,7 @@ void SetupGuiElements() {
     mGameplayStatsWindow =
         std::make_shared<GameplayStatsWindow>(CVAR_WINDOW("GameplayStats"), "Gameplay Stats", ImVec2(480, 550));
     gui->AddGuiWindow(mGameplayStatsWindow);
+#ifndef SOH_DISABLE_RANDOMIZER
     mCheckTrackerWindow = std::make_shared<CheckTracker::CheckTrackerWindow>(CVAR_WINDOW("CheckTracker"),
                                                                              "Check Tracker", ImVec2(400, 540));
     gui->AddGuiWindow(mCheckTrackerWindow);
@@ -256,6 +257,7 @@ void SetupGuiElements() {
     mItemTrackerSettingsWindow = std::make_shared<ItemTrackerSettingsWindow>(CVAR_WINDOW("ItemTrackerSettings"),
                                                                              "Item Tracker Settings", ImVec2(733, 472));
     gui->AddGuiWindow(mItemTrackerSettingsWindow);
+#endif
 
     mTimeSplitsWindow =
         std::make_shared<TimeSplits::TimesplitsWindow>(CVAR_WINDOW("TimeSplits"), "Time Splits", ImVec2(450, 660));
@@ -263,9 +265,11 @@ void SetupGuiElements() {
     mTimeSplitSettingsWindow = std::make_shared<TimeSplits::TimesplitsSettingsWindow>(
         CVAR_WINDOW("TimeSplitSettings"), "Time Splits Settings Window", ImVec2(450, 660));
     gui->AddGuiWindow(mTimeSplitSettingsWindow);
+#ifndef SOH_DISABLE_RANDOMIZER
     mPlandomizerWindow =
         std::make_shared<PlandomizerWindow>(CVAR_WINDOW("PlandomizerEditor"), "Plandomizer Editor", ImVec2(850, 760));
     gui->AddGuiWindow(mPlandomizerWindow);
+#endif
     mNotificationWindow = std::make_shared<Notification::Window>(CVAR_WINDOW("Notifications"), "Notifications Window");
     gui->AddGuiWindow(mNotificationWindow);
     mNotificationWindow->Show();

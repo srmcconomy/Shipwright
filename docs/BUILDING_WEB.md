@@ -72,3 +72,8 @@ SohWeb.stopMacro();
   `emscripten_set_main_loop` and runs it at the game's own update rate. Frame interpolation
   is fixed at 20 FPS, because only the last frame drawn before returning to the browser is shown.
 - **Networking** (Anchor, Sail, Crowd Control) compiles but can't open raw TCP sockets from a browser.
+- **No randomizer.** `SOH_DISABLE_RANDOMIZER` (on by default for this build) makes `IS_RANDO` a
+  constant 0 and leaves the randomizer's sources out, halving `soh.wasm`. The randomizer quest is
+  hidden on file select, and the few randomizer functions the game still calls answer as if no
+  randomizer file is loaded (`soh/soh/Enhancements/randomizer/RandomizerDisabled.cpp`). Story
+  cutscene skips give their items directly, without the randomizer's get-item entries.

@@ -131,6 +131,7 @@ void applyPreset(std::string presetName, std::vector<PresetSection> includeSecti
             if (!includeSections.empty() && !SohUtils::Contains(i, includeSections)) {
                 continue;
             }
+#ifndef SOH_DISABLE_RANDOMIZER
             if (i == PRESET_SECTION_TRACKERS) {
                 ItemTracker_LoadFromPreset(info.presetValues["blocks"][blockInfo[i].names[1]]["windows"]);
                 if (info.presetValues["blocks"][blockInfo[i].names[1]]["windows"].contains("Check Tracker")) {
@@ -142,6 +143,7 @@ void applyPreset(std::string presetName, std::vector<PresetSection> includeSecti
                         info.presetValues["blocks"][blockInfo[i].names[1]]["windows"]["Entrance Tracker"]);
                 }
             }
+#endif
             auto section = info.presetValues["blocks"][blockInfo[i].names[1]];
             SectionStrategy sectionStrategy = GetSectionStrategy(info, i);
 
@@ -177,9 +179,11 @@ void applyPreset(std::string presetName, std::vector<PresetSection> includeSecti
             // SetBlock already saved the unmigrated values
             Ship::Context::GetRawInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
         }
+#ifndef SOH_DISABLE_RANDOMIZER
         Rando::Settings::GetInstance()->UpdateAllOptions();
         SohGui::UpdateMenuTricks();
         SohGui::UpdateMenuLocations();
+#endif
     }
     ShipInit::InitAll();
     OTRGlobals::Instance->ScaleImGui();

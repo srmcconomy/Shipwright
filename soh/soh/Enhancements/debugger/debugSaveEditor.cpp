@@ -140,11 +140,37 @@ template <typename T> void DrawGroupWithBorder(T&& drawFunc, std::string section
 // for vanilla/MQ small key counts (synced to the loaded save on load via SaveManager).
 // Returns 0 for dungeons without small keys (e.g. Deku Tree, Ganon's Tower).
 static int8_t GetMaxKeysForDungeon(int32_t dungeonIndex) {
+#ifdef SOH_DISABLE_RANDOMIZER
+    // Vanilla small key counts; the randomizer's dungeon data (with MQ counts) is not in this build
+    switch (dungeonIndex) {
+        case SCENE_FOREST_TEMPLE:
+            return 5;
+        case SCENE_FIRE_TEMPLE:
+            return 8;
+        case SCENE_WATER_TEMPLE:
+            return 6;
+        case SCENE_SPIRIT_TEMPLE:
+            return 5;
+        case SCENE_SHADOW_TEMPLE:
+            return 5;
+        case SCENE_BOTTOM_OF_THE_WELL:
+            return 3;
+        case SCENE_GERUDO_TRAINING_GROUND:
+            return 9;
+        case SCENE_THIEVES_HIDEOUT:
+            return 4;
+        case SCENE_INSIDE_GANONS_CASTLE:
+            return 2;
+        default:
+            return 0;
+    }
+#else
     Rando::DungeonInfo* dungeon = Rando::Context::GetInstance()->GetDungeons()->GetDungeonFromScene(dungeonIndex);
     if (dungeon == nullptr) {
         return 0; // Not a tracked key dungeon — no small keys.
     }
     return static_cast<int8_t>(dungeon->GetSmallKeyCount());
+#endif
 }
 
 // Check if a dungeon has a boss key
@@ -1411,10 +1437,12 @@ bool DrawStateSearchResults(const char* label, T& flags, const std::vector<std::
 }
 
 static const char* GetFlagDescription(const FlagTable& flagTable, uint16_t index) {
+#ifndef SOH_DISABLE_RANDOMIZER
     if (flagTable.flagTableType == RANDOMIZER_INF) {
         std::string_view name = EnumToString(static_cast<RandomizerInf>(index));
         return name.empty() ? "" : name.data();
     }
+#endif
     auto it = flagTable.flagDescriptions.find(index);
     return it != flagTable.flagDescriptions.end() ? it->second : "";
 }
@@ -1649,7 +1677,8 @@ void DrawFlagsTab() {
             }
 
             // make some buttons to help with fishsanity debugging
-            uint8_t fsMode = OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY);
+            uint8_t fsMode =
+                IS_RANDO ? OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY) : RO_FISHSANITY_OFF;
             if (flagTable.flagTableType == RANDOMIZER_INF && fsMode != RO_FISHSANITY_OFF &&
                 fsMode != RO_FISHSANITY_OVERWORLD) {
                 if (ImGui::Button("Catch All (Child)")) {

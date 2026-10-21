@@ -1066,7 +1066,7 @@ void SohMenu::AddMenuEnhancements() {
         .CVar(CVAR_ENHANCEMENT("BlueFireArrows"))
         .PreFunc([](WidgetInfo& info) {
             info.options->disabled =
-                OTRGlobals::Instance->gRandoContext->GetOption(RSK_BLUE_FIRE_ARROWS).Is(RO_GENERIC_ON);
+                IS_RANDO && OTRGlobals::Instance->gRandoContext->GetOption(RSK_BLUE_FIRE_ARROWS).Is(RO_GENERIC_ON);
             info.options->disabledTooltip = "This setting is forcefully enabled because a randomized savefile with "
                                             "\"Blue Fire Arrows\" is currently loaded.";
         })
@@ -1076,7 +1076,7 @@ void SohMenu::AddMenuEnhancements() {
         .CVar(CVAR_ENHANCEMENT("SunlightArrows"))
         .PreFunc([](WidgetInfo& info) {
             info.options->disabled =
-                OTRGlobals::Instance->gRandoContext->GetOption(RSK_SUNLIGHT_ARROWS).Is(RO_GENERIC_ON);
+                IS_RANDO && OTRGlobals::Instance->gRandoContext->GetOption(RSK_SUNLIGHT_ARROWS).Is(RO_GENERIC_ON);
             info.options->disabledTooltip = "This setting is forcefully enabled because a randomized savefile with "
                                             "\"Sunlight Arrows\" enabled is currently loaded.";
         })

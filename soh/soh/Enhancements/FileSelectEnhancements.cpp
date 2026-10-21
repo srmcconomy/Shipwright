@@ -77,7 +77,11 @@ bool SohFileSelect_IsQuestHidden(u8 quest) {
             return !ResourceMgr_GameHasMasterQuest() ||
                    CVarGetInteger(CVAR_ENHANCEMENT("FileSelect.HideMasterQuest"), 0);
         case QUEST_RANDOMIZER:
+#ifdef SOH_DISABLE_RANDOMIZER
+            return true;
+#else
             return CVarGetInteger(CVAR_ENHANCEMENT("FileSelect.HideRandomizerQuest"), 0);
+#endif
         case QUEST_BOSSRUSH:
             return CVarGetInteger(CVAR_ENHANCEMENT("FileSelect.HideBossRushQuest"), 0);
         case QUEST_SPEEDRUN:

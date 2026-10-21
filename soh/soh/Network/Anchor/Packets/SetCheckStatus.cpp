@@ -15,6 +15,9 @@ static bool isResultOfHandling = false;
  */
 
 void Anchor::SendPacket_SetCheckStatus(RandomizerCheck rc) {
+#ifdef SOH_DISABLE_RANDOMIZER
+
+#else
     if (!IsSaveLoaded() || isResultOfHandling) {
         return;
     }
@@ -31,9 +34,13 @@ void Anchor::SendPacket_SetCheckStatus(RandomizerCheck rc) {
     payload["quiet"] = true;
 
     SendJsonToRemote(payload);
+#endif
 }
 
 void Anchor::HandlePacket_SetCheckStatus(nlohmann::json payload) {
+#ifdef SOH_DISABLE_RANDOMIZER
+
+#else
     if (!IsSaveLoaded() || !roomState.syncItemsAndFlags) {
         return;
     }
@@ -60,4 +67,5 @@ void Anchor::HandlePacket_SetCheckStatus(nlohmann::json payload) {
     CheckTracker::RecalculateAllAreaTotals();
     CheckTracker::RecalculateAvailableChecks();
     isResultOfHandling = false;
+#endif
 }
