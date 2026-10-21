@@ -40,6 +40,7 @@
 #include "soh/Enhancements/randomizer/randomizer_hint_tracker.h"
 #include "soh/Enhancements/randomizer/randomizer_item_tracker.h"
 #include "soh/Enhancements/timesplits/TimeSplits.h"
+#include "soh/Enhancements/gz-macro/GzMacro.h"
 #include "soh/Enhancements/timesplits/TimeSplitsSettings.h"
 #include "soh/Enhancements/randomizer/Plandomizer.h"
 #include "soh/SohGui/SohModals.h"
@@ -111,6 +112,7 @@ std::shared_ptr<SohModalWindow> mModalWindow;
 std::shared_ptr<Notification::Window> mNotificationWindow;
 std::shared_ptr<TimeDisplayWindow> mTimeDisplayWindow;
 std::shared_ptr<AnchorRoomWindow> mAnchorRoomWindow;
+std::shared_ptr<GzMacroWindow> mGzMacroWindow;
 
 UIWidgets::Colors GetMenuThemeColor() {
     return mSohMenu->GetMenuThemeColor();
@@ -153,6 +155,7 @@ std::vector<std::shared_ptr<Ship::GuiWindow>> GetAllGuiWindows() {
         mNotificationWindow,
         mTimeDisplayWindow,
         mAnchorRoomWindow,
+        mGzMacroWindow,
         // Registered outside SohGui.
         gui->GetGuiWindow("Configure Controller"),
         gui->GetGuiWindow("Console"),
@@ -270,6 +273,8 @@ void SetupGuiElements() {
     gui->AddGuiWindow(mTimeDisplayWindow);
     mAnchorRoomWindow = std::make_shared<AnchorRoomWindow>(CVAR_WINDOW("AnchorRoom"), "Anchor Room");
     gui->AddGuiWindow(mAnchorRoomWindow);
+    mGzMacroWindow = std::make_shared<GzMacroWindow>(CVAR_WINDOW("GzMacro"), "gz Tools", ImVec2(420, 520));
+    gui->AddGuiWindow(mGzMacroWindow);
 }
 
 void Destroy() {
@@ -307,6 +312,7 @@ void Destroy() {
     mPlandomizerWindow = nullptr;
     mTimeDisplayWindow = nullptr;
     mAnchorRoomWindow = nullptr;
+    mGzMacroWindow = nullptr;
 }
 
 void RegisterPopup(std::string title, std::string message, std::string button1, std::string button2,

@@ -7,6 +7,14 @@ set(CMAKE_C_STANDARD 23 CACHE STRING "The C standard to use")
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 
 project(Ship VERSION 9.3.1 LANGUAGES C CXX)
+if(EMSCRIPTEN)
+    # Single threaded, like Prelude of Light's build: no SharedArrayBuffer, so the page needs
+    # no cross-origin isolation headers. Code that would start a thread runs inline instead.
+    # Every object has to agree on the exception model, so set it before any subproject.
+    add_compile_options(-fwasm-exceptions)
+    add_link_options(-fwasm-exceptions)
+endif()
+
 include(CMake/soh-cvars.cmake)
 include(CMake/lus-cvars.cmake)
 set(SPDLOG_LEVEL_TRACE 0)
@@ -280,6 +288,9 @@ function(quiet_dependency_tree dir)
     endforeach()
 endfunction()
 
+# The browser build has no ROM extraction: the page supplies oot.o2r, and soh.o2r comes
+# from a native build (see docs/BUILDING_WEB.md).
+if(NOT EMSCRIPTEN)
 add_subdirectory(torch SYSTEM)
 quiet_dependency_tree(${CMAKE_CURRENT_SOURCE_DIR}/torch)
 
@@ -358,6 +369,7 @@ add_custom_target(GenerateSohOtr ALL DEPENDS ${CMAKE_BINARY_DIR}/soh/soh.o2r)
 
 # ExtractAssets produced soh.o2r as well as the rom archives, so keep doing that.
 add_dependencies(ExtractAssets GenerateSohOtr)
+endif()
 
 # The asset tools only need torch, so a tools-only configure can skip libultraship and soh
 # entirely -- that is all CI needs to produce soh.o2r.

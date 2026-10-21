@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "soh/Enhancements/gz-macro/GzMacro.h"
 #include "ResourceManagerHelpers.h"
 #include "soh/resource/type/Scene.h"
 #include "soh/resource/type/scenecommand/SetCameraSettings.h"
@@ -471,7 +472,8 @@ s32 OTRScene_ExecuteCommands(PlayState* play, SOH::Scene* scene) {
 extern "C" s32 OTRfunc_800973FC(PlayState* play, RoomContext* roomCtx) {
     if (roomCtx->status == 1) {
         // if (!osRecvMesg(&roomCtx->loadQueue, NULL, OS_MESG_NOBLOCK)) {
-        if (1) {
+        // SOH [Enhancement] gz macros record the frames where a room was still loading
+        if (!GzMacro_ShouldDelayRoomLoad()) {
             roomCtx->status = 0;
             roomCtx->curRoom.segment = roomCtx->unk_34;
             gSegments[3] = VIRTUAL_TO_PHYSICAL(roomCtx->unk_34);

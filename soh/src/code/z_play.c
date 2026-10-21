@@ -11,6 +11,7 @@
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/OTRGlobals.h"
 #include "soh/ResourceManagerHelpers.h"
+#include "soh/Enhancements/gz-macro/GzMacro.h"
 #include "soh/SaveManager.h"
 #include "soh/framebuffer_effects.h"
 
@@ -518,7 +519,9 @@ void Play_Init(GameState* thisx) {
     gTrnsnUnkState = 0;
     play->transitionMode = TRANS_MODE_OFF;
     FrameAdvance_Init(&play->frameAdvCtx);
-    Rand_Seed((u32)osGetTime());
+    // #region SOH [Enhancement] gz macros restore the seed they recorded
+    Rand_Seed(GzMacro_FilterRandSeed((u32)osGetTime()));
+    // #endregion
     Matrix_Init(&play->state);
     play->state.main = Play_Main;
     play->state.destroy = Play_Destroy;

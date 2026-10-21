@@ -8,6 +8,9 @@
 
 #include <libultraship/bridge/gfxdebuggerbridge.h>
 #include <libultraship/bridge/windowbridge.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include "soh/Enhancements/gameconsole.h"
 #include "soh/OTRGlobals.h"
 
@@ -506,10 +509,34 @@ static void RunFrame() {
     exit(0);
 }
 
+#ifdef __EMSCRIPTEN__
+static double sNextWebFrameTime;
+
+// Called on every browser animation frame. RunFrame does one game update, so only run it
+// at the game's own rate (20 updates a second for most scenes).
+static void Graph_WebFrame(void) {
+    double now = emscripten_get_now();
+    double interval = 1000.0 / (60.0 / (R_UPDATE_RATE > 0 ? R_UPDATE_RATE : 1));
+
+    // A little slack so a 60Hz animation frame landing just early doesn't skip a whole update
+    if (now < sNextWebFrameTime - 2.0) {
+        return;
+    }
+    // Don't try to catch up on updates missed while the tab was hidden
+    sNextWebFrameTime = (now - sNextWebFrameTime > interval * 4) ? now + interval : sNextWebFrameTime + interval;
+    RunFrame();
+}
+#endif
+
 void Graph_ThreadEntry(void* arg0) {
+#ifdef __EMSCRIPTEN__
+    // The browser owns the loop. This never returns: it unwinds the stack back to the browser.
+    emscripten_set_main_loop(Graph_WebFrame, 0, true);
+#else
     while (WindowIsRunning()) {
         RunFrame();
     }
+#endif
 }
 
 void* Graph_Alloc(GraphicsContext* gfxCtx, size_t size) {

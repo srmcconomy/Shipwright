@@ -983,7 +983,12 @@ bool GenerateRandomizer(std::string seed /*= ""*/) {
     }
     WaitForRandoGeneration();
     randoGenerating = true;
+#ifdef __EMSCRIPTEN__
+    // No threads in the browser; generation blocks the frame until it is done
+    GenerateRandomizerImgui(seed);
+#else
     randoThread = std::thread(&GenerateRandomizerImgui, seed);
+#endif
     return true;
 }
 

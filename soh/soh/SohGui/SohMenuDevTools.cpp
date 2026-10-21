@@ -231,6 +231,16 @@ void SohMenu::AddMenuDevTools() {
         .WindowName("GfxDebugger##SoH")
         .HideInSearch(true)
         .Options(WindowButtonOptions().Tooltip("Enables the separate Gfx Debugger Window."));
+
+    // gz Tools
+    path.sidebarName = "gz Tools";
+    AddSidebarEntry("Dev Tools", path.sidebarName, 1);
+    AddWidget(path, "Popout gz Tools", WIDGET_WINDOW_BUTTON)
+        .CVar(CVAR_WINDOW("GzMacro"))
+        .WindowName("gz Tools")
+        .HideInSearch(true)
+        .Options(WindowButtonOptions().Tooltip("Enables the separate gz Tools Window, for playing back macros and "
+                                               "importing savestates from the gz practice ROM."));
 }
 
 } // namespace SohGui

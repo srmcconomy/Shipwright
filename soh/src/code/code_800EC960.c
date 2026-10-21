@@ -6,6 +6,7 @@
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/Enhancements/savestate_serialize.h"
+#include "soh/Enhancements/gz-macro/GzMacro.h"
 #include <libultraship/bridge/consolevariablebridge.h>
 
 // TODO: can these macros be shared between files? code_800F9280 seems to use
@@ -1478,6 +1479,9 @@ void AudioOcarina_ReadControllerInput(void) {
     u32 ocarinaInputButtonPrev = sOcarinaInputButtonCur;
 
     PadMgr_RequestPadData(&gPadMgr, inputs, false);
+    // #region SOH [Enhancement]
+    GzMacro_UpdateOcarinaInput(input);
+    // #endregion
     sOcarinaInputButtonCur = input->cur.button;
     sOcarinaInputButtonPrev = ocarinaInputButtonPrev;
     sOcarinaInputStickAdj.x = input->rel.stick_x;
@@ -1856,7 +1860,8 @@ void AudioOcarina_CheckSongsWithoutMusicStaff(void) {
 // This unused argument is used in Majora's Mask as a u8
 void AudioOcarina_PlayControllerInput(u8 unused) {
     u32 ocarinaBtnsHeld;
-    bool customControls = CVarGetInteger(CVAR_SETTING("CustomOcarina.Enabled"), 0);
+    // SOH [Enhancement] gz macros are recorded with the default ocarina buttons
+    bool customControls = CVarGetInteger(CVAR_SETTING("CustomOcarina.Enabled"), 0) && !GzMacro_IsPlaying();
 
     // Prevents two different ocarina notes from being played on two consecutive frames
     if (sOcarinaFlags != 0 && sOcarinaDropInputTimer != 0) {
@@ -2429,7 +2434,13 @@ s32 AudioOcarina_MemoryGameNextNote(void) {
         return 1;
     }
 
-    randomButtonIndex = Audio_NextRandom();
+    // #region SOH [Enhancement] gz macros need the notes to be deterministic
+    if (GzMacro_IsPlaying()) {
+        randomButtonIndex = GzMacro_OcarinaMemoryGameRand(sOcaMemoryGameAppendPos);
+    } else {
+        randomButtonIndex = Audio_NextRandom();
+    }
+    // #endregion
     randomPitch = sButtonToPitchMap[randomButtonIndex % 5];
 
     if (sOcarinaSongNotes[OCARINA_SONG_MEMORY_GAME][sOcaMemoryGameAppendPos - 1].pitch == randomPitch) {
@@ -2453,7 +2464,30 @@ s32 AudioOcarina_MemoryGameNextNote(void) {
     return 0;
 }
 
+// #region SOH [Enhancement]
+/**
+ * Makes the ocarina advance by the number of audio frames recorded in a gz macro, rather than however many
+ * audio tasks actually ran since the last update. Same as gz's ocarina_update_hook.
+ */
+void AudioOcarina_SyncGzMacro(void) {
+    s32 audioFrames = R_UPDATE_RATE;
+    u32 playFrames;
+    u32 recordFrames;
+
+    if (!GzMacro_GetOcarinaSync(&audioFrames)) {
+        return;
+    }
+    playFrames = sOcarinaUpdateTaskStart + audioFrames - sOcarinaPlaybackTaskStart;
+    recordFrames = sOcarinaUpdateTaskStart + audioFrames - sOcarinaRecordTaskStart;
+    sOcarinaPlaybackTaskStart = gAudioContext.totalTaskCnt - playFrames;
+    sOcarinaRecordTaskStart = gAudioContext.totalTaskCnt - recordFrames;
+}
+// #endregion
+
 void AudioOcarina_Update(void) {
+    // #region SOH [Enhancement]
+    AudioOcarina_SyncGzMacro();
+    // #endregion
     sOcarinaUpdateTaskStart = gAudioContext.totalTaskCnt;
     if (sOcarinaInstrumentId != OCARINA_INSTRUMENT_OFF) {
         if (sIsOcarinaInputEnabled == true) {

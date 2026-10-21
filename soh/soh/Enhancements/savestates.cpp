@@ -9,11 +9,13 @@
 #include <soh/OTRGlobals.h>
 #include <soh/OTRAudio.h>
 #include "savestate_serialize.h"
+#include "gz-macro/GzMacro.h"
 
 extern "C" {
 #include "z64.h"
 #include "z64save.h"
 #include <variables.h>
+#include <functions.h>
 }
 
 extern "C" PlayState* gPlayState;
@@ -380,6 +382,7 @@ void SaveStateMgr::ProcessSaveStateRequests(void) {
             case RequestType::LOAD:
                 if (this->states.contains(request.slot)) {
                     this->states[request.slot]->Load();
+                    GzMacro_OnSaveStateLoaded();
                     Ship::Context::GetRawInstance()->GetWindow()->GetGui()->GetGameOverlay()->TextDrawNotification(
                         1.0f, true, "loaded state %u", request.slot);
                 } else {
@@ -446,6 +449,7 @@ void SaveState::Save(void) {
     memcpy(&info->saveContextCopy, &gSaveContext, sizeof(gSaveContext));
     memcpy(&info->gameInfoCopy, gGameInfo, sizeof(*gGameInfo));
     memcpy(&info->effectContextCopy, &sEffectContext, sizeof(sEffectContext));
+    info->rngSeed = Rand_GetSeed();
 
     // Various static data
     SaveOverlayStaticData();
@@ -464,6 +468,7 @@ void SaveState::Load(void) {
     memcpy(&gSaveContext, &info->saveContextCopy, sizeof(gSaveContext));
     memcpy(gGameInfo, &info->gameInfoCopy, sizeof(*gGameInfo));
     memcpy(&sEffectContext, &info->effectContextCopy, sizeof(sEffectContext));
+    Rand_Seed(info->rngSeed);
 
     memcpy(gActiveSounds, info->gActiveSoundsCopy, sizeof(gActiveSounds));
     memcpy(gSoundBankMuted, &info->gSoundBankMutedCopy, sizeof(info->gSoundBankMutedCopy));

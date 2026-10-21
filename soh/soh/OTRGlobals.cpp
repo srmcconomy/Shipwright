@@ -409,6 +409,11 @@ static bool RemoveArchiveAcrossAppDirs(const std::string& fileName) {
 }
 
 void OTRGlobals::RunExtract(int argc, char* argv[]) {
+#ifdef __EMSCRIPTEN__
+    // The page writes oot.o2r and soh.o2r into the filesystem before main; there is no
+    // ROM extractor in the browser build.
+    return;
+#else
     bool extractDone = false;
     ExtractSteps extractStep = ES_PORT_ARCHIVE;
     WindowsSteps windowsStep = WS_TEMP;
@@ -820,6 +825,7 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
 #elif defined(__WIIU__)
     Ship::WiiU::Init(appShortName);
 #endif
+#endif
 }
 
 void InitGfxDebugger() {
@@ -1049,6 +1055,11 @@ bool OTRGlobals::HasOriginal() {
 }
 
 uint32_t OTRGlobals::GetInterpolationFPS() {
+#ifdef __EMSCRIPTEN__
+    // Only the last frame drawn before returning to the browser is shown, so drawing
+    // interpolated frames in between would be wasted work.
+    return 20;
+#endif
     if (CVarGetInteger(CVAR_SETTING("MatchRefreshRate"), 0)) {
         return Ship::Context::GetRawInstance()->GetWindow()->GetCurrentRefreshRate();
     } else if (CVarGetInteger(CVAR_VSYNC_ENABLED, 1) ||
@@ -1066,6 +1077,30 @@ int AudioPlayer_Buffered(void);
 extern "C" int AudioPlayer_GetDesiredBuffered(void);
 std::unordered_map<std::string, ExtensionEntry> ExtensionCache;
 
+// AudioMgr_ThreadEntry(&gAudioMgr);
+//  528 and 544 relate to 60 fps at 32 kHz 32000/60 = 533.333..
+//  in an ideal world, one third of the calls should use num_samples=544 and two thirds num_samples=528
+#define SAMPLES_HIGH 560
+#define SAMPLES_LOW 528
+
+#define AUDIO_FRAMES_PER_UPDATE (R_UPDATE_RATE > 0 ? R_UPDATE_RATE : 1)
+#define NUM_AUDIO_CHANNELS 2
+
+static void OTRAudio_ProcessFrame() {
+    int samples_left = AudioPlayer_Buffered();
+    u32 num_audio_samples = samples_left < AudioPlayer_GetDesiredBuffered() ? SAMPLES_HIGH : SAMPLES_LOW;
+
+    // 3 is the maximum authentic frame divisor.
+    s16 audio_buffer[SAMPLES_HIGH * NUM_AUDIO_CHANNELS * 3];
+    for (int i = 0; i < AUDIO_FRAMES_PER_UPDATE; i++) {
+        AudioMgr_CreateNextAudioBuffer(audio_buffer + i * (num_audio_samples * NUM_AUDIO_CHANNELS),
+                                       num_audio_samples);
+    }
+
+    AudioPlayer_Play((u8*)audio_buffer,
+                     num_audio_samples * (sizeof(int16_t) * NUM_AUDIO_CHANNELS * AUDIO_FRAMES_PER_UPDATE));
+}
+
 void OTRAudio_Thread() {
     while (audio.running) {
         {
@@ -1079,27 +1114,7 @@ void OTRAudio_Thread() {
             }
         }
         std::unique_lock<std::mutex> Lock(audio.mutex);
-// AudioMgr_ThreadEntry(&gAudioMgr);
-//  528 and 544 relate to 60 fps at 32 kHz 32000/60 = 533.333..
-//  in an ideal world, one third of the calls should use num_samples=544 and two thirds num_samples=528
-#define SAMPLES_HIGH 560
-#define SAMPLES_LOW 528
-
-#define AUDIO_FRAMES_PER_UPDATE (R_UPDATE_RATE > 0 ? R_UPDATE_RATE : 1)
-#define NUM_AUDIO_CHANNELS 2
-
-        int samples_left = AudioPlayer_Buffered();
-        u32 num_audio_samples = samples_left < AudioPlayer_GetDesiredBuffered() ? SAMPLES_HIGH : SAMPLES_LOW;
-
-        // 3 is the maximum authentic frame divisor.
-        s16 audio_buffer[SAMPLES_HIGH * NUM_AUDIO_CHANNELS * 3];
-        for (int i = 0; i < AUDIO_FRAMES_PER_UPDATE; i++) {
-            AudioMgr_CreateNextAudioBuffer(audio_buffer + i * (num_audio_samples * NUM_AUDIO_CHANNELS),
-                                           num_audio_samples);
-        }
-
-        AudioPlayer_Play((u8*)audio_buffer,
-                         num_audio_samples * (sizeof(int16_t) * NUM_AUDIO_CHANNELS * AUDIO_FRAMES_PER_UPDATE));
+        OTRAudio_ProcessFrame();
 
         audio.processing = false;
         audio.cv_from_thread.notify_one();
@@ -1112,7 +1127,9 @@ void OTRAudio_Init() {
 
     if (!audio.running) {
         audio.running = true;
+#ifndef __EMSCRIPTEN__
         audio.thread = std::thread(OTRAudio_Thread);
+#endif
     }
 }
 
@@ -1132,7 +1149,9 @@ extern "C" void OTRAudio_Exit() {
     audio.cv_to_thread.notify_all();
 
     // Wait until the audio thread quit
-    audio.thread.join();
+    if (audio.thread.joinable()) {
+        audio.thread.join();
+    }
 #if 0
     for (size_t i = 0; i < sequenceMapSize; i++) {
         free(sequenceMap[i]);
@@ -1506,7 +1525,11 @@ OTRVersion DetectOTRVersion(std::string fileName, bool isMQ) {
 }
 
 extern "C" void Messagebox_ShowErrorBox(char* title, char* body) {
+#ifdef __EMSCRIPTEN__
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, body, nullptr);
+#else
     Extractor::ShowErrorBox(title, body);
+#endif
 }
 
 bool VerifyArchiveVersion(OTRVersion version) {
@@ -1824,12 +1847,17 @@ void RunCommands(Gfx* Commands, int time, int step, int denom, int count) {
 
 // C->C++ Bridge
 extern "C" void Graph_ProcessGfxCommands(Gfx* commands) {
+#ifdef __EMSCRIPTEN__
+    // No audio thread in the browser: mix this frame's audio before drawing it
+    OTRAudio_ProcessFrame();
+#else
     {
         std::unique_lock<std::mutex> Lock(audio.mutex);
         audio.processing = true;
     }
 
     audio.cv_to_thread.notify_one();
+#endif
     int target_fps = OTRGlobals::Instance->GetInterpolationFPS();
     static int last_fps;
     static int last_update_rate;
@@ -1875,12 +1903,14 @@ extern "C" void Graph_ProcessGfxCommands(Gfx* commands) {
     last_fps = fps;
     last_update_rate = R_UPDATE_RATE;
 
+#ifndef __EMSCRIPTEN__
     {
         std::unique_lock<std::mutex> Lock(audio.mutex);
         while (audio.processing) {
             audio.cv_from_thread.wait(Lock);
         }
     }
+#endif
 
     bool curAltAssets = CVarGetInteger(CVAR_SETTING("AltAssets"), 1);
     if (prevAltAssets != curAltAssets) {
@@ -2495,6 +2525,14 @@ extern "C" void Gfx_TextureCacheDelete(const uint8_t* texAddr) {
 
 bool SoH_HandleConfigDrop(char* filePath) {
     if (SohUtils::IsStringEmpty(filePath)) {
+        return false;
+    }
+    // Leave other dropped files (gz macros and savestates) to their own handlers instead of
+    // reporting them as broken configs
+    std::string extension = std::filesystem::path(filePath).extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    if (extension != ".json") {
         return false;
     }
     try {

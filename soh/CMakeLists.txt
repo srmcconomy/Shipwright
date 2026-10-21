@@ -166,8 +166,11 @@ endif()
 
 # soh/Extractor {{{
 list(FILTER ship__ EXCLUDE REGEX "soh/Extractor/*")
+if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    list(FILTER soh__ EXCLUDE REGEX "soh/Extractor/.*\\.(c|cpp)$")
+endif()
 
-if(NOT CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch|CafeOS")
+if(NOT CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch|CafeOS|Emscripten")
     file(GLOB_RECURSE soh__Extractor CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "soh/Extractor/*.c"
         "soh/Extractor/*.cpp"
@@ -539,6 +542,54 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
         target_link_options(${PROJECT_NAME} PRIVATE
             -pthread
         )
+    elseif (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            -Wno-error
+            -Wno-return-type
+            -Wno-narrowing
+            -Wno-unknown-pragmas
+            $<$<COMPILE_LANGUAGE:C>:
+                -Werror-implicit-function-declaration
+                -Wno-implicit-int
+                -Wno-incompatible-pointer-types
+                -Wno-int-conversion
+            >
+            $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wno-c++11-narrowing -Wno-deprecated-enum-enum-conversion>
+        )
+
+        # The page (soh/web/index.html) writes oot.o2r and soh.o2r into /ship before main runs
+        # and keeps /ship in IndexedDB so saves and settings persist.
+        target_link_options(${PROJECT_NAME} PRIVATE
+            -sALLOW_MEMORY_GROWTH=1
+            -sINITIAL_MEMORY=512MB
+            -sMAXIMUM_MEMORY=4GB
+            -sSTACK_SIZE=8MB
+            -sFORCE_FILESYSTEM=1
+            -sEXIT_RUNTIME=0
+            -sINVOKE_RUN=0
+            -sMODULARIZE=0
+            -sEXPORTED_RUNTIME_METHODS=FS,IDBFS,callMain,addRunDependency,removeRunDependency,ccall,UTF8ToString
+            -sEXPORTED_FUNCTIONS=_main,_malloc,_free
+            -lidbfs.js
+            -sGL_ENABLE_GET_PROC_ADDRESS=1
+            # The randomizer's table-building functions are each ~1MB of straight-line code. -O2
+            # leaves them with ~17k locals, and Chrome's renderer crashes entering them.
+            # Coalescing again brings them to a few hundred, like Prelude of Light's build.
+            -sBINARYEN_EXTRA_PASSES=--coalesce-locals,--simplify-locals
+            -sOFFSCREENCANVAS_SUPPORT=0
+            --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/web/index.html
+        )
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            SUFFIX ".html"
+            LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/web/index.html
+        )
+        # soh.o2r can't be packed in the browser build (it needs torch), so serve the one a
+        # native build left in the source root next to the page
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/index.html
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/soh.o2r $<TARGET_FILE_DIR:${PROJECT_NAME}>/soh.o2r
+        )
     elseif (CMAKE_SYSTEM_NAME STREQUAL "CafeOS")
         target_compile_options(${PROJECT_NAME} PRIVATE
             -O2
@@ -614,10 +665,10 @@ add_custom_command(
 ################################################################################
 # Dependencies
 ################################################################################
-add_dependencies(${PROJECT_NAME}
-    libultraship
-    torch
-)
+add_dependencies(${PROJECT_NAME} libultraship)
+if (NOT EMSCRIPTEN)
+    add_dependencies(${PROJECT_NAME} torch)
+endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     find_package(glfw3 REQUIRED)
@@ -673,6 +724,41 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
         SDL2::SDL2
         -lglad
         Threads::Threads
+    )
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    # opus has no emscripten port, so build it and opusfile from source
+    set(OPUS_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
+    set(OPUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
+    set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+        opus
+        GIT_REPOSITORY https://github.com/xiph/opus.git
+        GIT_TAG v1.5.2
+    )
+    FetchContent_Declare(
+        opusfile
+        GIT_REPOSITORY https://github.com/xiph/opusfile.git
+        GIT_TAG v0.12
+    )
+    FetchContent_MakeAvailable(opus)
+    FetchContent_Populate(opusfile)
+    add_library(opusfile STATIC
+        ${opusfile_SOURCE_DIR}/src/info.c
+        ${opusfile_SOURCE_DIR}/src/internal.c
+        ${opusfile_SOURCE_DIR}/src/opusfile.c
+        ${opusfile_SOURCE_DIR}/src/stream.c
+    )
+    target_include_directories(opusfile PUBLIC ${opusfile_SOURCE_DIR}/include)
+    target_compile_definitions(opusfile PRIVATE OP_DISABLE_HTTP OP_DISABLE_FLOAT_API)
+    target_link_libraries(opusfile PUBLIC opus SDL2::SDL2)
+
+    # SDL2, SDL2_net, ogg and vorbis are emscripten ports, set up by libultraship
+    set(ADDITIONAL_LIBRARY_DEPENDENCIES
+        opusfile
+        "libultraship;"
+        SDL2::SDL2
+        SDL2_net::SDL2_net
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "CafeOS")
     find_package(SDL2 REQUIRED)

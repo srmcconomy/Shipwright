@@ -74,9 +74,11 @@ int main(int argc, char* argv[]) {
 }
 
 void Main(void* arg) {
-    IrqMgrClient irqClient;
-    OSMesgQueue irqMgrMsgQ;
-    OSMesg irqMgrMsgBuf[60];
+    // Static because the browser build never returns from Graph_ThreadEntry: it unwinds this
+    // frame while the irq manager still points at these.
+    static IrqMgrClient irqClient;
+    static OSMesgQueue irqMgrMsgQ;
+    static OSMesg irqMgrMsgBuf[60];
     uintptr_t sysHeap;
     uintptr_t fb;
     void* debugHeap;

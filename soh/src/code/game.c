@@ -5,6 +5,7 @@
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ResourceManagerHelpers.h"
+#include "soh/Enhancements/gz-macro/GzMacro.h"
 
 #include "message_data_static.h"
 #include <libultraship/bridge/consolevariablebridge.h>
@@ -251,6 +252,9 @@ void PadMgr_RequestPadData(PadMgr*, Input*, s32);
 
 void GameState_ReqPadData(GameState* gameState) {
     PadMgr_RequestPadData(&gPadMgr, &gameState->input[0], 1);
+    // #region SOH [Enhancement]
+    GzMacro_UpdateInput(&gameState->input[0]);
+    // #endregion
 }
 
 // Framebuffer for the Link preview on the pause menu equipment sub-screen

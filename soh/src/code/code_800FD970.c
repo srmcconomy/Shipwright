@@ -20,6 +20,15 @@ void Rand_Seed(u32 seed) {
     sRandInt = seed;
 }
 
+// #region SOH [Enhancement]
+/**
+ * Gets the latest generated random number without advancing the sequence.
+ */
+u32 Rand_GetSeed(void) {
+    return sRandInt;
+}
+// #endregion
+
 /**
  * Returns a pseudo-random floating-point number between 0.0f and 1.0f, by generating
  * the next integer and masking it to an IEEE-754 compliant floating-point number
