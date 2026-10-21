@@ -22,6 +22,9 @@ u32 GzMacro_OcarinaMemoryGameRand(u8 songLength);
 // Whether a room load should take another frame, as it did when the macro was recorded.
 bool GzMacro_ShouldDelayRoomLoad(void);
 bool GzMacro_IsPlaying(void);
+// The controller input the macro gave the game this frame, for the input viewer. Returns false when no macro is
+// playing.
+bool GzMacro_GetCurrentInput(u16* button, s8* stickX, s8* stickY);
 #ifdef __cplusplus
 }; // extern "C"
 #endif

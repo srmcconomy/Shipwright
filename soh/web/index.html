@@ -40,6 +40,8 @@
   .row .actions { display: flex; gap: 8px; align-items: center; }
   .row .clear { border: none; padding: 0 4px; color: var(--muted); }
   .row .clear[hidden] { display: none; }
+  .check { display: flex; align-items: center; gap: 8px; margin: -8px 0 20px; font-size: 14px; cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
 </style>
 </head>
 <body>
@@ -75,6 +77,7 @@
         <label class="btn">Choose…<input type="file" id="gzm-input" accept=".gzm"></label>
       </div>
     </div>
+    <label class="check"><input type="checkbox" id="input-display" checked> Show the macro's inputs while it plays</label>
 
     <button id="play" disabled>Play</button>
     <div class="links">
@@ -203,6 +206,15 @@
     document.getElementById(kind + "-clear").addEventListener("click", () => setGzFile(kind, null));
   }
 
+  // Remembered per browser; storage can be unavailable (private windows), so it is only a convenience
+  const inputDisplay = document.getElementById("input-display");
+  try {
+    if (localStorage.getItem("soh.inputDisplay") === "off") inputDisplay.checked = false;
+  } catch (e) {}
+  inputDisplay.addEventListener("change", () => {
+    try { localStorage.setItem("soh.inputDisplay", inputDisplay.checked ? "on" : "off"); } catch (e) {}
+  });
+
   // Before the game starts, dropped files fill in the launcher
   function dropOnLauncher(files) {
     for (const file of files) {
@@ -257,7 +269,7 @@
 
     // Plays a gz macro from its savestate, booting straight into gameplay on a temporary file if no
     // file is loaded. state and macro are File/Blob/ArrayBuffer/Uint8Array or URLs; macro is optional.
-    async playGz({ state, macro, speed = 1 }) {
+    async playGz({ state, macro, speed = 1, inputDisplay = true }) {
       if (!running) throw new Error("the game is not running");
       const bytesOf = async (src) => {
         if (typeof src === "string") {
@@ -286,6 +298,12 @@
         await new Promise((r) => setTimeout(r, 50));
       }
       Module.ccall("SohWeb_SetSpeed", null, ["number"], [speed]);
+      this.setInputDisplay(inputDisplay && !!macro);
+    },
+
+    // SoH's Input Viewer, which follows the macro's inputs while one plays
+    setInputDisplay(visible) {
+      Module.ccall("SohWeb_SetInputDisplay", null, ["boolean"], [visible]);
     },
 
     // Where the macro and Link are: { macro: { playing, frame, frameCount, ... }, scene, room, pos, ... }
@@ -351,7 +369,7 @@
     running = true;
     Module.callMain([]);
     if (gzFiles.gzs) {
-      SohWeb.playGz({ state: gzFiles.gzs, macro: gzFiles.gzm })
+      SohWeb.playGz({ state: gzFiles.gzs, macro: gzFiles.gzm, inputDisplay: inputDisplay.checked })
         .catch((err) => alert("Could not play the gz files: " + err.message));
     }
   });

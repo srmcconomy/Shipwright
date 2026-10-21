@@ -7,6 +7,7 @@
 #include <fast/Fast3dGui.h>
 
 #include "InputViewer.h"
+#include "soh/Enhancements/gz-macro/GzMacro.h"
 #include "soh/OTRGlobals.h"
 #include "soh/SohGui/UIWidgets.hpp"
 #include "soh/SohGui/SohGui.hpp"
@@ -146,6 +147,20 @@ void InputViewer::DrawElement() {
 
         OSContPad* pads =
             std::dynamic_pointer_cast<LUS::ControlDeck>(Ship::Context::GetRawInstance()->GetControlDeck())->GetPads();
+
+        // A playing gz macro gives the game its own inputs, which never pass through the control deck
+        OSContPad macroPad;
+        u16 macroButtons;
+        s8 macroStickX, macroStickY;
+        if (pads != nullptr && GzMacro_GetCurrentInput(&macroButtons, &macroStickX, &macroStickY)) {
+            macroPad = pads[0];
+            macroPad.button = macroButtons;
+            macroPad.stick_x = macroStickX;
+            macroPad.stick_y = macroStickY;
+            macroPad.right_stick_x = 0;
+            macroPad.right_stick_y = 0;
+            pads = &macroPad;
+        }
 
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
                                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground |

@@ -13,6 +13,8 @@
 #include <string>
 
 #include <emscripten.h>
+#include <ship/Context.h>
+#include <ship/window/Window.h>
 
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 
@@ -60,6 +62,19 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_GzPlay() {
 
 EMSCRIPTEN_KEEPALIVE void SohWeb_GzStop() {
     GzMacro_Stop();
+}
+
+// Shows or hides SoH's Input Viewer, which follows the macro's inputs while one plays.
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetInputDisplay(bool visible) {
+    auto window = Ship::Context::GetRawInstance()->GetWindow()->GetGui()->GetGuiWindow("Input Viewer");
+    if (window == nullptr) {
+        return;
+    }
+    if (visible) {
+        window->Show();
+    } else {
+        window->Hide();
+    }
 }
 
 // Runs this many game updates per browser frame, for fast-forwarding through a macro.

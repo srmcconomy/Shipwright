@@ -244,6 +244,19 @@ bool GzMacro_IsPlaying(void) {
     return sPlayback.playing;
 }
 
+bool GzMacro_GetCurrentInput(u16* button, s8* stickX, s8* stickY) {
+    if (!sPlayback.playing) {
+        return false;
+    }
+    // The frame counter has already moved past the input the game was given
+    const GzMacro::Controller& raw =
+        sPlayback.frame == 0 ? sPlayback.macro.inputStart : sPlayback.macro.inputs[sPlayback.frame - 1].raw;
+    *button = raw.pad;
+    *stickX = raw.x;
+    *stickY = raw.y;
+    return true;
+}
+
 } // extern "C"
 
 bool GzMacro_Load(const std::string& path) {
