@@ -48,11 +48,11 @@
 <div id="launcher">
   <div class="panel">
     <h1>Ship of Harkinian</h1>
-    <p>Pick the <code>oot.o2r</code> (or <code>oot-mq.o2r</code>) that the desktop version made from your ROM. It is kept in this browser, so you only do this once.</p>
+    <p>Choose your Ocarina of Time ROM (<code>.z64</code>, <code>.n64</code> or <code>.v64</code>). It is converted and kept in this browser, so you only do this once. An <code>oot.o2r</code> from the desktop version works too.</p>
 
     <div class="row">
       <div><div class="label">Game archive</div><div class="status" id="rom-status">Checking…</div></div>
-      <label class="btn">Choose…<input type="file" id="rom-input" accept=".o2r,.otr"></label>
+      <label class="btn">Choose…<input type="file" id="rom-input" accept=".z64,.n64,.v64,.o2r,.otr"></label>
     </div>
     <div class="row">
       <div><div class="label">Mods</div><div class="status" id="mods-status">None</div></div>
@@ -129,7 +129,46 @@
     refreshLauncher();
   }
 
+  // Converts a ROM to oot.o2r (or oot-mq.o2r) in a worker, with the game's own extractor
+  function convertRom(file) {
+    playButton.disabled = true;
+    setStatus(romStatus, "Reading " + file.name + "…");
+    return new Promise(async (resolve) => {
+      const rom = await file.arrayBuffer();
+      const worker = new Worker("rom-convert-worker.js");
+      worker.onmessage = async ({ data }) => {
+        if (data.type === "progress") {
+          setStatus(romStatus, data.text);
+          return;
+        }
+        worker.terminate();
+        if (data.type === "error") {
+          setStatus(romStatus, "Could not convert " + file.name, "err");
+          alert(data.message);
+          refreshLauncher();
+        } else {
+          FS.writeFile(HOME + "/" + data.name, data.bytes);
+          await syncToDisk();
+          refreshLauncher();
+        }
+        resolve();
+      };
+      worker.onerror = (e) => {
+        worker.terminate();
+        setStatus(romStatus, "The converter failed to load", "err");
+        refreshLauncher();
+        resolve();
+      };
+      worker.postMessage({ rom }, [rom]);
+    });
+  }
+
+  const ROM_EXTENSIONS = ["z64", "n64", "v64"];
+
   async function loadArchive(file) {
+    if (ROM_EXTENSIONS.includes(file.name.split(".").pop().toLowerCase())) {
+      return convertRom(file);
+    }
     setStatus(romStatus, "Loading " + file.name + "…");
     // The desktop version names Master Quest archives oot-mq.o2r
     const name = /mq/i.test(file.name) ? "oot-mq.o2r" : "oot.o2r";
@@ -170,7 +209,7 @@
       const extension = file.name.split(".").pop().toLowerCase();
       if (extension === "gzs" || extension === "gzm") {
         setGzFile(extension, file);
-      } else if (extension === "o2r" || extension === "otr") {
+      } else if (extension === "o2r" || extension === "otr" || ROM_EXTENSIONS.includes(extension)) {
         loadArchive(file);
       }
     }

@@ -288,9 +288,6 @@ function(quiet_dependency_tree dir)
     endforeach()
 endfunction()
 
-# The browser build has no ROM extraction: the page supplies oot.o2r, and soh.o2r comes
-# from a native build (see docs/BUILDING_WEB.md).
-if(NOT EMSCRIPTEN)
 add_subdirectory(torch SYSTEM)
 quiet_dependency_tree(${CMAKE_CURRENT_SOURCE_DIR}/torch)
 
@@ -304,6 +301,56 @@ add_executable(soh-torch EXCLUDE_FROM_ALL
 )
 target_include_directories(soh-torch PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/soh/soh/Extractor)
 target_link_libraries(soh-torch PRIVATE torch)
+
+if(EMSCRIPTEN)
+    # The browser build converts the visitor's ROM to oot.o2r with this same CLI, run in a web
+    # worker (soh/web/rom-convert-worker.js). It is built with the game and lands next to it.
+    set_target_properties(soh-torch PROPERTIES
+        EXCLUDE_FROM_ALL FALSE
+        OUTPUT_NAME soh-extract
+        SUFFIX ".js"
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/soh
+    )
+    target_link_options(soh-torch PRIVATE
+        -sMODULARIZE=1
+        -sEXPORT_NAME=SohExtract
+        -sENVIRONMENT=worker
+        -sINVOKE_RUN=0
+        -sEXIT_RUNTIME=0
+        -sALLOW_MEMORY_GROWTH=1
+        -sINITIAL_MEMORY=256MB
+        -sMAXIMUM_MEMORY=4GB
+        -sSTACK_SIZE=8MB
+        -sFORCE_FILESYSTEM=1
+        -sEXPORTED_RUNTIME_METHODS=FS,callMain
+        # torch carries embind bindings for its own web build (torch/src/lib/web.cpp)
+        -lembind
+    )
+
+    # The asset definitions are 118MB of yml in 20k files, but compress to a few MB. The worker
+    # unpacks this archive into its filesystem before extracting.
+    file(GLOB_RECURSE SOH_EXTRACT_YML CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/soh/assets/yml/*)
+    if(CMAKE_HOST_APPLE)
+        # CMake's tar adds an AppleDouble "._" entry for every file on macOS; the system tar can leave them out
+        set(SOH_YML_TAR tar --no-mac-metadata -czf)
+    else()
+        set(SOH_YML_TAR ${CMAKE_COMMAND} -E tar czf)
+    endif()
+    add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/soh/soh-extract-yml.tar.gz
+        COMMAND ${SOH_YML_TAR} ${CMAKE_BINARY_DIR}/soh/soh-extract-yml.tar.gz yml
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/soh/assets
+        DEPENDS ${SOH_EXTRACT_YML}
+        COMMENT "Packing asset ymls for the browser ROM converter..."
+    )
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/soh/web/rom-convert-worker.js
+                   ${CMAKE_BINARY_DIR}/soh/rom-convert-worker.js @ONLY)
+    add_custom_target(SohExtractYml ALL DEPENDS ${CMAKE_BINARY_DIR}/soh/soh-extract-yml.tar.gz)
+endif()
+
+# The browser build packs no o2r files itself: soh.o2r comes from a native build (see
+# docs/BUILDING_WEB.md).
+if(NOT EMSCRIPTEN)
 
 add_executable(soh-o2r-packer EXCLUDE_FROM_ALL
     ${CMAKE_CURRENT_SOURCE_DIR}/soh/assets/tools/soh-o2r-packer/main.cpp

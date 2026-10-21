@@ -17,10 +17,15 @@ runs on any static web host: no `SharedArrayBuffer` and no cross-origin isolatio
 export EM_CACHE=$HOME/.emscripten_cache        # Homebrew's emscripten cache isn't writable
 mkdir -p $EM_CACHE/sysroot/lib/pkgconfig       # works around an emscripten 6.0 port install bug
 emcmake cmake -S . -B build-web -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_OPENGLES=ON
-ninja -C build-web soh
+ninja -C build-web
 ```
 
-`build-web/soh/` then holds everything to serve: `index.html`, `soh.js`, `soh.wasm` and `soh.o2r`.
+`build-web/soh/` then holds everything to serve:
+
+- `index.html`, `soh.js`, `soh.wasm` and `soh.o2r`: the game
+- `rom-convert-worker.js`, `soh-extract.js`, `soh-extract.wasm` and `soh-extract-yml.tar.gz`:
+  the ROM converter, which is SoH's own torch extractor built for the browser. It runs in a
+  worker and turns a ROM into the same `oot.o2r` the desktop version makes, in a few seconds.
 
 ## Run
 
@@ -28,9 +33,10 @@ ninja -C build-web soh
 python3 -m http.server 8123 --directory build-web/soh
 ```
 
-Open <http://127.0.0.1:8123/>, choose your `oot.o2r` (or `oot-mq.o2r`), and press Play.
-The archive, mods, saves and settings are kept in the browser's IndexedDB, so you only pick
-the archive once. "Download saves" exports the save files.
+Open <http://127.0.0.1:8123/>, choose your Ocarina of Time ROM (`.z64`, `.n64` or `.v64`) or an
+`oot.o2r` from the desktop version, and press Play. The converted archive, mods, saves and
+settings are kept in the browser's IndexedDB, so you only do this once. "Download saves"
+exports the save files.
 
 Files dropped on the page, or chosen with a Browse button in the game (such as in gz Tools),
 are copied into the browser's storage under `/ship/dropped` and handed to the game like a
@@ -57,7 +63,7 @@ SohWeb.stopMacro();
 
 ## How it differs from the desktop build
 
-- **No ROM extraction.** Generate `oot.o2r` with the desktop version first.
+- **ROM conversion runs in a worker** with the page open; the ROM never leaves the browser.
 - **No threads.** The audio mixer runs once per frame on the main thread. Resource loading,
   custom-audio decoding and randomizer generation run inline. The thread pool is swapped
   for an inline stand-in (`libultraship/cmake/dependencies/emscripten/BS_thread_pool.hpp`),

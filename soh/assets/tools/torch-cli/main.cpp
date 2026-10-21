@@ -8,7 +8,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "TorchExtract.h"
@@ -50,6 +53,29 @@ static std::vector<std::string> CollectRoms(const std::vector<std::string>& args
     }
 
     return roms;
+}
+
+// SohTorch::Extract takes the ROM big-endian (.z64 order), like the game's extractor passes it.
+static bool ReadRomBigEndian(const std::string& path, std::vector<uint8_t>& rom) {
+    std::ifstream file(path, std::ios::binary);
+    if (!file) {
+        return false;
+    }
+    rom.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+    if (rom.size() < 4) {
+        return false;
+    }
+    if (rom[0] == 0x37 && rom[1] == 0x80) { // .v64, byte-swapped halfwords
+        for (size_t i = 0; i + 1 < rom.size(); i += 2) {
+            std::swap(rom[i], rom[i + 1]);
+        }
+    } else if (rom[0] == 0x40 && rom[1] == 0x12) { // .n64, little-endian words
+        for (size_t i = 0; i + 3 < rom.size(); i += 4) {
+            std::swap(rom[i], rom[i + 3]);
+            std::swap(rom[i + 1], rom[i + 2]);
+        }
+    }
+    return true;
 }
 
 int main(int argc, char** argv) {
@@ -98,7 +124,12 @@ int main(int argc, char** argv) {
 
     for (const auto& rom : roms) {
         // A fresh extraction per ROM; torch names the archive from config.yml.
-        const std::string archive = SohTorch::Extract(rom, src, dest, version, nullptr);
+        std::vector<uint8_t> romData;
+        if (!ReadRomBigEndian(rom, romData)) {
+            fprintf(stderr, "could not read %s\n", rom.c_str());
+            return 1;
+        }
+        const std::string archive = SohTorch::Extract(std::move(romData), src, dest, version, nullptr);
         if (archive.empty()) {
             fprintf(stderr, "failed to extract %s\n", rom.c_str());
             return 1;
