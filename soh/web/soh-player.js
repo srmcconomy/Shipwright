@@ -79,10 +79,10 @@
            gap: 8px; background: #000000a0; text-shadow: 0 1px 3px #000; }
   .cover[hidden], .ended[hidden], .bar[hidden], .note[hidden], .progress[hidden], .frames[hidden] { display: none; }
   .caption { max-width: 32em; text-shadow: 0 1px 3px #000; }
-  .play, .replay { width: 64px; height: 64px; border-radius: 50%; border: none; background: #e0b34acc; color: #1a1406; cursor: pointer; }
+  .play, .replay { display: grid; place-items: center; width: 64px; height: 64px; padding: 0; border-radius: 50%; border: none;
+                   background: #e0b34acc; color: #1a1406; cursor: pointer; }
   .play:hover, .replay:hover { background: #e0b34a; }
-  .play svg, .replay svg { width: 28px; height: 28px; }
-  .play svg { margin-left: 4px; }
+  .play svg, .replay svg { display: block; width: 28px; height: 28px; }
   .note { font-size: 13px; color: #c9c6be; max-width: 30em; text-shadow: 0 1px 3px #000; }
   .note.err { color: #f09080; }
   label.btn, button.small { font: inherit; font-size: 13px; cursor: pointer; border-radius: 6px; padding: 4px 10px;
@@ -121,7 +121,7 @@
   <label class="btn rom" hidden>Choose ROM…<input type="file" accept=".z64,.n64,.v64,.o2r"></label>
 </div>
 <div class="ended" hidden>
-  <button class="replay" title="Replay" aria-label="Replay"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg></button>
+  <button class="replay" title="Replay" aria-label="Replay"><svg viewBox="0 0 24 24"><path fill="currentColor" transform="translate(0 1)" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg></button>
   <div>Replay</div>
 </div>
 <div class="bar" hidden>
