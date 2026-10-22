@@ -222,6 +222,12 @@
       Module._emscripten_resume_main_loop();
       this.paused = false;
     },
+
+    // While paused, runs one game update (one frame of a macro) and shows it
+    step() {
+      if (!this.paused) return;
+      Module.ccall("SohWeb_StepFrame", null, [], []);
+    },
   };
 
   // Loads the game's code and this browser's stored files, without starting the game.

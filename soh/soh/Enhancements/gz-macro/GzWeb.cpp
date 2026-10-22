@@ -24,6 +24,7 @@ extern "C" {
 #include "variables.h"
 extern PlayState* gPlayState;
 void Graph_SetWebSpeed(f32 speed);
+void Graph_WebStep(void);
 void OTRAudio_SetWebMuted(bool muted);
 }
 
@@ -81,6 +82,11 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetInputDisplay(bool visible) {
 // Shows or hides the gz tools' notifications, such as "gz savestate loaded" and "macro playing".
 EMSCRIPTEN_KEEPALIVE void SohWeb_SetNotifications(bool visible) {
     Gz_SetNotifications(visible);
+}
+
+// Runs one game update, with the page's main loop paused.
+EMSCRIPTEN_KEEPALIVE void SohWeb_StepFrame() {
+    Graph_WebStep();
 }
 
 // Silences the game, or brings its sound back.

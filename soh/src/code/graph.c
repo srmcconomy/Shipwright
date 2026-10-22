@@ -539,6 +539,11 @@ static void Graph_WebFrame(void) {
         RunFrame();
     }
 }
+
+// Runs one game update and draws it while the browser's loop is paused, to step through a macro frame by frame
+void Graph_WebStep(void) {
+    RunFrame();
+}
 #endif
 
 void Graph_ThreadEntry(void* arg0) {
