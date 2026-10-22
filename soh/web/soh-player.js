@@ -6,7 +6,7 @@
 //   </soh-player>
 //
 // Attributes: state (required) and macro are URLs. poster is an image shown until it plays.
-// speed is the playback speed (default 1). inputs="off" hides the Input Viewer.
+// speed is the playback speed: 0.5, 1 (the default), 1.5 or 2. inputs="off" hides the Input Viewer.
 // The element's content is the caption shown before it plays.
 //
 // A page has one game (see soh-runtime.js), so one player plays at a time: playing another moves
@@ -30,7 +30,7 @@
     return runtimeScript.then(() => SohRuntime.load({ input: false }));
   }
 
-  const SPEEDS = [1, 2, 4];
+  const SPEEDS = [0.5, 1, 1.5, 2];
 
   const template = document.createElement("template");
   template.innerHTML = `

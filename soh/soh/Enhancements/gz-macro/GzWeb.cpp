@@ -23,7 +23,7 @@ extern "C" {
 #include "macros.h"
 #include "variables.h"
 extern PlayState* gPlayState;
-void Graph_SetWebSpeed(s32 speed);
+void Graph_SetWebSpeed(f32 speed);
 }
 
 namespace {
@@ -82,8 +82,8 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetNotifications(bool visible) {
     Gz_SetNotifications(visible);
 }
 
-// Runs this many game updates per browser frame, for fast-forwarding through a macro.
-EMSCRIPTEN_KEEPALIVE void SohWeb_SetSpeed(int speed) {
+// Runs the game at this multiple of its own speed: 0.5 is half speed, 2 double speed. Away from 1 it is silent.
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetSpeed(float speed) {
     Graph_SetWebSpeed(speed);
 }
 

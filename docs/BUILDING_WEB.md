@@ -66,7 +66,7 @@ if (!runtime.archives().length) await runtime.importArchive(romFile);
 await runtime.start();
 await runtime.playGz({ state, macro, speed });  // File, Blob, ArrayBuffer, Uint8Array or URL
 runtime.status();      // { macro: { playing, frame, frameCount, rngMismatches }, scene, room, pos, ... }
-runtime.setSpeed(8);   // game updates per browser frame; above 1 fast-forwards without sound
+runtime.setSpeed(2);   // a multiple of the game's speed: 0.5 is half, 2 double; silent away from 1
 runtime.stopMacro();
 runtime.pause();       // stops running frames while nothing shows the game; resume() continues
 ```

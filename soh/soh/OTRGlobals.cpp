@@ -1081,7 +1081,7 @@ extern "C" void AudioPlayer_Play(const uint8_t* buf, uint32_t len);
 int AudioPlayer_Buffered(void);
 extern "C" int AudioPlayer_GetDesiredBuffered(void);
 #ifdef __EMSCRIPTEN__
-extern "C" s32 Graph_GetWebSpeed(void);
+extern "C" f32 Graph_GetWebSpeed(void);
 #endif
 std::unordered_map<std::string, ExtensionEntry> ExtensionCache;
 
@@ -1106,8 +1106,9 @@ static void OTRAudio_ProcessFrame() {
     }
 
 #ifdef __EMSCRIPTEN__
-    // Still mixed while fast-forwarding, so the audio state keeps pace with the game, but not queued
-    if (Graph_GetWebSpeed() > 1) {
+    // Still mixed away from normal speed, so the audio state keeps pace with the game, but not queued:
+    // it would pile up or run dry
+    if (Graph_GetWebSpeed() != 1.0f) {
         return;
     }
 #endif

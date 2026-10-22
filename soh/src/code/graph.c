@@ -511,37 +511,33 @@ static void RunFrame() {
 
 #ifdef __EMSCRIPTEN__
 static double sNextWebFrameTime;
-static s32 sWebSpeed = 1;
+static f32 sWebSpeed = 1.0f;
 
-// Game updates per browser frame. Above 1 the game runs as fast as it can, for fast-forwarding a gz macro.
-void Graph_SetWebSpeed(s32 speed) {
-    sWebSpeed = CLAMP(speed, 1, 64);
+// How fast the game runs, as a multiple of its own speed: 0.5 is half speed, 2 double speed.
+void Graph_SetWebSpeed(f32 speed) {
+    sWebSpeed = CLAMP(speed, 0.1f, 16.0f);
 }
 
-s32 Graph_GetWebSpeed(void) {
+f32 Graph_GetWebSpeed(void) {
     return sWebSpeed;
 }
 
 // Called on every browser animation frame. RunFrame does one game update, so only run it
-// at the game's own rate (20 updates a second for most scenes).
+// at the game's own rate (20 updates a second for most scenes), times the speed.
 static void Graph_WebFrame(void) {
     double now = emscripten_get_now();
-    if (sWebSpeed > 1) {
-        for (s32 i = 0; i < sWebSpeed; i++) {
-            RunFrame();
-        }
-        sNextWebFrameTime = now;
-        return;
-    }
-    double interval = 1000.0 / (60.0 / (R_UPDATE_RATE > 0 ? R_UPDATE_RATE : 1));
+    double interval = 1000.0 / (60.0 / (R_UPDATE_RATE > 0 ? R_UPDATE_RATE : 1)) / sWebSpeed;
 
-    // A little slack so a 60Hz animation frame landing just early doesn't skip a whole update
-    if (now < sNextWebFrameTime - 2.0) {
-        return;
-    }
     // Don't try to catch up on updates missed while the tab was hidden
-    sNextWebFrameTime = (now - sNextWebFrameTime > interval * 4) ? now + interval : sNextWebFrameTime + interval;
-    RunFrame();
+    if (now - sNextWebFrameTime > interval * 4) {
+        sNextWebFrameTime = now;
+    }
+    // A little slack so a 60Hz animation frame landing just early doesn't skip a whole update.
+    // Faster than the browser's frame rate, several updates run in one frame.
+    for (s32 i = 0; i < 8 && now >= sNextWebFrameTime - 2.0; i++) {
+        sNextWebFrameTime += interval;
+        RunFrame();
+    }
 }
 #endif
 
