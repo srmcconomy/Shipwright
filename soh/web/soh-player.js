@@ -222,31 +222,42 @@
       this.play();
     }
 
-    // Follows the macro's progress. Once it ends, the game pauses on its last frame and offers to replay it.
+    // Follows the macro's progress on every browser frame, so the count keeps up with the game. Once it ends,
+    // the game pauses on its last frame and offers to replay it.
     watch() {
-      clearInterval(this.timer);
+      this.unwatch();
       this.bar.classList.remove("show");
       // The macro starts a few frames after it is imported; it has ended once it played and stopped
       let started = false;
-      this.timer = setInterval(() => {
+      let shown = null;
+      const update = () => {
+        this.frameRequest = requestAnimationFrame(update);
         const { macro } = this.runtime.status();
         if (!macro.loaded) return;
         started ||= macro.playing;
         const frame = started ? Math.min(macro.frame, macro.frameCount) : 0;
-        this.progress.style.width = (macro.frameCount ? (100 * frame) / macro.frameCount : 0) + "%";
-        this.frames.textContent = frame + " / " + macro.frameCount;
+        if (frame !== shown) {
+          shown = frame;
+          this.progress.style.width = (macro.frameCount ? (100 * frame) / macro.frameCount : 0) + "%";
+          this.frames.textContent = frame + " / " + macro.frameCount;
+        }
         if (started && !macro.playing) {
-          clearInterval(this.timer);
+          this.unwatch();
           this.runtime.pause();
           this.ended.hidden = false;
           this.bar.classList.add("show");
         }
-      }, 250);
+      };
+      update();
+    }
+
+    unwatch() {
+      cancelAnimationFrame(this.frameRequest);
     }
 
     // Another player took the game, or this one left the page; go back to the poster
     deactivate() {
-      clearInterval(this.timer);
+      this.unwatch();
       this.runtime.stopMacro();
       this.bar.hidden = true;
       this.bar.classList.remove("show");
