@@ -204,6 +204,11 @@
       else audio?.resume();
     },
 
+    // A red line through where Link has been while the macro plays
+    setTrail(visible) {
+      Module.ccall("SohWeb_SetTrail", null, ["boolean"], [visible]);
+    },
+
     // Holds the game when the playing macro reaches this frame, until it is moved on; -1 lets it run
     setBreakFrame(frame) {
       Module.ccall("SohWeb_SetBreakFrame", null, ["number"], [frame]);

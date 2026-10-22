@@ -12,12 +12,14 @@
 //     "macro": "bomb-hover.gzm",
 //     "speeds": [{ "frame": 120, "speed": 0.5 }, { "frame": 200, "speed": 1 }],
 //     "pauses": [{ "frame": 150, "seconds": 2 }],
-//     "annotations": [{ "frame": 120, "until": 200, "text": "Z-target the wall..." }]
+//     "annotations": [{ "frame": 120, "until": 200, "text": "Z-target the wall..." }],
+//     "trail": false
 //   }
 //
 // macro and the lists are optional. Frames are the macro's, as the player counts them. A speed holds from its
 // frame on. A pause stops on its frame for that long, then plays on. An annotation shows beside the game from
-// its frame until "until", or until the next annotation starts.
+// its frame until "until", or until the next annotation starts. A red line follows where Link has been, unless
+// "trail" is false.
 //
 // poster is an image shown until it plays. speed is the playback speed, 0.5, 1 (the default), 1.5 or 2, which
 // multiplies the file's speeds. inputs="off" hides the macro's inputs, which are shown beside the game.
@@ -85,6 +87,7 @@
       macro: data.macro ? new URL(data.macro, url).href : null,
       speeds: byFrame(data.speeds),
       pauses: byFrame(data.pauses),
+      trail: data.trail !== false,
       annotations: annotations.map((note, i) => ({
         frame: note.frame,
         until: note.until ?? annotations[i + 1]?.frame ?? Infinity,
@@ -517,6 +520,7 @@
         this.scriptedSpeed = this.scriptedSpeedAt(0);
         this.setPaused(false);
         this.runtime.setMuted(SohPlayer.muted);
+        this.runtime.setTrail(this.loaded.trail);
         await this.runtime.playGz({
           state: this.loaded.savestate,
           macro,

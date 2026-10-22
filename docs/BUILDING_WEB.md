@@ -100,7 +100,8 @@ changes, pauses and notes at macro frames (the frame numbers the player shows):
 
 A speed holds from its frame on. A pause stops the game on exactly its frame for that many
 seconds; pressing play goes on early. An annotation shows beside the game (under it, in a
-narrow player) from its frame until `until`, or until the next annotation starts.
+narrow player) from its frame until `until`, or until the next annotation starts. A red line
+in the game follows where Link has been since the macro started; `"trail": false` turns it off.
 
 `poster` (an image), `speed` (0.5, 1, 1.5 or 2, multiplying the file's speeds) and
 `inputs="off"` are optional. The element's content is the caption on its poster. It loads the

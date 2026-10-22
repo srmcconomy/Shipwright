@@ -5,6 +5,7 @@
 
 #include "GzMacro.h"
 #include "GzState.h"
+#include "GzTrail.h"
 
 #include <algorithm>
 #include <cctype>
@@ -101,6 +102,11 @@ s32 GzWeb_AtBreakFrame(void) {
 // Runs one game update, with the page's main loop paused.
 EMSCRIPTEN_KEEPALIVE void SohWeb_StepFrame() {
     Graph_WebStep();
+}
+
+// Shows or hides the red line through where Link has been while the macro plays.
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetTrail(bool visible) {
+    GzTrail_SetEnabled(visible);
 }
 
 // Silences the game, or brings its sound back.
