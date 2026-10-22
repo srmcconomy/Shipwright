@@ -34,6 +34,9 @@
 
   const SPEEDS = [0.5, 1, 1.5, 2];
 
+  const SPEAKER = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+  const SPEAKER_OFF = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
+
   const template = document.createElement("template");
   template.innerHTML = `
 <style>
@@ -56,6 +59,8 @@
   label.btn, button.small { font: inherit; font-size: 13px; cursor: pointer; border-radius: 6px; padding: 4px 10px;
                             border: 1px solid #ffffff40; background: #00000080; color: inherit; }
   label.btn input { display: none; }
+  .mute { padding: 4px 7px; }
+  .mute svg { width: 16px; height: 16px; display: block; }
   .bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 8px; padding: 6px 8px;
          background: linear-gradient(transparent, #000000c0); opacity: 0; transition: opacity .2s; }
   :host(:hover) .bar, .bar.show { opacity: 1; }
@@ -77,12 +82,15 @@
 <div class="bar" hidden>
   <button class="small restart" title="Play again from the start">Restart</button>
   <button class="small speed" title="Playback speed">1×</button>
+  <button class="small mute"></button>
   <div class="progress"><div></div></div>
   <div class="frames"></div>
 </div>`;
 
   class SohPlayer extends HTMLElement {
     static active = null;
+    // The page's one game is muted or not for every player; players start muted
+    static muted = true;
 
     constructor() {
       super();
@@ -94,6 +102,7 @@
       this.romPicker = $(".rom");
       this.bar = $(".bar");
       this.speedButton = $(".speed");
+      this.muteButton = $(".mute");
       this.progressBar = $(".progress");
       this.progress = $(".progress div");
       this.frames = $(".frames");
@@ -106,6 +115,11 @@
         this.speed = SPEEDS[(SPEEDS.indexOf(this.speed) + 1) % SPEEDS.length];
         this.showSpeed();
         this.runtime?.setSpeed(this.speed);
+      });
+      this.muteButton.addEventListener("click", () => {
+        SohPlayer.muted = !SohPlayer.muted;
+        this.runtime?.setMuted(SohPlayer.muted);
+        for (const player of document.querySelectorAll("soh-player")) player.showMuted?.();
       });
       $(".rom input").addEventListener("change", (e) => {
         if (e.target.files[0]) this.useArchive(e.target.files[0]);
@@ -122,6 +136,7 @@
       const poster = this.getAttribute("poster");
       if (poster) this.cover.style.backgroundImage = `url("${new URL(poster, document.baseURI).href}")`;
       this.showSpeed();
+      this.showMuted();
     }
 
     disconnectedCallback() {
@@ -133,6 +148,13 @@
 
     showSpeed() {
       this.speedButton.textContent = this.speed + "×";
+    }
+
+    showMuted() {
+      const label = SohPlayer.muted ? "Unmute" : "Mute";
+      this.muteButton.innerHTML = SohPlayer.muted ? SPEAKER_OFF : SPEAKER;
+      this.muteButton.title = label;
+      this.muteButton.setAttribute("aria-label", label);
     }
 
     setNote(text, kind) {
@@ -167,6 +189,7 @@
       try {
         await this.runtime.start();
         this.runtime.resume();
+        this.runtime.setMuted(SohPlayer.muted);
         await this.runtime.playGz({
           state: this.getAttribute("state"),
           macro,

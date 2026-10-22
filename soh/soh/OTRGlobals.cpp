@@ -1082,6 +1082,12 @@ int AudioPlayer_Buffered(void);
 extern "C" int AudioPlayer_GetDesiredBuffered(void);
 #ifdef __EMSCRIPTEN__
 extern "C" f32 Graph_GetWebSpeed(void);
+static bool sWebMuted = false;
+
+// Silences the game for a web page, without changing its volume settings
+extern "C" void OTRAudio_SetWebMuted(bool muted) {
+    sWebMuted = muted;
+}
 #endif
 std::unordered_map<std::string, ExtensionEntry> ExtensionCache;
 
@@ -1106,9 +1112,9 @@ static void OTRAudio_ProcessFrame() {
     }
 
 #ifdef __EMSCRIPTEN__
-    // Still mixed away from normal speed, so the audio state keeps pace with the game, but not queued:
-    // it would pile up or run dry
-    if (Graph_GetWebSpeed() != 1.0f) {
+    // Still mixed when muted or away from normal speed, so the audio state keeps pace with the game, but
+    // not queued: away from normal speed it would pile up or run dry
+    if (sWebMuted || Graph_GetWebSpeed() != 1.0f) {
         return;
     }
 #endif

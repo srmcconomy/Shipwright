@@ -195,6 +195,15 @@
       Module.ccall("SohWeb_SetSpeed", null, ["number"], [speed]);
     },
 
+    setMuted(muted) {
+      Module.ccall("SohWeb_SetMuted", null, ["boolean"], [muted]);
+      // The game stops queuing sound, and the browser stops playing what is already queued. Unmuting is a
+      // click, which also lets a browser that held back sound play it.
+      const audio = Module.SDL2?.audioContext;
+      if (muted) audio?.suspend();
+      else audio?.resume();
+    },
+
     stopMacro() {
       Module.ccall("SohWeb_GzStop", null, [], []);
     },
