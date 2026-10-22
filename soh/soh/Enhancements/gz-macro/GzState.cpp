@@ -248,6 +248,8 @@ PendingArrival sPending;
 void (*sOnArrived)() = nullptr;
 HOOK_ID sSceneInitHook = 0;
 HOOK_ID sPlayerUpdateHook = 0;
+// From importing a state until Link arrives in its scene
+bool sImporting = false;
 
 Vec3f ToVec3f(const GzMacro::Vec3fBE& v) {
     return { v.x, v.y, v.z };
@@ -262,6 +264,7 @@ void ApplyArrival() {
     if (player == nullptr) {
         return;
     }
+    sImporting = false;
     player->actor.world.pos = sPending.pos;
     player->actor.prevPos = sPending.pos;
     player->actor.world.rot = sPending.worldRot;
@@ -384,6 +387,7 @@ bool Import(bool boot = false) {
     });
 
     // Wait for the new scene, then for Link's first update in it.
+    sImporting = true;
     GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnSceneInit>(sSceneInitHook);
     GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayerUpdate>(sPlayerUpdateHook);
     sSceneInitHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>([](int16_t sceneNum) {
@@ -414,6 +418,10 @@ void Gz_Notify(const char* text) {
 
 void Gz_SetNotifications(bool enabled) {
     sNotifications = enabled;
+}
+
+bool GzState_IsImporting() {
+    return sImporting;
 }
 
 bool GzState_GetSummary(int* sceneId, int* roomNum, float pos[3]) {

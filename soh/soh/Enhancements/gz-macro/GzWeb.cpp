@@ -27,6 +27,7 @@ extern "C" {
 extern PlayState* gPlayState;
 void Graph_SetWebSpeed(f32 speed);
 void Graph_WebStep(void);
+u32 Rand_GetSeed(void);
 void OTRAudio_SetWebMuted(bool muted);
 }
 
@@ -131,10 +132,10 @@ EMSCRIPTEN_KEEPALIVE const char* SohWeb_GzStatus() {
     GzMacroStatus macro = GzMacro_GetStatus();
     int written = snprintf(json, sizeof(json),
                            "{\"macro\":{\"loaded\":%s,\"playing\":%s,\"frame\":%d,\"frameCount\":%d,"
-                           "\"rngMismatches\":%d},\"saveLoaded\":%s",
+                           "\"rngMismatches\":%d},\"saveLoaded\":%s,\"rng\":%u",
                            macro.loaded ? "true" : "false", macro.playing ? "true" : "false", macro.frame,
                            macro.frameCount, macro.rngMismatches,
-                           GameInteractor::IsSaveLoaded() ? "true" : "false");
+                           GameInteractor::IsSaveLoaded() ? "true" : "false", Rand_GetSeed());
     Player* player = gPlayState != nullptr ? GET_PLAYER(gPlayState) : nullptr;
     if (player != nullptr) {
         written += snprintf(json + written, sizeof(json) - written,

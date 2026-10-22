@@ -52,6 +52,9 @@ struct Playback {
 
 Playback sPlayback;
 
+// The rng where gz's would come from the state, which SoH doesn't read: the N64's at power on
+constexpr u32 FIXED_SEED = 1;
+
 void Rewind() {
     sPlayback.frame = 0;
     sPlayback.seedPos = 0;
@@ -68,6 +71,9 @@ void Start() {
     Rewind();
     sPlayback.rngMismatches = 0;
     sPlayback.resetWarned = false;
+    // A gz state holds the rng, but SoH doesn't read it, so start from a fixed one (the N64's at power on) to make
+    // every playback of the macro the same until the first scene load restores the recorded seed
+    Rand_Seed(FIXED_SEED);
     sPlayback.playing = true;
     Gz_Notify("macro playing");
 }
@@ -105,6 +111,23 @@ template <typename T> const T* NextRecord(const std::vector<T>& records, size_t&
     }
     if (pos < records.size() && records[pos].frame == sPlayback.frame) {
         return &records[pos++];
+    }
+    return nullptr;
+}
+
+// Scene loads can land a frame or two away from where gz recorded them (SoH reaches Play_Init a frame earlier
+// than the N64 does), and a seed missed by frame would leave the rng to the clock. So the next seed record within
+// this many frames is used, in order.
+constexpr int32_t SEED_SLACK = 2;
+
+const GzMacro::Seed* NextSeedRecord() {
+    const std::vector<GzMacro::Seed>& seeds = sPlayback.macro.seeds;
+    size_t& pos = sPlayback.seedPos;
+    while (pos < seeds.size() && seeds[pos].frame < sPlayback.frame - SEED_SLACK) {
+        pos++;
+    }
+    if (pos < seeds.size() && seeds[pos].frame <= sPlayback.frame + SEED_SLACK) {
+        return &seeds[pos++];
     }
     return nullptr;
 }
@@ -179,9 +202,11 @@ void GzMacro_UpdateInput(Input* input) {
 
 u32 GzMacro_FilterRandSeed(u32 seed) {
     if (!sPlayback.playing) {
-        return seed;
+        // The scene an imported state loads would seed the rng from the clock, and what it draws before the macro
+        // starts (such as Link's blink timer) lasts into it. A fixed seed makes every import the same.
+        return GzState_IsImporting() ? FIXED_SEED : seed;
     }
-    const GzMacro::Seed* record = NextRecord(sPlayback.macro.seeds, sPlayback.seedPos);
+    const GzMacro::Seed* record = NextSeedRecord();
     if (record == nullptr) {
         return seed;
     }
