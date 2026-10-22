@@ -85,10 +85,12 @@ scrolls and types as usual. It hides gamepads from the whole page to do that.
 </soh-player>
 ```
 
-`state` is required; `macro`, `poster` (an image), `speed` and `inputs="off"` (hides the
-Input Viewer) are optional. The element's content is the caption on its poster. It loads the
+`state` is required; `macro`, `poster` (an image), `speed` (0.5, 1, 1.5 or 2) and
+`inputs="off"` are optional. The element's content is the caption on its poster. It loads the
 game on the first Play, and asks for the visitor's ROM once if the browser has no archive.
-Each player has Restart, a speed button and the macro's progress.
+Each player has play/pause, next frame, Restart, speed, mute (on to start with) and the macro's
+progress. Under the game it shows the macro's controller inputs frame by frame, unless
+`inputs="off"`. When the macro ends, it pauses on the last frame and offers to replay it.
 
 All players share the page's one game, so one plays at a time: playing another moves the game
 to it and sends the first back to its poster. Removing the playing element pauses the game.

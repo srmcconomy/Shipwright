@@ -6,7 +6,8 @@
 //   </soh-player>
 //
 // Attributes: state (required) and macro are URLs. poster is an image shown until it plays.
-// speed is the playback speed: 0.5, 1 (the default), 1.5 or 2. inputs="off" hides the Input Viewer.
+// speed is the playback speed: 0.5, 1 (the default), 1.5 or 2. inputs="off" hides the macro's inputs,
+// which are shown under the game.
 // The element's content is the caption shown before it plays.
 //
 // When the macro ends, the game pauses on its last frame and the player offers to replay it.
@@ -39,11 +40,37 @@
   const SPEAKER = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
   const SPEAKER_OFF = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
 
+  // The macro's controller under the game: N64 button bits, and where each is drawn
+  const BUTTONS = {
+    a: 0x8000, b: 0x4000, z: 0x2000, start: 0x1000, dup: 0x0800, ddown: 0x0400, dleft: 0x0200, dright: 0x0100,
+    l: 0x0020, r: 0x0010, cup: 0x0008, cdown: 0x0004, cleft: 0x0002, cright: 0x0001,
+  };
+  const trigger = (name, x) =>
+    `<g class="key trigger" data-button="${name}"><rect x="${x}" y="21" width="32" height="22" rx="6"/>` +
+    `<text x="${x + 16}" y="36">${name.toUpperCase()}</text></g>`;
+  const round = (name, x, y, r, color) =>
+    `<circle class="key" data-button="${name}" style="--color: ${color}" cx="${x}" cy="${y}" r="${r}"/>`;
+  const dpad = (name, x, y) => `<rect class="key" data-button="${name}" x="${x}" y="${y}" width="11" height="11" rx="2"/>`;
+  const CONTROLLER = `
+<svg viewBox="0 0 490 64" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <circle class="gate" cx="34" cy="32" r="24"/>
+  <circle class="stick" cx="34" cy="32" r="6"/>
+  <text class="axis" x="68" y="28">X <tspan class="x">0</tspan></text>
+  <text class="axis" x="68" y="46">Y <tspan class="y">0</tspan></text>
+  ${trigger("l", 124)}${trigger("z", 162)}${trigger("r", 200)}
+  ${dpad("dup", 261, 14)}${dpad("ddown", 261, 39)}${dpad("dleft", 248, 26)}${dpad("dright", 274, 26)}
+  ${round("start", 314, 32, 8, "#d8433b")}
+  ${round("b", 352, 22, 11, "#34a853")}${round("a", 380, 40, 13, "#4061e0")}
+  ${round("cup", 446, 14, 8, "#e0b52a")}${round("cdown", 446, 50, 8, "#e0b52a")}
+  ${round("cleft", 428, 32, 8, "#e0b52a")}${round("cright", 464, 32, 8, "#e0b52a")}
+</svg>`;
+
   const template = document.createElement("template");
   template.innerHTML = `
 <style>
-  :host { display: block; position: relative; aspect-ratio: 4 / 3; max-width: 100%; background: #000; color: #e8e6e1;
+  :host { display: block; max-width: 100%; background: #000; color: #e8e6e1;
           font: 14px/1.4 system-ui, sans-serif; border-radius: 8px; overflow: hidden; }
+  .stage { position: relative; aspect-ratio: 4 / 3; }
   .screen { position: absolute; inset: 0; }
   .screen ::slotted(*), .screen canvas { width: 100%; height: 100%; display: block; }
   .cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -70,7 +97,22 @@
   .progress { flex: 1; height: 4px; border-radius: 2px; background: #ffffff30; overflow: hidden; }
   .progress div { height: 100%; width: 0; background: #e0b34a; }
   .frames { font-size: 12px; font-variant-numeric: tabular-nums; color: #c9c6be; min-width: 7em; text-align: right; }
+  .inputs { padding: 6px 8px; background: #111317; border-top: 1px solid #ffffff14; }
+  .inputs[hidden] { display: none; }
+  .inputs svg { display: block; width: 100%; max-height: 56px; }
+  .inputs text { font: 600 13px system-ui, sans-serif; fill: #c9c6be; text-anchor: middle; }
+  .inputs .axis { text-anchor: start; font-variant-numeric: tabular-nums; }
+  .gate { fill: #ffffff0a; stroke: #ffffff40; stroke-width: 2; }
+  .stick { fill: #c9c6be; }
+  .key { --color: #c9c6be; fill: transparent; stroke: var(--color); stroke-width: 2; opacity: .45; }
+  .key.on { fill: var(--color); opacity: 1; }
+  .trigger { fill: none; }
+  .trigger rect { fill: transparent; stroke: #c9c6be; stroke-width: 2; }
+  .trigger.on rect { fill: #c9c6be; }
+  .trigger.on text { fill: #111317; }
+  .trigger text { stroke: none; }
 </style>
+<div class="stage">
 <div class="screen"><slot name="screen"></slot></div>
 <div class="cover" part="cover">
   <button class="play" title="Play" aria-label="Play"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4v16l13-8z"/></svg></button>
@@ -90,7 +132,9 @@
   <button class="small icon mute"></button>
   <div class="progress"><div></div></div>
   <div class="frames"></div>
-</div>`;
+</div>
+</div>
+<div class="inputs">${CONTROLLER}</div>`;
 
   class SohPlayer extends HTMLElement {
     static active = null;
@@ -113,6 +157,11 @@
       this.progressBar = $(".progress");
       this.progress = $(".progress div");
       this.frames = $(".frames");
+      this.inputs = $(".inputs");
+      this.stick = $(".stick");
+      this.stickX = $(".x");
+      this.stickY = $(".y");
+      this.keys = [...this.shadowRoot.querySelectorAll("[data-button]")];
       this.speed = Number(this.getAttribute("speed")) || 1;
 
       $(".play").addEventListener("click", () => this.play());
@@ -150,6 +199,7 @@
       if (poster) this.cover.style.backgroundImage = `url("${new URL(poster, document.baseURI).href}")`;
       this.showSpeed();
       this.showMuted();
+      this.inputs.hidden = !this.getAttribute("macro") || this.getAttribute("inputs") === "off";
     }
 
     disconnectedCallback() {
@@ -180,6 +230,19 @@
       this.muteButton.innerHTML = SohPlayer.muted ? SPEAKER_OFF : SPEAKER;
       this.muteButton.title = label;
       this.muteButton.setAttribute("aria-label", label);
+    }
+
+    // Shows the controller input the macro gave the game this frame
+    showInput({ buttons, x, y }) {
+      if (this.shownInput && buttons === this.shownInput.buttons && x === this.shownInput.x && y === this.shownInput.y) return;
+      this.shownInput = { buttons, x, y };
+      for (const key of this.keys) key.classList.toggle("on", (buttons & BUTTONS[key.dataset.button]) !== 0);
+      // An N64 stick reaches about 80 either way
+      const clamp = (v) => Math.max(-1, Math.min(1, v / 80));
+      this.stick.setAttribute("cx", 34 + 18 * clamp(x));
+      this.stick.setAttribute("cy", 32 - 18 * clamp(y));
+      this.stickX.textContent = x;
+      this.stickY.textContent = y;
     }
 
     setNote(text, kind) {
@@ -219,7 +282,8 @@
           state: this.getAttribute("state"),
           macro,
           speed: this.speed,
-          inputDisplay: this.getAttribute("inputs") !== "off",
+          // The player shows the inputs itself, under the game instead of over it
+          inputDisplay: false,
           notifications: false,
         });
       } catch (err) {
@@ -255,10 +319,13 @@
       // The macro starts a few frames after it is imported; it has ended once it played and stopped
       let started = false;
       let shown = null;
+      this.showInput({ buttons: 0, x: 0, y: 0 });
       const update = () => {
         this.frameRequest = requestAnimationFrame(update);
-        const { macro } = this.runtime.status();
+        const { macro, input } = this.runtime.status();
         if (!macro.loaded) return;
+        // Read on the frame the game drew, so the inputs match the picture; it keeps the last one once it ends
+        if (input) this.showInput(input);
         started ||= macro.playing;
         const frame = started ? Math.min(macro.frame, macro.frameCount) : 0;
         if (frame !== shown) {
@@ -289,6 +356,7 @@
       this.ended.hidden = true;
       this.cover.hidden = false;
       this.paused = false;
+      this.showInput({ buttons: 0, x: 0, y: 0 });
       if (SohPlayer.active === this) SohPlayer.active = null;
     }
   }

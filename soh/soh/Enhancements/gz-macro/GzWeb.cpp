@@ -99,9 +99,10 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetSpeed(float speed) {
     Graph_SetWebSpeed(speed);
 }
 
-// The macro and where Link is, as JSON. The string lives until the next call.
+// The macro, the input it gave the game this frame (N64 button bits and stick) and where Link is, as JSON.
+// The string lives until the next call.
 EMSCRIPTEN_KEEPALIVE const char* SohWeb_GzStatus() {
-    static char json[768];
+    static char json[1024];
     GzMacroStatus macro = GzMacro_GetStatus();
     int written = snprintf(json, sizeof(json),
                            "{\"macro\":{\"loaded\":%s,\"playing\":%s,\"frame\":%d,\"frameCount\":%d,"
@@ -109,6 +110,12 @@ EMSCRIPTEN_KEEPALIVE const char* SohWeb_GzStatus() {
                            macro.loaded ? "true" : "false", macro.playing ? "true" : "false", macro.frame,
                            macro.frameCount, macro.rngMismatches,
                            GameInteractor::IsSaveLoaded() ? "true" : "false");
+    u16 buttons;
+    s8 stickX, stickY;
+    if (GzMacro_GetCurrentInput(&buttons, &stickX, &stickY)) {
+        written += snprintf(json + written, sizeof(json) - written, ",\"input\":{\"buttons\":%u,\"x\":%d,\"y\":%d}",
+                            buttons, stickX, stickY);
+    }
     Player* player = gPlayState != nullptr ? GET_PLAYER(gPlayState) : nullptr;
     if (player != nullptr) {
         written += snprintf(json + written, sizeof(json) - written,
