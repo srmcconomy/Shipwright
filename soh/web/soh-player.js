@@ -93,7 +93,16 @@
   button.small:disabled { opacity: .4; cursor: default; }
   .bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 8px; padding: 6px 8px;
          background: linear-gradient(transparent, #000000c0); opacity: 0; transition: opacity .2s; }
-  :host(:hover) .bar, .bar.show { opacity: 1; }
+  :host(:hover) .bar, .bar.show, .bar.menu-open { opacity: 1; }
+  .speed-menu { position: relative; }
+  .menu { position: absolute; left: 0; bottom: calc(100% + 6px); display: flex; flex-direction: column; padding: 4px;
+          min-width: 72px; border-radius: 8px; border: 1px solid #ffffff30; background: #15181dee; }
+  .menu[hidden] { display: none; }
+  .menu button { font: inherit; font-size: 13px; text-align: left; padding: 4px 8px; border: none; border-radius: 5px;
+                 background: none; color: inherit; cursor: pointer; }
+  .menu button:hover, .menu button:focus-visible { background: #ffffff1a; outline: none; }
+  .menu button[aria-checked="true"] { color: #e0b34a; }
+  .menu button[aria-checked="true"]::after { content: " ✓"; }
   .progress { flex: 1; height: 4px; border-radius: 2px; background: #ffffff30; overflow: hidden; }
   .progress div { height: 100%; width: 0; background: #e0b34a; }
   .frames { font-size: 12px; font-variant-numeric: tabular-nums; color: #c9c6be; min-width: 7em; text-align: right; }
@@ -128,7 +137,12 @@
   <button class="small icon pause"></button>
   <button class="small icon step" title="Next frame" aria-label="Next frame" disabled><svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
   <button class="small restart" title="Play again from the start">Restart</button>
-  <button class="small speed" title="Playback speed">1×</button>
+  <div class="speed-menu">
+    <button class="small speed" title="Playback speed" aria-haspopup="menu" aria-expanded="false">1×</button>
+    <div class="menu" role="menu" hidden>
+      ${SPEEDS.map((speed) => `<button role="menuitemradio" data-speed="${speed}">${speed}×</button>`).join("")}
+    </div>
+  </div>
   <button class="small icon mute"></button>
   <div class="progress"><div></div></div>
   <div class="frames"></div>
@@ -151,6 +165,7 @@
       this.romPicker = $(".rom");
       this.bar = $(".bar");
       this.speedButton = $(".speed");
+      this.speedMenu = $(".menu");
       this.muteButton = $(".mute");
       this.pauseButton = $(".pause");
       this.stepButton = $(".step");
@@ -167,11 +182,21 @@
       $(".play").addEventListener("click", () => this.play());
       $(".restart").addEventListener("click", () => this.play());
       $(".replay").addEventListener("click", () => this.play());
-      this.speedButton.addEventListener("click", () => {
-        this.speed = SPEEDS[(SPEEDS.indexOf(this.speed) + 1) % SPEEDS.length];
+      this.speedButton.addEventListener("click", () => this.openSpeedMenu(this.speedMenu.hidden));
+      this.speedMenu.addEventListener("click", (e) => {
+        const choice = e.target.closest("[data-speed]");
+        if (!choice) return;
+        this.speed = Number(choice.dataset.speed);
         this.showSpeed();
         this.runtime?.setSpeed(this.speed);
+        this.openSpeedMenu(false);
       });
+      // Clicking anywhere else, or Escape, closes the menu
+      this.closeSpeedMenu = (e) => {
+        if (e.type === "keydown" ? e.key === "Escape" : !e.composedPath().includes(this.speedMenu.parentNode)) {
+          this.openSpeedMenu(false);
+        }
+      };
       this.pauseButton.addEventListener("click", () => {
         // Once the macro has ended, playing starts it over
         if (!this.ended.hidden) this.play();
@@ -211,6 +236,19 @@
 
     showSpeed() {
       this.speedButton.textContent = this.speed + "×";
+      for (const choice of this.speedMenu.children) {
+        choice.setAttribute("aria-checked", String(Number(choice.dataset.speed) === this.speed));
+      }
+    }
+
+    openSpeedMenu(open) {
+      this.speedMenu.hidden = !open;
+      this.speedButton.setAttribute("aria-expanded", String(open));
+      this.bar.classList.toggle("menu-open", open);
+      for (const type of ["pointerdown", "keydown"]) {
+        if (open) document.addEventListener(type, this.closeSpeedMenu);
+        else document.removeEventListener(type, this.closeSpeedMenu);
+      }
     }
 
     // Pauses or resumes the game, which can then be stepped a frame at a time
@@ -350,6 +388,7 @@
     // Another player took the game, or this one left the page; go back to the poster
     deactivate() {
       this.unwatch();
+      this.openSpeedMenu(false);
       this.runtime.stopMacro();
       this.bar.hidden = true;
       this.bar.classList.remove("show");
