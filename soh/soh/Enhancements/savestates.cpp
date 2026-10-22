@@ -184,7 +184,8 @@ class SaveState {
 };
 
 SaveStateMgr::SaveStateMgr() {
-    this->SetCurrentSlot(0);
+    // Without SetCurrentSlot's notification, which isn't news at startup
+    this->currentSlot = 0;
 }
 SaveStateMgr::~SaveStateMgr() {
     this->states.clear();
