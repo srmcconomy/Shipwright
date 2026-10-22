@@ -52,11 +52,6 @@ struct Playback {
 
 Playback sPlayback;
 
-void Notify(const char* text) {
-    Ship::Context::GetRawInstance()->GetWindow()->GetGui()->GetGameOverlay()->TextDrawNotification(2.0f, true,
-                                                                                                   "%s", text);
-}
-
 void Rewind() {
     sPlayback.frame = 0;
     sPlayback.seedPos = 0;
@@ -74,13 +69,13 @@ void Start() {
     sPlayback.rngMismatches = 0;
     sPlayback.resetWarned = false;
     sPlayback.playing = true;
-    Notify("macro playing");
+    Gz_Notify("macro playing");
 }
 
 void Stop() {
     if (sPlayback.playing) {
         sPlayback.playing = false;
-        Notify("macro stopped");
+        Gz_Notify("macro stopped");
     }
 }
 
@@ -89,7 +84,7 @@ bool LoadMacro(const std::string& path) {
     std::string error;
     if (!GzMacro::LoadMacroFile(path, macro, error)) {
         SPDLOG_ERROR("[gz macro] failed to load {}: {}", path, error);
-        Notify(("failed to load macro: " + error).c_str());
+        Gz_Notify(("failed to load macro: " + error).c_str());
         return false;
     }
     sPlayback.playing = false;
@@ -98,7 +93,7 @@ bool LoadMacro(const std::string& path) {
     sPlayback.loaded = true;
     Rewind();
     SPDLOG_INFO("[gz macro] loaded {} ({} frames)", path, sPlayback.macro.inputs.size());
-    Notify("macro loaded");
+    Gz_Notify("macro loaded");
     return true;
 }
 
@@ -171,7 +166,7 @@ void GzMacro_UpdateInput(Input* input) {
             Rewind();
         } else {
             sPlayback.playing = false;
-            Notify("macro finished");
+            Gz_Notify("macro finished");
             return;
         }
     }

@@ -13,3 +13,8 @@ bool GzState_Import(void (*onArrived)() = nullptr, bool boot = false);
 // Where the loaded savestate puts Link. Returns false when none is loaded.
 bool GzState_GetSummary(int* sceneId, int* roomNum, float pos[3]);
 void GzState_DrawTab();
+
+// Shows a notification from the gz tools ("gz savestate loaded", "macro playing"...), unless they are turned off,
+// as on a web page that only plays a macro.
+void Gz_Notify(const char* text);
+void Gz_SetNotifications(bool enabled);

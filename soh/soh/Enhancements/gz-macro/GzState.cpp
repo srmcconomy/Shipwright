@@ -33,10 +33,7 @@ GzMacro::StateFile sState;
 std::string sStatePath;
 bool sStateLoaded = false;
 
-void Notify(const char* text) {
-    Ship::Context::GetRawInstance()->GetWindow()->GetGui()->GetGameOverlay()->TextDrawNotification(2.0f, true,
-                                                                                                   "%s", text);
-}
+bool sNotifications = true;
 
 // Reads fields out of the N64 SaveContext by their retail offsets.
 class SaveReader {
@@ -280,7 +277,7 @@ void ApplyArrival() {
     // The warp used the void out respawn point to place Link, put back the one from the state.
     gSaveContext.respawn[RESPAWN_MODE_DOWN] = sPending.voidOutRespawn;
     gPlayState->actorCtx.flags.tempClear = sPending.tempClearFlags;
-    Notify("gz savestate imported");
+    Gz_Notify("gz savestate imported");
     if (sOnArrived != nullptr) {
         void (*onArrived)() = sOnArrived;
         sOnArrived = nullptr;
@@ -313,7 +310,7 @@ bool Import(bool boot = false) {
     }
     bool fileLoaded = gPlayState != nullptr && GameInteractor::IsSaveLoaded(true);
     if (!fileLoaded && (!boot || gGameState == nullptr)) {
-        Notify("load a file before importing a gz savestate");
+        Gz_Notify("load a file before importing a gz savestate");
         return false;
     }
     const GzMacro::StateFile& st = sState;
@@ -407,6 +404,18 @@ bool Import(bool boot = false) {
 
 } // namespace
 
+void Gz_Notify(const char* text) {
+    if (!sNotifications) {
+        return;
+    }
+    Ship::Context::GetRawInstance()->GetWindow()->GetGui()->GetGameOverlay()->TextDrawNotification(2.0f, true,
+                                                                                                   "%s", text);
+}
+
+void Gz_SetNotifications(bool enabled) {
+    sNotifications = enabled;
+}
+
 bool GzState_GetSummary(int* sceneId, int* roomNum, float pos[3]) {
     if (!sStateLoaded) {
         return false;
@@ -434,7 +443,7 @@ bool GzState_Load(const std::string& path) {
     std::string error;
     if (!GzMacro::LoadStateFile(path, state, error)) {
         SPDLOG_ERROR("[gz state] failed to load {}: {}", path, error);
-        Notify(("failed to load gz savestate: " + error).c_str());
+        Gz_Notify(("failed to load gz savestate: " + error).c_str());
         return false;
     }
     sState = std::move(state);
@@ -443,7 +452,7 @@ bool GzState_Load(const std::string& path) {
     CVarSetString(CVAR_STATE_PATH_NAME, path.c_str());
     Ship::Context::GetRawInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
     SPDLOG_INFO("[gz state] loaded {} ({}, scene {})", path, GzMacro::GzVersionName(sState.version), sState.sceneId);
-    Notify("gz savestate loaded");
+    Gz_Notify("gz savestate loaded");
     return true;
 }
 

@@ -161,6 +161,7 @@
           macro,
           speed: this.speed,
           inputDisplay: this.getAttribute("inputs") !== "off",
+          notifications: false,
         });
       } catch (err) {
         this.setNote("Could not play: " + err.message, "err");

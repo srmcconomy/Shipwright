@@ -77,6 +77,11 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetInputDisplay(bool visible) {
     }
 }
 
+// Shows or hides the gz tools' notifications, such as "gz savestate loaded" and "macro playing".
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetNotifications(bool visible) {
+    Gz_SetNotifications(visible);
+}
+
 // Runs this many game updates per browser frame, for fast-forwarding through a macro.
 EMSCRIPTEN_KEEPALIVE void SohWeb_SetSpeed(int speed) {
     Graph_SetWebSpeed(speed);

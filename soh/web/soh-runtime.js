@@ -155,9 +155,11 @@
 
     // Plays a gz macro from its savestate, booting straight into gameplay on a temporary file if no
     // file is loaded. state and macro are File/Blob/ArrayBuffer/Uint8Array or URLs; macro is optional.
-    async playGz({ state, macro, speed = 1, inputDisplay = true }) {
+    // notifications: false hides the gz tools' "gz savestate loaded", "macro playing"... messages.
+    async playGz({ state, macro, speed = 1, inputDisplay = true, notifications = true }) {
       if (!this.running) throw new Error("the game is not running");
       const [stateBytes, macroBytes] = await Promise.all([bytesOf(state), macro ? bytesOf(macro) : null]);
+      Module.ccall("SohWeb_SetNotifications", null, ["boolean"], [notifications]);
       const dir = HOME + "/player";
       if (!exists(dir)) FS.mkdir(dir);
       FS.writeFile(dir + "/state.gzs", stateBytes);
