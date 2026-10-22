@@ -16,7 +16,7 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
-  #canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; background: #000; }
+  .soh-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; background: #000; }
   #launcher { position: fixed; inset: 0; display: flex; padding: 16px; overflow-y: auto; background: var(--bg); z-index: 1; }
   /* auto margins center the panel, and let the launcher scroll instead of clipping it on short screens */
   .panel { width: 100%; max-width: 440px; margin: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
@@ -45,8 +45,6 @@
 </style>
 </head>
 <body>
-<canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
-
 <div id="launcher">
   <div class="panel">
     <h1>Ship of Harkinian</h1>
@@ -87,12 +85,12 @@
   </div>
 </div>
 
+<script src="soh-runtime.js"></script>
 <script>
-  // The game reads and writes everything under /ship, which lives in IndexedDB.
-  const HOME = "/ship";
   const romStatus = document.getElementById("rom-status");
   const modsStatus = document.getElementById("mods-status");
   const playButton = document.getElementById("play");
+  let runtime = null;
   let started = false;
 
   function setStatus(el, text, kind) {
@@ -100,82 +98,28 @@
     el.className = "status" + (kind ? " " + kind : "");
   }
 
-  function exists(path) {
-    try { FS.stat(path); return true; } catch (e) { return false; }
-  }
-
-  function syncToDisk() {
-    return new Promise((resolve) => FS.syncfs(false, (err) => {
-      if (err) console.error("Saving to IndexedDB failed", err);
-      resolve();
-    }));
-  }
-
   function refreshLauncher() {
-    const archives = ["oot.o2r", "oot-mq.o2r"].filter((f) => exists(HOME + "/" + f));
+    const archives = runtime.archives();
     if (archives.length) {
       setStatus(romStatus, archives.join(", ") + " ready", "ok");
     } else {
       setStatus(romStatus, "Not loaded yet");
     }
-    const mods = FS.readdir(HOME + "/mods").filter((f) => f !== "." && f !== "..");
+    const mods = runtime.mods();
     setStatus(modsStatus, mods.length ? mods.join(", ") : "None", mods.length ? "ok" : "");
     playButton.disabled = archives.length === 0;
   }
 
-  async function writeUploads(files, dir, nameFor) {
-    for (const file of files) {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      FS.writeFile(dir + "/" + nameFor(file), bytes);
-    }
-    await syncToDisk();
-    refreshLauncher();
-  }
-
-  // Converts a ROM to oot.o2r (or oot-mq.o2r) in a worker, with the game's own extractor
-  function convertRom(file) {
-    playButton.disabled = true;
-    setStatus(romStatus, "Reading " + file.name + "…");
-    return new Promise(async (resolve) => {
-      const rom = await file.arrayBuffer();
-      const worker = new Worker("rom-convert-worker.js");
-      worker.onmessage = async ({ data }) => {
-        if (data.type === "progress") {
-          setStatus(romStatus, data.text);
-          return;
-        }
-        worker.terminate();
-        if (data.type === "error") {
-          setStatus(romStatus, "Could not convert " + file.name, "err");
-          alert(data.message);
-          refreshLauncher();
-        } else {
-          FS.writeFile(HOME + "/" + data.name, data.bytes);
-          await syncToDisk();
-          refreshLauncher();
-        }
-        resolve();
-      };
-      worker.onerror = (e) => {
-        worker.terminate();
-        setStatus(romStatus, "The converter failed to load", "err");
-        refreshLauncher();
-        resolve();
-      };
-      worker.postMessage({ rom }, [rom]);
-    });
-  }
-
-  const ROM_EXTENSIONS = ["z64", "n64", "v64"];
-
   async function loadArchive(file) {
-    if (ROM_EXTENSIONS.includes(file.name.split(".").pop().toLowerCase())) {
-      return convertRom(file);
+    playButton.disabled = true;
+    try {
+      await runtime.importArchive(file, (text) => setStatus(romStatus, text));
+      refreshLauncher();
+    } catch (err) {
+      setStatus(romStatus, "Could not load " + file.name, "err");
+      playButton.disabled = runtime.archives().length === 0;
+      alert(err.message);
     }
-    setStatus(romStatus, "Loading " + file.name + "…");
-    // The desktop version names Master Quest archives oot-mq.o2r
-    const name = /mq/i.test(file.name) ? "oot-mq.o2r" : "oot.o2r";
-    await writeUploads([file], HOME, () => name);
   }
 
   document.getElementById("rom-input").addEventListener("change", (e) => {
@@ -221,7 +165,7 @@
       const extension = file.name.split(".").pop().toLowerCase();
       if (extension === "gzs" || extension === "gzm") {
         setGzFile(extension, file);
-      } else if (extension === "o2r" || extension === "otr" || ROM_EXTENSIONS.includes(extension)) {
+      } else if (extension === "o2r" || extension === "otr" || runtime.isRom(file)) {
         loadArchive(file);
       }
     }
@@ -229,101 +173,33 @@
 
   document.getElementById("mods-input").addEventListener("change", async (e) => {
     setStatus(modsStatus, "Loading…");
-    await writeUploads(e.target.files, HOME + "/mods", (f) => f.name);
+    await runtime.addMods(e.target.files);
+    refreshLauncher();
   });
 
-  document.getElementById("reset").addEventListener("click", async () => {
+  document.getElementById("reset").addEventListener("click", () => {
     if (!confirm("Delete the game archive, mods, saves and settings stored in this browser?")) return;
-    indexedDB.deleteDatabase(HOME);
+    runtime.forgetAll();
     location.reload();
   });
 
   document.getElementById("export").addEventListener("click", () => {
-    const dir = HOME + "/Save";
-    if (!exists(dir)) { alert("No saves yet."); return; }
-    for (const name of FS.readdir(dir)) {
-      if (name === "." || name === "..") continue;
-      const blob = new Blob([FS.readFile(dir + "/" + name)]);
+    const saves = runtime.saves();
+    if (!saves.length) { alert("No saves yet."); return; }
+    for (const { name, bytes } of saves) {
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
+      a.href = URL.createObjectURL(new Blob([bytes]));
       a.download = name;
       a.click();
       URL.revokeObjectURL(a.href);
     }
   });
 
-  // Files dropped on the page, or picked from the game's own Browse buttons, are copied into
-  // /ship/dropped and handed to the game like a desktop drag-and-drop (gz macros, savestates...).
-  // They live in IndexedDB too, so a path the game remembers still loads after a reload.
-  let running = false;
-  window.SohWeb = {
-    async importFile(file) {
-      if (!running) return;
-      const dir = HOME + "/dropped";
-      if (!exists(dir)) FS.mkdir(dir);
-      const path = dir + "/" + file.name.replace(/[\\/]/g, "_");
-      FS.writeFile(path, new Uint8Array(await file.arrayBuffer()));
-      await syncToDisk();
-      Module.ccall("SohWeb_FileDropped", null, ["string"], [path]);
-    },
-
-    // Plays a gz macro from its savestate, booting straight into gameplay on a temporary file if no
-    // file is loaded. state and macro are File/Blob/ArrayBuffer/Uint8Array or URLs; macro is optional.
-    async playGz({ state, macro, speed = 1, inputDisplay = true }) {
-      if (!running) throw new Error("the game is not running");
-      const bytesOf = async (src) => {
-        if (typeof src === "string") {
-          const response = await fetch(src);
-          if (!response.ok) throw new Error("could not fetch " + src + " (" + response.status + ")");
-          return new Uint8Array(await response.arrayBuffer());
-        }
-        if (src instanceof Blob) return new Uint8Array(await src.arrayBuffer());
-        return new Uint8Array(src);
-      };
-      const dir = HOME + "/player";
-      if (!exists(dir)) FS.mkdir(dir);
-      FS.writeFile(dir + "/state.gzs", await bytesOf(state));
-      if (!Module.ccall("SohWeb_GzLoad", "boolean", ["string"], [dir + "/state.gzs"])) {
-        throw new Error("not a valid gz savestate");
-      }
-      if (macro) {
-        FS.writeFile(dir + "/macro.gzm", await bytesOf(macro));
-        if (!Module.ccall("SohWeb_GzLoad", "boolean", ["string"], [dir + "/macro.gzm"])) {
-          throw new Error("not a valid gz macro");
-        }
-      }
-      // The game needs a running game state to boot from, which takes a frame or two after main
-      for (let tries = 0; !Module.ccall("SohWeb_GzImport", "boolean", ["boolean"], [!!macro]); tries++) {
-        if (tries > 100) throw new Error("the game did not start");
-        await new Promise((r) => setTimeout(r, 50));
-      }
-      Module.ccall("SohWeb_SetSpeed", null, ["number"], [speed]);
-      this.setInputDisplay(inputDisplay && !!macro);
-    },
-
-    // SoH's Input Viewer, which follows the macro's inputs while one plays
-    setInputDisplay(visible) {
-      Module.ccall("SohWeb_SetInputDisplay", null, ["boolean"], [visible]);
-    },
-
-    // Where the macro and Link are: { macro: { playing, frame, frameCount, ... }, scene, room, pos, ... }
-    status() {
-      return JSON.parse(Module.ccall("SohWeb_GzStatus", "string", [], []));
-    },
-    setSpeed(speed) {
-      Module.ccall("SohWeb_SetSpeed", null, ["number"], [speed]);
-    },
-    stopMacro() {
-      Module.ccall("SohWeb_GzStop", null, [], []);
-    },
-  };
-
-
   // Always cancel the browser's default, which would navigate away from the game to the file
   const panel = document.querySelector(".panel");
   window.addEventListener("dragover", (e) => {
     e.preventDefault();
-    if (!running) panel.classList.add("dragging");
+    if (!started) panel.classList.add("dragging");
   });
   window.addEventListener("dragleave", (e) => {
     if (!e.relatedTarget) panel.classList.remove("dragging");
@@ -331,12 +207,13 @@
   window.addEventListener("drop", async (e) => {
     e.preventDefault();
     panel.classList.remove("dragging");
-    if (!running) {
+    if (!runtime) return;
+    if (!started) {
       dropOnLauncher(e.dataTransfer.files);
       return;
     }
     for (const file of e.dataTransfer.files) {
-      await SohWeb.importFile(file);
+      await runtime.importFile(file);
     }
   });
 
@@ -345,68 +222,32 @@
     started = true;
     playButton.disabled = true;
     playButton.textContent = "Loading…";
+    document.body.prepend(runtime.canvas);
     try {
-      // soh.o2r ships with this build, so always take the copy next to the page
-      const response = await fetch("soh.o2r");
-      if (!response.ok) throw new Error("soh.o2r is missing from the server (" + response.status + ")");
-      FS.writeFile(HOME + "/soh.o2r", new Uint8Array(await response.arrayBuffer()));
+      await runtime.start();
     } catch (err) {
       alert(err.message);
+      runtime.canvas.remove();
       started = false;
       playButton.disabled = false;
       playButton.textContent = playLabel();
       return;
     }
     document.getElementById("launcher").remove();
-    const canvas = document.getElementById("canvas");
-    canvas.focus();
-
-    // Saves and settings are written to the in-memory filesystem; copy them to IndexedDB often
-    setInterval(syncToDisk, 5000);
-    document.addEventListener("visibilitychange", () => { if (document.hidden) syncToDisk(); });
-    window.addEventListener("pagehide", syncToDisk);
-
-    running = true;
-    Module.callMain([]);
+    runtime.canvas.focus();
     if (gzFiles.gzs) {
-      SohWeb.playGz({ state: gzFiles.gzs, macro: gzFiles.gzm, inputDisplay: inputDisplay.checked })
+      runtime.playGz({ state: gzFiles.gzs, macro: gzFiles.gzm, inputDisplay: inputDisplay.checked })
         .catch((err) => alert("Could not play the gz files: " + err.message));
     }
   });
 
-  var Module = {
-    canvas: document.getElementById("canvas"),
-    print: (...args) => console.log(...args),
-    printErr: (...args) => console.error(...args),
-    preRun: [() => {
-      FS.mkdir(HOME);
-      FS.mount(IDBFS, { autoPersist: false }, HOME);
-      addRunDependency("idbfs");
-      FS.syncfs(true, (err) => {
-        if (err) console.error("Loading from IndexedDB failed", err);
-        if (!exists(HOME + "/mods")) FS.mkdir(HOME + "/mods");
-        FS.chdir(HOME);
-        removeRunDependency("idbfs");
-      });
-    }],
-    onRuntimeInitialized: async () => {
-      // For local testing: ?archive=oot.o2r fetches the archive from this server instead of
-      // asking for a file. Never host a ROM archive publicly.
-      const archive = new URLSearchParams(location.search).get("archive");
-      if (archive && !exists(HOME + "/oot.o2r") && !exists(HOME + "/oot-mq.o2r")) {
-        setStatus(romStatus, "Fetching " + archive + "…");
-        const response = await fetch(archive);
-        if (response.ok) {
-          const name = /mq/i.test(archive) ? "oot-mq.o2r" : "oot.o2r";
-          FS.writeFile(HOME + "/" + name, new Uint8Array(await response.arrayBuffer()));
-          await syncToDisk();
-        }
-      }
+  // For local testing: ?archive=oot.o2r fetches the archive from this server instead of asking for a file
+  SohRuntime.load({ archiveUrl: new URLSearchParams(location.search).get("archive") })
+    .then((loaded) => {
+      runtime = loaded;
       refreshLauncher();
-    },
-    onAbort: (what) => alert("The game stopped: " + what),
-  };
+    })
+    .catch((err) => setStatus(romStatus, err.message, "err"));
 </script>
-{{{ SCRIPT }}}
 </body>
 </html>

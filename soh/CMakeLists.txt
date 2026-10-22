@@ -583,8 +583,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             $<$<COMPILE_LANGUAGE:CXX>:-Wno-c++11-narrowing -Wno-deprecated-enum-enum-conversion>
         )
 
-        # The page (soh/web/index.html) writes oot.o2r and soh.o2r into /ship before main runs
-        # and keeps /ship in IndexedDB so saves and settings persist.
+        # soh/web/soh-runtime.js loads soh.js into the page, writes oot.o2r and soh.o2r into /ship
+        # before main runs and keeps /ship in IndexedDB so saves and settings persist.
         target_link_options(${PROJECT_NAME} PRIVATE
             -sALLOW_MEMORY_GROWTH=1
             -sINITIAL_MEMORY=512MB
@@ -594,8 +594,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             -sEXIT_RUNTIME=0
             -sINVOKE_RUN=0
             -sMODULARIZE=0
-            -sEXPORTED_RUNTIME_METHODS=FS,IDBFS,callMain,addRunDependency,removeRunDependency,ccall,UTF8ToString
-            -sEXPORTED_FUNCTIONS=_main,_malloc,_free
+            -sEXPORTED_RUNTIME_METHODS=FS,IDBFS,ENV,specialHTMLTargets,callMain,addRunDependency,removeRunDependency,ccall,UTF8ToString
+            -sEXPORTED_FUNCTIONS=_main,_malloc,_free,_emscripten_pause_main_loop,_emscripten_resume_main_loop
             -lidbfs.js
             -sGL_ENABLE_GET_PROC_ADDRESS=1
             # The randomizer's table-building functions are each ~1MB of straight-line code. -O2
@@ -603,16 +603,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             # Coalescing again brings them to a few hundred, like Prelude of Light's build.
             -sBINARYEN_EXTRA_PASSES=--coalesce-locals,--simplify-locals
             -sOFFSCREENCANVAS_SUPPORT=0
-            --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/web/index.html
         )
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-            SUFFIX ".html"
-            LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/web/index.html
-        )
+        set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".js")
+        foreach(WEB_FILE index.html soh-runtime.js soh-player.js player-demo.html)
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/web/${WEB_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${WEB_FILE} COPYONLY)
+        endforeach()
         # soh.o2r can't be packed in the browser build (it needs torch), so serve the one a
         # native build left in the source root next to the page
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/index.html
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/soh.o2r $<TARGET_FILE_DIR:${PROJECT_NAME}>/soh.o2r
         )
     elseif (CMAKE_SYSTEM_NAME STREQUAL "CafeOS")

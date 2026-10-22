@@ -22,7 +22,10 @@ ninja -C build-web
 
 `build-web/soh/` then holds everything to serve:
 
-- `index.html`, `soh.js`, `soh.wasm` and `soh.o2r`: the game
+- `soh.js`, `soh.wasm` and `soh.o2r`: the game
+- `soh-runtime.js`: loads the game into a page and drives it. The pages below are built on it.
+- `index.html`: the start page, which runs the game full window
+- `soh-player.js` and `player-demo.html`: the embeddable macro player and a page to try it
 - `rom-convert-worker.js`, `soh-extract.js`, `soh-extract.wasm` and `soh-extract-yml.tar.gz`:
   the ROM converter, which is SoH's own torch extractor built for the browser. It runs in a
   worker and turns a ROM into the same `oot.o2r` the desktop version makes, in a few seconds.
@@ -52,14 +55,48 @@ it, picked with its buttons or dropped anywhere on the page. Play then boots str
 savestate and plays the macro: no title screen, file select or save file. The game runs on a
 temporary file that is never written to disk.
 
-The page exposes the same through JavaScript, for a site built around the player:
+`soh-runtime.js` exposes the same through JavaScript. A page has one game, so
+`SohRuntime.load()` always returns the same runtime, loading it the first time; the first call's
+options win. The start page also sets it as `window.SohWeb`.
 
 ```js
-await SohWeb.playGz({ state, macro, speed });  // File, Blob, ArrayBuffer, Uint8Array or URL
-SohWeb.status();      // { macro: { playing, frame, frameCount, rngMismatches }, scene, room, pos, ... }
-SohWeb.setSpeed(8);   // game updates per browser frame; above 1 fast-forwards without sound
-SohWeb.stopMacro();
+const runtime = await SohRuntime.load({ input: false });  // input: false only watches
+someElement.append(runtime.canvas);   // the game renders at the canvas's size
+if (!runtime.archives().length) await runtime.importArchive(romFile);
+await runtime.start();
+await runtime.playGz({ state, macro, speed });  // File, Blob, ArrayBuffer, Uint8Array or URL
+runtime.status();      // { macro: { playing, frame, frameCount, rngMismatches }, scene, room, pos, ... }
+runtime.setSpeed(8);   // game updates per browser frame; above 1 fast-forwards without sound
+runtime.stopMacro();
+runtime.pause();       // stops running frames while nothing shows the game; resume() continues
 ```
+
+With `input: false` the game ignores the keyboard, mouse and gamepads, so the page around it
+scrolls and types as usual. It hides gamepads from the whole page to do that.
+
+## Embedding macro players
+
+`soh-player.js` defines `<soh-player>`, for pages that show tricks or routes:
+
+```html
+<script src="soh-player.js"></script>
+<soh-player state="tricks/bomb-hover.gzs" macro="tricks/bomb-hover.gzm" poster="bomb-hover.jpg">
+  Bomb hover onto the Fire Temple ledge
+</soh-player>
+```
+
+`state` is required; `macro`, `poster` (an image), `speed` and `inputs="off"` (hides the
+Input Viewer) are optional. The element's content is the caption on its poster. It loads the
+game on the first Play, and asks for the visitor's ROM once if the browser has no archive.
+Each player has Restart, a speed button and the macro's progress.
+
+All players share the page's one game, so one plays at a time: playing another moves the game
+to it and sends the first back to its poster. Removing the playing element pauses the game.
+`soh-runtime.js` must sit next to `soh-player.js`.
+
+`player-demo.html` lists players from its URL, one `p` per player:
+`player-demo.html?p=state.gzs,macro.gzm,Caption&p=other.gzs,,State only`. Add
+`&archive=oot.o2r` to test locally as above.
 
 ## How it differs from the desktop build
 
