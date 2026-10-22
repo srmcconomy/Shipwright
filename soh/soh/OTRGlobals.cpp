@@ -325,7 +325,10 @@ OTRGlobals::OTRGlobals() {
         fontStandard = CreateFontWithSize(16.0f, "fonts/Montserrat-Regular.ttf");
         fontStandardLarger = CreateFontWithSize(20.0f, "fonts/Montserrat-Regular.ttf");
         fontStandardLargest = CreateFontWithSize(24.0f, "fonts/Montserrat-Regular.ttf");
+#ifndef __EMSCRIPTEN__
+        // Nothing draws with it yet, and its glyphs make the font atlas 2048x2048 (16MB of GPU texture)
         fontJapanese = CreateFontWithSize(24.0f, "fonts/NotoSansJP-Regular.ttf", true);
+#endif
         ImGui::GetIO().FontDefault = fontStandardLarger;
     }
 
