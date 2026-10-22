@@ -30,6 +30,9 @@ void OTRAudio_SetWebMuted(bool muted);
 
 namespace {
 
+// The macro frame the game holds on until the page moves it on, or -1
+int32_t sBreakFrame = -1;
+
 void PlayMacroOnArrival() {
     GzMacro_Play();
 }
@@ -84,6 +87,17 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetNotifications(bool visible) {
     Gz_SetNotifications(visible);
 }
 
+// Holds the game once the playing macro reaches this frame (as GzStatus counts them), so the page can pause it
+// on exactly that frame; -1 lets it run. Stepping still moves past it.
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetBreakFrame(int frame) {
+    sBreakFrame = frame;
+}
+
+// Whether the game should hold, for the browser's frame loop
+s32 GzWeb_AtBreakFrame(void) {
+    return sBreakFrame >= 0 && GzMacro_IsPlaying() && GzMacro_GetStatus().frame >= sBreakFrame;
+}
+
 // Runs one game update, with the page's main loop paused.
 EMSCRIPTEN_KEEPALIVE void SohWeb_StepFrame() {
     Graph_WebStep();
@@ -99,10 +113,9 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetSpeed(float speed) {
     Graph_SetWebSpeed(speed);
 }
 
-// The macro, the input it gave the game this frame (N64 button bits and stick) and where Link is, as JSON.
-// The string lives until the next call.
+// The macro and where Link is, as JSON. The string lives until the next call.
 EMSCRIPTEN_KEEPALIVE const char* SohWeb_GzStatus() {
-    static char json[1024];
+    static char json[768];
     GzMacroStatus macro = GzMacro_GetStatus();
     int written = snprintf(json, sizeof(json),
                            "{\"macro\":{\"loaded\":%s,\"playing\":%s,\"frame\":%d,\"frameCount\":%d,"
@@ -110,12 +123,6 @@ EMSCRIPTEN_KEEPALIVE const char* SohWeb_GzStatus() {
                            macro.loaded ? "true" : "false", macro.playing ? "true" : "false", macro.frame,
                            macro.frameCount, macro.rngMismatches,
                            GameInteractor::IsSaveLoaded() ? "true" : "false");
-    u16 buttons;
-    s8 stickX, stickY;
-    if (GzMacro_GetCurrentInput(&buttons, &stickX, &stickY)) {
-        written += snprintf(json + written, sizeof(json) - written, ",\"input\":{\"buttons\":%u,\"x\":%d,\"y\":%d}",
-                            buttons, stickX, stickY);
-    }
     Player* player = gPlayState != nullptr ? GET_PLAYER(gPlayState) : nullptr;
     if (player != nullptr) {
         written += snprintf(json + written, sizeof(json) - written,

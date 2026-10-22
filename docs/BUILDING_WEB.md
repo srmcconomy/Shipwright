@@ -80,24 +80,43 @@ scrolls and types as usual. It hides gamepads from the whole page to do that.
 
 ```html
 <script src="soh-player.js"></script>
-<soh-player state="tricks/bomb-hover.gzs" macro="tricks/bomb-hover.gzm" poster="bomb-hover.jpg">
+<soh-player src="tricks/bomb-hover.json" poster="bomb-hover.jpg">
   Bomb hover onto the Fire Temple ledge
 </soh-player>
 ```
 
-`state` is required; `macro`, `poster` (an image), `speed` (0.5, 1, 1.5 or 2) and
+`src` is a JSON file naming what to play, with paths relative to it, and optionally speed
+changes, pauses and notes at macro frames (the frame numbers the player shows):
+
+```json
+{
+  "savestate": "bomb-hover.gzs",
+  "macro": "bomb-hover.gzm",
+  "speeds": [{ "frame": 120, "speed": 0.5 }, { "frame": 200, "speed": 1 }],
+  "pauses": [{ "frame": 150, "seconds": 2 }],
+  "annotations": [{ "frame": 120, "until": 200, "text": "Z-target the wall here" }]
+}
+```
+
+A speed holds from its frame on. A pause stops the game on exactly its frame for that many
+seconds; pressing play goes on early. An annotation shows beside the game (under it, in a
+narrow player) from its frame until `until`, or until the next annotation starts.
+
+`poster` (an image), `speed` (0.5, 1, 1.5 or 2, multiplying the file's speeds) and
 `inputs="off"` are optional. The element's content is the caption on its poster. It loads the
 game on the first Play, and asks for the visitor's ROM once if the browser has no archive.
 Each player has play/pause, next frame, Restart, speed, mute (on to start with) and the macro's
-progress. Under the game it shows the macro's controller inputs frame by frame, unless
-`inputs="off"`. When the macro ends, it pauses on the last frame and offers to replay it.
+progress, which can be clicked or dragged to go to a frame: the game replays the macro there as
+fast as it runs (from the savestate again to go back), so it lands on exactly that frame. Its
+⋮ menu downloads the macro and savestate. Beside the game, above the notes, it shows the macro's controller inputs a frame
+ahead (what is held going into the next frame), unless `inputs="off"`. When the macro ends, it pauses on the last frame and offers to replay it.
 
 All players share the page's one game, so one plays at a time: playing another moves the game
 to it and sends the first back to its poster. Removing the playing element pauses the game.
 `soh-runtime.js` must sit next to `soh-player.js`.
 
 `player-demo.html` lists players from its URL, one `p` per player:
-`player-demo.html?p=state.gzs,macro.gzm,Caption&p=other.gzs,,State only`. Add
+`player-demo.html?p=trick.json,Caption&p=other.json,Another`. Add
 `&archive=oot.o2r` to test locally as above.
 
 ## How it differs from the desktop build

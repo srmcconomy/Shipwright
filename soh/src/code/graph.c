@@ -513,6 +513,8 @@ static void RunFrame() {
 static double sNextWebFrameTime;
 static f32 sWebSpeed = 1.0f;
 
+s32 GzWeb_AtBreakFrame(void);
+
 // How fast the game runs, as a multiple of its own speed: 0.5 is half speed, 2 double speed.
 void Graph_SetWebSpeed(f32 speed) {
     sWebSpeed = CLAMP(speed, 0.1f, 16.0f);
@@ -534,7 +536,8 @@ static void Graph_WebFrame(void) {
     }
     // A little slack so a 60Hz animation frame landing just early doesn't skip a whole update.
     // Faster than the browser's frame rate, several updates run in one frame.
-    for (s32 i = 0; i < 8 && now >= sNextWebFrameTime - 2.0; i++) {
+    // A page can hold the game on a macro frame, to pause there exactly
+    for (s32 i = 0; i < 8 && now >= sNextWebFrameTime - 2.0 && !GzWeb_AtBreakFrame(); i++) {
         sNextWebFrameTime += interval;
         RunFrame();
     }

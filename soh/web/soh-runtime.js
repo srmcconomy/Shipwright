@@ -204,6 +204,11 @@
       else audio?.resume();
     },
 
+    // Holds the game when the playing macro reaches this frame, until it is moved on; -1 lets it run
+    setBreakFrame(frame) {
+      Module.ccall("SohWeb_SetBreakFrame", null, ["number"], [frame]);
+    },
+
     stopMacro() {
       Module.ccall("SohWeb_GzStop", null, [], []);
     },

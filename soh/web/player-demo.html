@@ -17,8 +17,9 @@
 <body>
 <main>
   <h1>Macro players</h1>
-  <p>Tries <code>&lt;soh-player&gt;</code> with gz savestates and macros from this server. List them in the URL,
-    one <code>p</code> per player: <code>?p=state.gzs,macro.gzm,Caption&amp;p=…</code>.
+  <p>Tries <code>&lt;soh-player&gt;</code> with player files (JSON naming a gz savestate and macro, see
+    soh-player.js) from this server. List them in the URL, one <code>p</code> per player:
+    <code>?p=trick.json,Caption&amp;p=…</code>.
     For local testing, <code>&amp;archive=oot.o2r</code> fetches the game archive from this server.</p>
   <div id="players"></div>
 </main>
@@ -29,11 +30,10 @@
   // The first load decides the options, so this runs before any player loads the game
   SohRuntime.load({ input: false, archiveUrl: params.get("archive") });
   for (const entry of params.getAll("p")) {
-    const [state, macro, ...caption] = entry.split(",");
+    const [src, ...caption] = entry.split(",");
     const player = document.createElement("soh-player");
-    player.setAttribute("state", state);
-    if (macro) player.setAttribute("macro", macro);
-    player.textContent = caption.join(",") || state;
+    player.setAttribute("src", src);
+    player.textContent = caption.join(",") || src;
     document.getElementById("players").append(player);
   }
 </script>
