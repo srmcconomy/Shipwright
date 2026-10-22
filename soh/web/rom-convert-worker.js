@@ -66,7 +66,11 @@ self.onmessage = async ({ data }) => {
     progress("Unpacking asset definitions…");
     const response = await fetch("soh-extract-yml.tar.gz");
     if (!response.ok) throw new Error("soh-extract-yml.tar.gz is missing (" + response.status + ")");
-    const tar = new Uint8Array(await new Response(response.body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+    // Some servers send .gz files with Content-Encoding: gzip, so the browser has already unpacked it
+    const packed = new Uint8Array(await response.arrayBuffer());
+    const tar = packed[0] === 0x1f && packed[1] === 0x8b
+      ? new Uint8Array(await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer())
+      : packed;
     const assetCount = untar(module.FS, tar, "/assets");
 
     progress("Converting the ROM…");
