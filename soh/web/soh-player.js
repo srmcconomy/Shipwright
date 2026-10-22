@@ -9,6 +9,8 @@
 // speed is the playback speed: 0.5, 1 (the default), 1.5 or 2. inputs="off" hides the Input Viewer.
 // The element's content is the caption shown before it plays.
 //
+// When the macro ends, the game pauses on its last frame and the player offers to replay it.
+//
 // A page has one game (see soh-runtime.js), so one player plays at a time: playing another moves
 // the game to it, and this one goes back to its poster. The game is only watched, never controlled.
 // The visitor's own ROM is needed once; it is converted and kept in the browser like the launcher's.
@@ -41,11 +43,14 @@
   .screen ::slotted(*), .screen canvas { width: 100%; height: 100%; display: block; }
   .cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
            gap: 12px; padding: 16px; text-align: center; background: #0d0f12 center / cover no-repeat; }
-  .cover[hidden], .bar[hidden], .note[hidden], .progress[hidden], .frames[hidden] { display: none; }
+  .ended { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+           gap: 8px; background: #000000a0; text-shadow: 0 1px 3px #000; }
+  .cover[hidden], .ended[hidden], .bar[hidden], .note[hidden], .progress[hidden], .frames[hidden] { display: none; }
   .caption { max-width: 32em; text-shadow: 0 1px 3px #000; }
-  .play { width: 64px; height: 64px; border-radius: 50%; border: none; background: #e0b34acc; color: #1a1406; cursor: pointer; }
-  .play:hover { background: #e0b34a; }
-  .play svg { width: 28px; height: 28px; margin-left: 4px; }
+  .play, .replay { width: 64px; height: 64px; border-radius: 50%; border: none; background: #e0b34acc; color: #1a1406; cursor: pointer; }
+  .play:hover, .replay:hover { background: #e0b34a; }
+  .play svg, .replay svg { width: 28px; height: 28px; }
+  .play svg { margin-left: 4px; }
   .note { font-size: 13px; color: #c9c6be; max-width: 30em; text-shadow: 0 1px 3px #000; }
   .note.err { color: #f09080; }
   label.btn, button.small { font: inherit; font-size: 13px; cursor: pointer; border-radius: 6px; padding: 4px 10px;
@@ -65,6 +70,10 @@
   <div class="note" hidden></div>
   <label class="btn rom" hidden>Choose ROM…<input type="file" accept=".z64,.n64,.v64,.o2r"></label>
 </div>
+<div class="ended" hidden>
+  <button class="replay" title="Replay" aria-label="Replay"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg></button>
+  <div>Replay</div>
+</div>
 <div class="bar" hidden>
   <button class="small restart" title="Play again from the start">Restart</button>
   <button class="small speed" title="Playback speed">1×</button>
@@ -80,6 +89,7 @@
       this.attachShadow({ mode: "open" }).append(template.content.cloneNode(true));
       const $ = (selector) => this.shadowRoot.querySelector(selector);
       this.cover = $(".cover");
+      this.ended = $(".ended");
       this.note = $(".note");
       this.romPicker = $(".rom");
       this.bar = $(".bar");
@@ -91,6 +101,7 @@
 
       $(".play").addEventListener("click", () => this.play());
       $(".restart").addEventListener("click", () => this.play());
+      $(".replay").addEventListener("click", () => this.play());
       this.speedButton.addEventListener("click", () => {
         this.speed = SPEEDS[(SPEEDS.indexOf(this.speed) + 1) % SPEEDS.length];
         this.showSpeed();
@@ -169,6 +180,7 @@
       }
       this.setNote(null);
       this.cover.hidden = true;
+      this.ended.hidden = true;
       this.bar.hidden = false;
       // A savestate alone has no progress; the game's status still holds the last macro played
       this.progressBar.hidden = this.frames.hidden = !macro;
@@ -187,7 +199,7 @@
       this.play();
     }
 
-    // Follows the macro's progress, and offers to play it again once it ends
+    // Follows the macro's progress. Once it ends, the game pauses on its last frame and offers to replay it.
     watch() {
       clearInterval(this.timer);
       this.bar.classList.remove("show");
@@ -200,7 +212,12 @@
         const frame = started ? Math.min(macro.frame, macro.frameCount) : 0;
         this.progress.style.width = (macro.frameCount ? (100 * frame) / macro.frameCount : 0) + "%";
         this.frames.textContent = frame + " / " + macro.frameCount;
-        this.bar.classList.toggle("show", started && !macro.playing);
+        if (started && !macro.playing) {
+          clearInterval(this.timer);
+          this.runtime.pause();
+          this.ended.hidden = false;
+          this.bar.classList.add("show");
+        }
       }, 250);
     }
 
@@ -210,6 +227,7 @@
       this.runtime.stopMacro();
       this.bar.hidden = true;
       this.bar.classList.remove("show");
+      this.ended.hidden = true;
       this.cover.hidden = false;
       if (SohPlayer.active === this) SohPlayer.active = null;
     }
