@@ -68,7 +68,7 @@
   const template = document.createElement("template");
   template.innerHTML = `
 <style>
-  :host { display: block; max-width: 100%; background: #000; color: #e8e6e1;
+  :host { --shade: #000000a0; display: block; max-width: 100%; background: #000; color: #e8e6e1;
           font: 14px/1.4 system-ui, sans-serif; border-radius: 8px; overflow: hidden; }
   .stage { position: relative; aspect-ratio: 4 / 3; }
   .screen { position: absolute; inset: 0; }
@@ -76,7 +76,7 @@
   .cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
            gap: 12px; padding: 16px; text-align: center; background: #0d0f12 center / cover no-repeat; }
   .ended { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-           gap: 8px; background: #000000a0; text-shadow: 0 1px 3px #000; }
+           gap: 8px; background: var(--shade); text-shadow: 0 1px 3px #000; }
   .cover[hidden], .ended[hidden], .bar[hidden], .note[hidden], .progress[hidden], .frames[hidden] { display: none; }
   .caption { max-width: 32em; text-shadow: 0 1px 3px #000; }
   .play, .replay { display: grid; place-items: center; width: 64px; height: 64px; padding: 0; border-radius: 50%; border: none;
@@ -221,7 +221,11 @@
 
     connectedCallback() {
       const poster = this.getAttribute("poster");
-      if (poster) this.cover.style.backgroundImage = `url("${new URL(poster, document.baseURI).href}")`;
+      // Shaded like the last frame under Replay, so the button and caption stand out
+      if (poster) {
+        this.cover.style.backgroundImage =
+          `linear-gradient(var(--shade), var(--shade)), url("${new URL(poster, document.baseURI).href}")`;
+      }
       this.showSpeed();
       this.showMuted();
       this.inputs.hidden = !this.getAttribute("macro") || this.getAttribute("inputs") === "off";
