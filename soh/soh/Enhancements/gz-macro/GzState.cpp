@@ -424,6 +424,14 @@ bool GzState_IsImporting() {
     return sImporting;
 }
 
+bool GzState_GetSavedRng(uint32_t* rng) {
+    if (!sStateLoaded || !sState.rngFound) {
+        return false;
+    }
+    *rng = sState.rng;
+    return true;
+}
+
 bool GzState_GetSummary(int* sceneId, int* roomNum, float pos[3]) {
     if (!sStateLoaded) {
         return false;

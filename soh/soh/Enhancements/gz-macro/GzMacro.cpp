@@ -52,7 +52,8 @@ struct Playback {
 
 Playback sPlayback;
 
-// The rng where gz's would come from the state, which SoH doesn't read: the N64's at power on
+// The rng to use where gz's would come from the state but can't (the state's couldn't be found, or the scene an
+// import loads before the macro starts): the N64's at power on
 constexpr u32 FIXED_SEED = 1;
 
 void Rewind() {
@@ -71,9 +72,10 @@ void Start() {
     Rewind();
     sPlayback.rngMismatches = 0;
     sPlayback.resetWarned = false;
-    // A gz state holds the rng, but SoH doesn't read it, so start from a fixed one (the N64's at power on) to make
-    // every playback of the macro the same until the first scene load restores the recorded seed
-    Rand_Seed(FIXED_SEED);
+    // The rng the state was saved with, as gz restores it when playing a macro, so the macro draws the same random
+    // numbers it was recorded with
+    uint32_t rng;
+    Rand_Seed(GzState_GetSavedRng(&rng) ? rng : FIXED_SEED);
     sPlayback.playing = true;
     Gz_Notify("macro playing");
 }
@@ -119,6 +121,21 @@ template <typename T> const T* NextRecord(const std::vector<T>& records, size_t&
 // than the N64 does), and a seed missed by frame would leave the rng to the clock. So the next seed record within
 // this many frames is used, in order.
 constexpr int32_t SEED_SLACK = 2;
+
+// Whether either rng value follows the other within a few draws
+bool RngClose(u32 a, u32 b) {
+    constexpr int MAX_DRAWS = 64;
+    u32 fromA = a;
+    u32 fromB = b;
+    for (int i = 0; i <= MAX_DRAWS; i++) {
+        if (fromA == b || fromB == a) {
+            return true;
+        }
+        fromA = fromA * 1664525 + 1013904223;
+        fromB = fromB * 1664525 + 1013904223;
+    }
+    return false;
+}
 
 const GzMacro::Seed* NextSeedRecord() {
     const std::vector<GzMacro::Seed>& seeds = sPlayback.macro.seeds;
@@ -210,9 +227,10 @@ u32 GzMacro_FilterRandSeed(u32 seed) {
     if (record == nullptr) {
         return seed;
     }
-    // gz only restores the seed when the rng matches, but SoH's rng rarely matches an N64's. Restoring the
-    // seed anyway puts SoH back in sync on every scene load.
-    if (record->oldSeed != Rand_GetSeed()) {
+    // gz only restores the seed when the rng matches. SoH reaches the scene load a frame early, a few random
+    // numbers short of where the N64 was, so it counts as in sync when the two are that close in the sequence,
+    // and the seed is restored anyway to put SoH back in sync on every scene load.
+    if (!RngClose(Rand_GetSeed(), record->oldSeed)) {
         sPlayback.rngMismatches++;
     }
     return record->newSeed;

@@ -100,6 +100,85 @@ bool FindLink(const uint8_t* data, size_t size, size_t start, const uint8_t* cam
     return false;
 }
 
+// The display lists gz saves: its four buffers' sizes in Gfx (work, opaque, translucent, overlay), which the state
+// only gives offsets into.
+constexpr uint32_t DISP_BUFFER_SIZES[4] = { 0x80, 0x17E0, 0x800, 0x400 };
+constexpr size_t GFX_SIZE = 8;
+
+bool IsOpcode(uint8_t b) {
+    return b >= 0xD3 || (b >= 0x01 && b <= 0x07);
+}
+
+// Where a state would end if its rng were at rngPos, walking what gz writes after the rng (save_state in
+// src/gz/state.c, as load_state reads each state version), or SIZE_MAX if what follows doesn't fit there.
+size_t TailEnd(const uint8_t* data, size_t size, size_t rngPos, uint16_t stateVersion, bool ique) {
+    size_t pos = rngPos + 4;
+    if (stateVersion < 0x0004) {
+        pos += 4 + 2 + 4 + 4 + 4; // din's fire state, kept apart before version 4
+    }
+    pos += 4 + 4 + 0x20 + 0x140 + 0x08 + (ique ? 0x18 : 0x28); // farore's wind, camera, cutscene, message state
+    if (stateVersion >= 0x0004) {
+        pos += 2; // message select state
+    }
+    if (pos + 2 > size) {
+        return SIZE_MAX;
+    }
+    int16_t displayLists = (int16_t)ReadU16(data + pos);
+    pos += 2;
+    if (displayLists == 0) {
+        if (pos + 32 > size) {
+            return SIZE_MAX;
+        }
+        uint32_t sizes = 0;
+        uint32_t used = 0;
+        for (int i = 0; i < 4; i++) {
+            uint32_t p = ReadU32(data + pos + i * 8);
+            uint32_t d = ReadU32(data + pos + i * 8 + 4);
+            if (p > d || d > DISP_BUFFER_SIZES[i]) {
+                return SIZE_MAX;
+            }
+            used += p + (DISP_BUFFER_SIZES[i] - d);
+            sizes += DISP_BUFFER_SIZES[i];
+        }
+        // A state is saved mid-frame, so the opaque buffer holds commands, starting with an opcode
+        uint32_t opaqueP = ReadU32(data + pos + 8);
+        size_t opaque = pos + 32 + GFX_SIZE * (ReadU32(data + pos) + DISP_BUFFER_SIZES[0] - ReadU32(data + pos + 4));
+        if (opaqueP == 0 || opaque >= size || !IsOpcode(data[opaque])) {
+            return SIZE_MAX;
+        }
+        pos += 32 + GFX_SIZE * used + 8; // the lists' commands and data, then two frame counters
+    } else if (displayLists != -1) {
+        return SIZE_MAX;
+    }
+    pos += 8; // sfx mutes
+    if (pos + 1 > size) {
+        return SIZE_MAX;
+    }
+    pos += 1 + 4 * data[pos]; // pending audio commands
+    if (stateVersion >= 0x0005) {
+        pos += 0xC + 4 + 4 + 4 + 0x54 + 0x60 + 8 + 0x144 + 0x38C + 9 + 0xA; // audio and ocarina data
+        pos += stateVersion >= 0x0006 ? 0x44 + 0x18 + 4 + 0x88 : 0x160 + 4 + 0x90;
+        pos += (ique ? 0x10 + 4 : 0x1E + 6) + 0x20 + 4 + 1; // message icons, message bss, metronome, frame flag
+    } else {
+        pos += 0x60 + (stateVersion >= 0x0004 ? 1 : 0) + 1 + 1 + 0xAC + 0x140 + 4; // ocarina and song state
+    }
+    pos += 0x1E; // staff notes
+    return pos;
+}
+
+// The rng comes after the actor code, heap and particles, which can only be walked with the ROM in hand. What
+// follows it can be walked without, so the rng is found where a walk from it ends exactly at the end of the file.
+// That checks dozens of fields; the search runs from the end, as a false match is only ever found earlier.
+bool FindRng(const uint8_t* data, size_t size, size_t start, uint16_t stateVersion, bool ique, uint32_t& out) {
+    for (size_t pos = size - 4; pos-- > start;) {
+        if (TailEnd(data, size, pos, stateVersion, ique) == size) {
+            out = ReadU32(data + pos);
+            return true;
+        }
+    }
+    return false;
+}
+
 } // namespace
 
 const char* GzVersionName(uint16_t version) {
@@ -204,6 +283,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     pos += 4 + N64_GAME_INFO_SIZE; // game info pointer and game info
 
     s.linkFound = FindLink(data, size, pos, cameraPos, s.link);
+    s.rngFound = FindRng(data, size, pos, s.stateVersion, s.version == (uint16_t)GzVersion::OotIQueC, s.rng);
 
     out = std::move(s);
     return true;

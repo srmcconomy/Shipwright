@@ -104,6 +104,10 @@ struct StateFile {
 
     bool linkFound = false;
     LinkState link = {};
+
+    // The rng when the state was saved, which a macro recorded from it starts with
+    bool rngFound = false;
+    uint32_t rng = 0;
 };
 
 bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& error);

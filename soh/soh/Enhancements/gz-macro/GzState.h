@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 // Recreates the situation in a gz savestate (.gzs): its save data, scene and room, and Link's position and
@@ -12,6 +13,9 @@ bool GzState_Load(const std::string& path);
 bool GzState_Import(void (*onArrived)() = nullptr, bool boot = false);
 // From importing the state until Link arrives in its scene.
 bool GzState_IsImporting();
+// The rng when the loaded state was saved, which a macro recorded from it starts with. Returns false when none is
+// loaded or it couldn't be found in the file.
+bool GzState_GetSavedRng(uint32_t* rng);
 // Where the loaded savestate puts Link. Returns false when none is loaded.
 bool GzState_GetSummary(int* sceneId, int* roomNum, float pos[3]);
 void GzState_DrawTab();
