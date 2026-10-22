@@ -179,7 +179,7 @@
   .menu-wrap { position: relative; }
   .menu { position: absolute; left: 0; bottom: calc(100% + 6px); display: flex; flex-direction: column; padding: 4px;
           min-width: 72px; border-radius: 8px; border: 1px solid #ffffff30; background: #15181dee; white-space: nowrap; }
-  .more-menu .menu { left: auto; right: 0; }
+  .view-menu .menu, .more-menu .menu { left: auto; right: 0; }
   .menu[hidden], .menu [hidden] { display: none; }
   .menu button, .menu a { font: inherit; font-size: 13px; text-align: left; padding: 4px 8px; border: none; border-radius: 5px;
                           background: none; color: inherit; text-decoration: none; cursor: pointer; }
@@ -239,6 +239,13 @@
   <button class="small icon mute"></button>
   <div class="seek"><div class="progress"><div></div></div><div class="seek-tip" hidden></div></div>
   <div class="frames"></div>
+  <div class="menu-wrap view-menu">
+    <button class="small icon view" title="Camera" aria-label="Camera" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
+    <div class="menu" role="menu" hidden>
+      <button role="menuitemradio" data-view="game">Game camera</button>
+      <button role="menuitemradio" data-view="overhead">Overhead</button>
+    </div>
+  </div>
   <div class="menu-wrap more-menu">
     <button class="small icon more" title="More" aria-label="More" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
     <div class="menu" role="menu" hidden>
@@ -268,6 +275,9 @@
       this.speedButton = $(".speed");
       this.speedMenu = $(".speed-menu .menu");
       this.moreMenu = $(".more-menu .menu");
+      this.viewMenu = $(".view-menu .menu");
+      // Which camera draws the game; only the picture changes, the macro plays the same
+      this.view = "game";
       this.muteButton = $(".mute");
       this.pauseButton = $(".pause");
       this.stepButton = $(".step");
@@ -292,6 +302,18 @@
       $(".replay").addEventListener("click", () => this.play());
       this.speedButton.addEventListener("click", () => this.toggleMenu(this.speedMenu));
       $(".more").addEventListener("click", () => this.toggleMenu(this.moreMenu));
+      $(".view").addEventListener("click", () => this.toggleMenu(this.viewMenu));
+      this.viewMenu.addEventListener("click", (e) => {
+        const choice = e.target.closest("[data-view]");
+        if (!choice) return;
+        this.view = choice.dataset.view;
+        this.showView();
+        this.closeMenu();
+        if (SohPlayer.active !== this) return;
+        this.runtime.setView(this.view);
+        // The game can't draw a frame again without playing on, so a paused one is replayed to with the new camera
+        if (this.paused && !this.seeking) this.seek(this.frame, true);
+      });
       this.moreMenu.addEventListener("click", () => this.closeMenu());
       this.speedMenu.addEventListener("click", (e) => {
         const choice = e.target.closest("[data-speed]");
@@ -361,6 +383,7 @@
       }
       this.showSpeed();
       this.showMuted();
+      this.showView();
       this.timeline ||= loadTimeline(this.getAttribute("src"));
       this.timeline.then((timeline) => {
         this.inputs.hidden = !timeline.macro || this.getAttribute("inputs") === "off";
@@ -390,6 +413,12 @@
       this.speedButton.textContent = this.speed + "×";
       for (const choice of this.speedMenu.children) {
         choice.setAttribute("aria-checked", String(Number(choice.dataset.speed) === this.speed));
+      }
+    }
+
+    showView() {
+      for (const choice of this.viewMenu.children) {
+        choice.setAttribute("aria-checked", String(choice.dataset.view === this.view));
       }
     }
 
@@ -521,6 +550,7 @@
         this.setPaused(false);
         this.runtime.setMuted(SohPlayer.muted);
         this.runtime.setTrail(this.loaded.trail);
+        this.runtime.setView(this.view);
         await this.runtime.playGz({
           state: this.loaded.savestate,
           macro,
@@ -614,8 +644,9 @@
     }
 
     // Goes to a macro frame by playing on to it as fast as the game runs, from the savestate again if the frame is
-    // behind. A seek already running moves on to the new frame. Afterwards it plays on if it was playing.
-    async seek(frame) {
+    // behind (or reload is set). A seek already running moves on to the new frame. Afterwards it plays on if it
+    // was playing.
+    async seek(frame, reload = false) {
       if (!this.macroInputs || SohPlayer.active !== this) return;
       // The macro has stopped by its last frame, so the furthest it can be held is the one before
       this.seekTarget = Math.max(0, Math.min(frame, this.macroInputs.length - 1));
@@ -633,7 +664,7 @@
         for (let i = 0; SohPlayer.active === this; i++) {
           const target = this.seekTarget;
           const { macro } = this.runtime.status();
-          if (!macro.playing || (macro.frame > target && !reloaded)) {
+          if (!macro.playing || ((macro.frame > target || reload) && !reloaded)) {
             await this.reloadMacro(breather);
             reloaded = true;
             continue;

@@ -109,7 +109,9 @@ game on the first Play, and asks for the visitor's ROM once if the browser has n
 Each player has play/pause, next frame, Restart, speed, mute (on to start with) and the macro's
 progress, which can be clicked or dragged to go to a frame: the game replays the macro there as
 fast as it runs (from the savestate again to go back), so it lands on exactly that frame. Its
-⋮ menu downloads the macro and savestate. Beside the game, above the notes, it shows the macro's controller inputs a frame
+⋮ menu downloads the macro and savestate, and its camera button draws the game from overhead
+instead of the game's camera. Only the picture changes: the game logic, and the screen positions
+actors work out while being drawn, still see the game's camera, so the macro plays the same. Beside the game, above the notes, it shows the macro's controller inputs a frame
 ahead (what is held going into the next frame), unless `inputs="off"`. When the macro ends, it pauses on the last frame and offers to replay it.
 
 All players share the page's one game, so one plays at a time: playing another moves the game

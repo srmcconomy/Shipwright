@@ -1303,6 +1303,11 @@ void Play_DrawOverlayElements(PlayState* play) {
     }
 }
 
+// SOH [Web] Draws a gz macro from another camera angle, without changing the game's camera (GzView.h)
+void GzView_BeginDraw(PlayState* play);
+void GzView_KeepGameProjection(PlayState* play);
+void GzView_EndDraw(PlayState* play);
+
 void Play_Draw(PlayState* play) {
     GraphicsContext* gfxCtx = play->state.gfxCtx;
     Lights* sp228;
@@ -1357,6 +1362,7 @@ void Play_Draw(PlayState* play) {
         POLY_OPA_DISP = Play_SetFog(play, POLY_OPA_DISP);
         POLY_XLU_DISP = Play_SetFog(play, POLY_XLU_DISP);
 
+        GzView_BeginDraw(play);
         func_800AA460(&play->view, play->view.fovy, play->view.zNear, play->lightCtx.fogFar);
         func_800AAA50(&play->view, 15);
 
@@ -1378,6 +1384,7 @@ void Play_Draw(PlayState* play) {
         // The billboard is still a viewing matrix at this stage
         Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
         Matrix_Get(&play->viewProjectionMtxF);
+        GzView_KeepGameProjection(play);
         play->billboardMtxF.mf[0][3] = play->billboardMtxF.mf[1][3] = play->billboardMtxF.mf[2][3] =
             play->billboardMtxF.mf[3][0] = play->billboardMtxF.mf[3][1] = play->billboardMtxF.mf[3][2] = 0.0f;
         // This transpose is where the viewing matrix is properly converted into a billboard matrix
@@ -1620,6 +1627,7 @@ void Play_Draw(PlayState* play) {
     }
 
 Play_Draw_skip:
+    GzView_EndDraw(play);
 
     if (play->view.unk_124 != 0) {
         Camera_Update(GET_ACTIVE_CAM(play));

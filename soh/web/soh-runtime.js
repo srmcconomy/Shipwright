@@ -204,6 +204,11 @@
       else audio?.resume();
     },
 
+    // Which camera draws the game: "game" (its own) or "overhead". Only the picture changes, not the play.
+    setView(view) {
+      Module.ccall("SohWeb_SetView", null, ["number"], [["game", "overhead"].indexOf(view)]);
+    },
+
     // A red line through where Link has been while the macro plays
     setTrail(visible) {
       Module.ccall("SohWeb_SetTrail", null, ["boolean"], [visible]);

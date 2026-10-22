@@ -6,6 +6,7 @@
 #include "GzMacro.h"
 #include "GzState.h"
 #include "GzTrail.h"
+#include "GzView.h"
 
 #include <algorithm>
 #include <cctype>
@@ -107,6 +108,11 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_StepFrame() {
 // Shows or hides the red line through where Link has been while the macro plays.
 EMSCRIPTEN_KEEPALIVE void SohWeb_SetTrail(bool visible) {
     GzTrail_SetEnabled(visible);
+}
+
+// Draws the game from another camera angle (GzViewMode), leaving the game's own camera, and so the macro, alone.
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetView(int mode) {
+    GzView_SetMode((GzViewMode)mode);
 }
 
 // Silences the game, or brings its sound back.
