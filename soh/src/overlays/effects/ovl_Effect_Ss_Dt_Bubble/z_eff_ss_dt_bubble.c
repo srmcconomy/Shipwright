@@ -37,6 +37,10 @@ u32 EffectSsDtBubble_Init(PlayState* play, u32 index, EffectSs* this, void* init
     //! @bug Rand_ZeroOne in the macro means a random number is generated for both parts of the macro.
     // In the base game this works out because both addresses are segment 4, but it may break if
     // the addresses were changed to refer to different segments
+    // SOH [Port] The N64's SEGMENTED_TO_VIRTUAL used its argument twice, once for the segment and once for the
+    // offset, so it drew two random numbers here and the second picked the texture. SoH's uses it once, so draw the
+    // first one separately, keeping the rng in step with the N64 for everything after.
+    Rand_ZeroOne();
     this->gfx = SEGMENTED_TO_VIRTUAL(Rand_ZeroOne() < 0.5f ? gEffBubble1Tex : gEffBubble2Tex);
     this->pos = initParams->pos;
     this->velocity = initParams->velocity;
