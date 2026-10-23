@@ -52,6 +52,12 @@ struct Playback {
 
 Playback sPlayback;
 
+// Macros come from the N64, whose random floats differ from the GameCube versions SoH is built from
+void SetPlaying(bool playing) {
+    sPlayback.playing = playing;
+    Rand_SetN64Floats(playing);
+}
+
 // The rng to use where gz's would come from the state but can't (the state's couldn't be found, or the scene an
 // import loads before the macro starts): the N64's at power on
 constexpr u32 FIXED_SEED = 1;
@@ -76,13 +82,13 @@ void Start() {
     // numbers it was recorded with
     uint32_t rng;
     Rand_Seed(GzState_GetSavedRng(&rng) ? rng : FIXED_SEED);
-    sPlayback.playing = true;
+    SetPlaying(true);
     Gz_Notify("macro playing");
 }
 
 void Stop() {
     if (sPlayback.playing) {
-        sPlayback.playing = false;
+        SetPlaying(false);
         Gz_Notify("macro stopped");
     }
 }
@@ -95,7 +101,7 @@ bool LoadMacro(const std::string& path) {
         Gz_Notify(("failed to load macro: " + error).c_str());
         return false;
     }
-    sPlayback.playing = false;
+    SetPlaying(false);
     sPlayback.macro = std::move(macro);
     sPlayback.loadedPath = path;
     sPlayback.loaded = true;
@@ -205,7 +211,7 @@ void GzMacro_UpdateInput(Input* input) {
         if (CVarGetInteger(CVAR_LOOP_NAME, 0)) {
             Rewind();
         } else {
-            sPlayback.playing = false;
+            SetPlaying(false);
             Gz_Notify("macro finished");
             return;
         }

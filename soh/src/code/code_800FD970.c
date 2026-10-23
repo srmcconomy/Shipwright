@@ -27,6 +27,18 @@ void Rand_Seed(u32 seed) {
 u32 Rand_GetSeed(void) {
     return sRandInt;
 }
+
+// The N64 versions make a float from the lowest 23 bits of the random number, where the GameCube versions SoH comes
+// from use the highest. Same sequence, different floats. Set while a gz macro from the N64 plays.
+static u8 sRandN64Floats = false;
+
+void Rand_SetN64Floats(u8 n64) {
+    sRandN64Floats = n64;
+}
+
+static u32 Rand_FloatBits(u32 randInt) {
+    return sRandN64Floats ? (randInt & 0x007FFFFF) : (randInt >> 9);
+}
 // #endregion
 
 /**
@@ -36,7 +48,7 @@ u32 Rand_GetSeed(void) {
  */
 f32 Rand_ZeroOne(void) {
     sRandInt = (sRandInt * 1664525) + 1013904223;
-    sRandFloat = ((sRandInt >> 9) | 0x3F800000);
+    sRandFloat = (Rand_FloatBits(sRandInt) | 0x3F800000);
     return *((f32*)&sRandFloat) - 1.0f;
 }
 
@@ -46,7 +58,7 @@ f32 Rand_ZeroOne(void) {
  */
 f32 Rand_Centered(void) {
     sRandInt = (sRandInt * 1664525) + 1013904223;
-    sRandFloat = ((sRandInt >> 9) | 0x3F800000);
+    sRandFloat = (Rand_FloatBits(sRandInt) | 0x3F800000);
     return *((f32*)&sRandFloat) - 1.5f;
 }
 
@@ -72,7 +84,7 @@ f32 Rand_ZeroOne_Variable(u32* rndNum) {
     u32 next = (*rndNum * 1664525) + 1013904223;
 
     // clang-format off
-    *rndNum = next; sRandFloat = (next >> 9) | 0x3F800000;
+    *rndNum = next; sRandFloat = Rand_FloatBits(next) | 0x3F800000;
     // clang-format on
     return *((f32*)&sRandFloat) - 1.0f;
 }
@@ -85,7 +97,7 @@ f32 Rand_Centered_Variable(u32* rndNum) {
     u32 next = (*rndNum * 1664525) + 1013904223;
 
     // clang-format off
-    *rndNum = next; sRandFloat = (next >> 9) | 0x3F800000;
+    *rndNum = next; sRandFloat = Rand_FloatBits(next) | 0x3F800000;
     // clang-format on
     return *((f32*)&sRandFloat) - 1.5f;
 }
