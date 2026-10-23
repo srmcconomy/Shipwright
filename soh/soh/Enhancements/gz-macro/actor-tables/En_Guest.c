@@ -1,0 +1,120 @@
+// Generated from SoH's actor sources and the actor overlays of an N64 OoT 1.2 ROM, by the gz macro tools.
+// Do not edit.
+
+#include <stddef.h>
+#include "global.h"
+#include "soh/Enhancements/gz-macro/GzActorTables.h"
+#include "overlays/actors/ovl_En_Guest/z_en_guest.h"
+
+void EnGuest_Init(void*, void*);
+void EnGuest_Destroy(void*, void*);
+void EnGuest_Update(void*, void*);
+void func_80A50518(void*, void*);
+void func_80A5057C(void*, void*);
+void func_80A505CC(void*, void*);
+void EnGuest_Draw(void*, void*);
+
+const GzActorSpan gGzEnGuestSpans[] = {
+    { offsetof(EnGuest, skelAnime.limbCount), 0, 0x13c, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.mode), 0, 0x13d, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.curFrame), 0, 0x154, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.playSpeed), 0, 0x158, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.jointTable), 0, 0x15c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, skelAnime.morphTable), 0, 0x160, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, skelAnime.morphWeight), 0, 0x164, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.morphRate), 0, 0x168, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.update.normal), 0, 0x16c, 0x0, 1, 4, GZ_SPAN_FUNCTION },
+    { offsetof(EnGuest, skelAnime.initFlags), 0, 0x170, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.movementFlags), 0, 0x171, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.prevRot), 0, 0x172, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.prevTransl.x), 0, 0x174, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.prevTransl.y), 0, 0x176, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.prevTransl.z), 0, 0x178, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.baseTransl.x), 0, 0x17a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.baseTransl.y), 0, 0x17c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, skelAnime.baseTransl.z), 0, 0x17e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, jointTable[0].x), offsetof(EnGuest, jointTable[1].x) - offsetof(EnGuest, jointTable[0].x), 0x180, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, jointTable[0].y), offsetof(EnGuest, jointTable[1].y) - offsetof(EnGuest, jointTable[0].y), 0x182, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, jointTable[0].z), offsetof(EnGuest, jointTable[1].z) - offsetof(EnGuest, jointTable[0].z), 0x184, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, morphTable[0].x), offsetof(EnGuest, morphTable[1].x) - offsetof(EnGuest, morphTable[0].x), 0x1e0, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, morphTable[0].y), offsetof(EnGuest, morphTable[1].y) - offsetof(EnGuest, morphTable[0].y), 0x1e2, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, morphTable[0].z), offsetof(EnGuest, morphTable[1].z) - offsetof(EnGuest, morphTable[0].z), 0x1e4, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, actionFunc), 0, 0x240, 0x0, 1, 4, GZ_SPAN_FUNCTION },
+    { offsetof(EnGuest, collider.base.actor), 0, 0x244, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.base.at), 0, 0x248, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.base.ac), 0, 0x24c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.base.oc), 0, 0x250, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.base.atFlags), 0, 0x254, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.base.acFlags), 0, 0x255, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.base.ocFlags1), 0, 0x256, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.base.ocFlags2), 0, 0x257, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.base.colType), 0, 0x258, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.base.shape), 0, 0x259, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.toucher.dmgFlags), 0, 0x25c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.toucher.effect), 0, 0x260, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.toucher.damage), 0, 0x261, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.bumper.dmgFlags), 0, 0x264, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.bumper.effect), 0, 0x268, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.bumper.defense), 0, 0x269, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.bumper.hitPos.x), 0, 0x26a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.bumper.hitPos.y), 0, 0x26c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.bumper.hitPos.z), 0, 0x26e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.elemType), 0, 0x270, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.toucherFlags), 0, 0x271, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.bumperFlags), 0, 0x272, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.ocElemFlags), 0, 0x273, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.info.atHit), 0, 0x274, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.info.acHit), 0, 0x278, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.info.atHitInfo), 0, 0x27c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.info.acHitInfo), 0, 0x280, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGuest, collider.dim.radius), 0, 0x284, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.dim.height), 0, 0x286, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.dim.yShift), 0, 0x288, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.dim.pos.x), 0, 0x28a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.dim.pos.y), 0, 0x28c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, collider.dim.pos.z), 0, 0x28e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.talkState), 0, 0x290, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.trackingMode), 0, 0x292, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.autoTurnTimer), 0, 0x294, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.autoTurnState), 0, 0x296, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.headRot.x), 0, 0x298, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.headRot.y), 0, 0x29a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.headRot.z), 0, 0x29c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.torsoRot.x), 0, 0x29e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.torsoRot.y), 0, 0x2a0, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.torsoRot.z), 0, 0x2a2, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.yOffset), 0, 0x2a4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.trackPos.x), 0, 0x2a8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.trackPos.y), 0, 0x2ac, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.trackPos.z), 0, 0x2b0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, interactInfo.unk_24[0]), offsetof(EnGuest, interactInfo.unk_24[1]) - offsetof(EnGuest, interactInfo.unk_24[0]), 0x2b4, 0x1, 4, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, unk_2C8), 0, 0x2b8, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, unk_2CA), 0, 0x2ba, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, fidgetTableY[0]), offsetof(EnGuest, fidgetTableY[1]) - offsetof(EnGuest, fidgetTableY[0]), 0x2bc, 0x2, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, fidgetTableZ[0]), offsetof(EnGuest, fidgetTableZ[1]) - offsetof(EnGuest, fidgetTableZ[0]), 0x2dc, 0x2, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, osAnimeBankIndex), 0, 0x2fc, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, unk_30D), 0, 0x2fd, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnGuest, unk_30E), 0, 0x2fe, 0x0, 1, 1, GZ_SPAN_VALUE },
+};
+const size_t gGzEnGuestSpanCount = ARRAY_COUNT(gGzEnGuestSpans);
+
+const GzActorFunction gGzEnGuestFunctions[] = {
+    { 0x0, (void*)EnGuest_Init },
+    { 0x60, (void*)EnGuest_Destroy },
+    { 0x8c, (void*)EnGuest_Update },
+    { 0x1fc, NULL },
+    { 0x2a8, (void*)func_80A50518 },
+    { 0x310, (void*)func_80A5057C },
+    { 0x364, (void*)func_80A505CC },
+    { 0x4a4, NULL },
+    { 0x510, NULL },
+    { 0x738, (void*)EnGuest_Draw },
+};
+const size_t gGzEnGuestFunctionCount = ARRAY_COUNT(gGzEnGuestFunctions);

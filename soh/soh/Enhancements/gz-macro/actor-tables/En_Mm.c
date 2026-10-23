@@ -1,0 +1,131 @@
+// Generated from SoH's actor sources and the actor overlays of an N64 OoT 1.2 ROM, by the gz macro tools.
+// Do not edit.
+
+#include <stddef.h>
+#include "global.h"
+#include "soh/Enhancements/gz-macro/GzActorTables.h"
+#include "overlays/actors/ovl_En_Mm/z_en_mm.h"
+
+void EnMm_Init(void*, void*);
+void EnMm_Destroy(void*, void*);
+void func_80AADCD0(void*, void*);
+void func_80AAE224(void*, void*);
+void func_80AAE294(void*, void*);
+void func_80AAE50C(void*, void*);
+void func_80AAE598(void*, void*);
+void EnMm_Update(void*, void*);
+void EnMm_Draw(void*, void*);
+
+const GzActorSpan gGzEnMmSpans[] = {
+    { offsetof(EnMm, skelAnime.limbCount), 0, 0x13c, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.mode), 0, 0x13d, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.curFrame), 0, 0x154, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.playSpeed), 0, 0x158, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.jointTable), 0, 0x15c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, skelAnime.morphTable), 0, 0x160, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, skelAnime.morphWeight), 0, 0x164, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.morphRate), 0, 0x168, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.update.normal), 0, 0x16c, 0x0, 1, 4, GZ_SPAN_FUNCTION },
+    { offsetof(EnMm, skelAnime.initFlags), 0, 0x170, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.movementFlags), 0, 0x171, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.prevRot), 0, 0x172, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.prevTransl.x), 0, 0x174, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.prevTransl.y), 0, 0x176, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.prevTransl.z), 0, 0x178, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.baseTransl.x), 0, 0x17a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.baseTransl.y), 0, 0x17c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, skelAnime.baseTransl.z), 0, 0x17e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, actionFunc), 0, 0x180, 0x0, 1, 4, GZ_SPAN_FUNCTION },
+    { offsetof(EnMm, collider.base.actor), 0, 0x184, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.base.at), 0, 0x188, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.base.ac), 0, 0x18c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.base.oc), 0, 0x190, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.base.atFlags), 0, 0x194, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.base.acFlags), 0, 0x195, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.base.ocFlags1), 0, 0x196, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.base.ocFlags2), 0, 0x197, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.base.colType), 0, 0x198, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.base.shape), 0, 0x199, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.toucher.dmgFlags), 0, 0x19c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.toucher.effect), 0, 0x1a0, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.toucher.damage), 0, 0x1a1, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.bumper.dmgFlags), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.bumper.effect), 0, 0x1a8, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.bumper.defense), 0, 0x1a9, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.bumper.hitPos.x), 0, 0x1aa, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.bumper.hitPos.y), 0, 0x1ac, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.bumper.hitPos.z), 0, 0x1ae, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.elemType), 0, 0x1b0, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.toucherFlags), 0, 0x1b1, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.bumperFlags), 0, 0x1b2, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.ocElemFlags), 0, 0x1b3, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.info.atHit), 0, 0x1b4, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.info.acHit), 0, 0x1b8, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.info.atHitInfo), 0, 0x1bc, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.info.acHitInfo), 0, 0x1c0, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, collider.dim.radius), 0, 0x1c4, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.dim.height), 0, 0x1c6, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.dim.yShift), 0, 0x1c8, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.dim.pos.x), 0, 0x1ca, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.dim.pos.y), 0, 0x1cc, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, collider.dim.pos.z), 0, 0x1ce, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_1E0), 0, 0x1d0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, mouthTexIndex), 0, 0x1d4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_1E8), 0, 0x1d8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, path), 0, 0x1dc, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_1F0), 0, 0x1e0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, waypoint), 0, 0x1e4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, yawToWaypoint), 0, 0x1e8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, distToWaypoint), 0, 0x1ec, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, speedXZ), 0, 0x1f0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_204), 0, 0x1f4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_208.mf[0][0]), offsetof(EnMm, unk_208.mf[0][1]) - offsetof(EnMm, unk_208.mf[0][0]), 0x1f8, 0x4, 4, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_208.mf[1][0]), offsetof(EnMm, unk_208.mf[1][1]) - offsetof(EnMm, unk_208.mf[1][0]), 0x208, 0x4, 4, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_208.mf[2][0]), offsetof(EnMm, unk_208.mf[2][1]) - offsetof(EnMm, unk_208.mf[2][0]), 0x218, 0x4, 4, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_208.mf[3][0]), offsetof(EnMm, unk_208.mf[3][1]) - offsetof(EnMm, unk_208.mf[3][0]), 0x228, 0x4, 4, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_248.x), 0, 0x238, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_248.y), 0, 0x23a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_248.z), 0, 0x23c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_24E.x), 0, 0x23e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_24E.y), 0, 0x240, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_24E.z), 0, 0x242, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, unk_254), 0, 0x244, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, curAnimIndex), 0, 0x248, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, sitTimer), 0, 0x24c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnMm, jointTable[0].x), offsetof(EnMm, jointTable[1].x) - offsetof(EnMm, jointTable[0].x), 0x250, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, jointTable[0].y), offsetof(EnMm, jointTable[1].y) - offsetof(EnMm, jointTable[0].y), 0x252, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, jointTable[0].z), offsetof(EnMm, jointTable[1].z) - offsetof(EnMm, jointTable[0].z), 0x254, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, morphTable[0].x), offsetof(EnMm, morphTable[1].x) - offsetof(EnMm, morphTable[0].x), 0x2b0, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, morphTable[0].y), offsetof(EnMm, morphTable[1].y) - offsetof(EnMm, morphTable[0].y), 0x2b2, 0x6, 16, 2, GZ_SPAN_VALUE },
+    { offsetof(EnMm, morphTable[0].z), offsetof(EnMm, morphTable[1].z) - offsetof(EnMm, morphTable[0].z), 0x2b4, 0x6, 16, 2, GZ_SPAN_VALUE },
+};
+const size_t gGzEnMmSpanCount = ARRAY_COUNT(gGzEnMmSpans);
+
+const GzActorFunction gGzEnMmFunctions[] = {
+    { 0x0, NULL },
+    { 0x124, (void*)EnMm_Init },
+    { 0x2e0, (void*)EnMm_Destroy },
+    { 0x30c, NULL },
+    { 0x340, NULL },
+    { 0x4d4, NULL },
+    { 0x574, (void*)func_80AADCD0 },
+    { 0x6f4, NULL },
+    { 0x708, NULL },
+    { 0x79c, NULL },
+    { 0xaac, (void*)func_80AAE224 },
+    { 0xb1c, (void*)func_80AAE294 },
+    { 0xd94, (void*)func_80AAE50C },
+    { 0xe20, (void*)func_80AAE598 },
+    { 0xec8, (void*)EnMm_Update },
+    { 0xf3c, (void*)EnMm_Draw },
+    { 0x11b4, NULL },
+    { 0x1248, NULL },
+};
+const size_t gGzEnMmFunctionCount = ARRAY_COUNT(gGzEnMmFunctions);

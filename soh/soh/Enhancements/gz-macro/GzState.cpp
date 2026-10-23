@@ -1,8 +1,10 @@
 #include "GzState.h"
 #include "GzStateFile.h"
+#include "GzActorTables.h"
 
 #include <algorithm>
 #include <filesystem>
+#include <unordered_map>
 
 #include <spdlog/spdlog.h>
 #include <ship/Context.h>
@@ -254,6 +256,8 @@ struct PendingArrival {
     uint8_t precipitation[4];
     std::vector<GzMacro::KankyoState> kankyos;
     std::vector<GzMacro::ActorState> actors;
+    // The actor tables describe the N64 1.2 versions of the actors
+    bool actorTablesApply;
 };
 
 PendingArrival sPending;
@@ -504,8 +508,94 @@ void RestoreNavi(EnElf* elf, const std::vector<uint8_t>& data) {
 }
 
 // Restores an actor from the state: its Actor fields, and its own for the actors that need them
+const GzActorTable* FindActorTable(s16 id) {
+    static std::unordered_map<s16, const GzActorTable*> sTables;
+    if (sTables.empty()) {
+        for (size_t i = 0; i < gGzActorTableCount; i++) {
+            sTables[gGzActorTables[i].id] = &gGzActorTables[i];
+        }
+    }
+    auto it = sTables.find(id);
+    return it != sTables.end() ? it->second : nullptr;
+}
+
+// Restores an actor's own fields from the state, for the actors whose N64 layout and code are known: numbers as they
+// were, and function pointers (what the actor is in the middle of doing) as the SoH function at the same place in
+// the actor's code. Pointers to data keep what the fresh actor set up. Returns whether it could.
+bool RestoreOwnFields(Actor* actor, const std::vector<uint8_t>& data) {
+    const GzActorTable* table = FindActorTable(actor->id);
+    if (table == nullptr || data.size() < table->n64Size) {
+        return false;
+    }
+    const uint8_t* n64 = data.data();
+    // Where the actor's code was loaded, from its destroy function's address
+    constexpr size_t N64_ACTOR_DESTROY = 0x12C;
+    uint32_t destroy = GzMacro::ReadU32(n64 + N64_ACTOR_DESTROY);
+    bool haveBase = table->destroyIndex >= 0 && destroy != 0;
+    uint32_t base = haveBase ? destroy - table->functions[table->destroyIndex].n64Offset : 0;
+    auto translate = [&](uint32_t address, void* current) -> void* {
+        if (address == 0) {
+            return nullptr;
+        }
+        if (haveBase) {
+            for (size_t i = 0; i < *table->functionCount; i++) {
+                if (base + table->functions[i].n64Offset == address) {
+                    return table->functions[i].function != nullptr ? table->functions[i].function : current;
+                }
+            }
+        }
+        return current;
+    };
+    uint8_t* soh = (uint8_t*)actor;
+    for (size_t s = 0; s < *table->spanCount; s++) {
+        const GzActorSpan& span = table->spans[s];
+        for (size_t i = 0; i < span.count; i++) {
+            const uint8_t* from = n64 + span.n64Offset + i * span.n64Stride;
+            uint8_t* to = soh + span.sohOffset + i * span.sohStride;
+            switch (span.kind) {
+                case GZ_SPAN_VALUE:
+                    switch (span.size) {
+                        case 1:
+                            *to = *from;
+                            break;
+                        case 2: {
+                            uint16_t v = GzMacro::ReadU16(from);
+                            memcpy(to, &v, 2);
+                            break;
+                        }
+                        case 4: {
+                            uint32_t v = GzMacro::ReadU32(from);
+                            memcpy(to, &v, 4);
+                            break;
+                        }
+                        case 8: {
+                            uint64_t v = ((uint64_t)GzMacro::ReadU32(from) << 32) | GzMacro::ReadU32(from + 4);
+                            memcpy(to, &v, 8);
+                            break;
+                        }
+                    }
+                    break;
+                case GZ_SPAN_FUNCTION: {
+                    void* current;
+                    memcpy(&current, to, sizeof(current));
+                    void* function = translate(GzMacro::ReadU32(from), current);
+                    memcpy(to, &function, sizeof(function));
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+    return true;
+}
+
+// Restores an actor from the state: its Actor fields, and its own where the actor tables describe it
 void RestoreActor(Actor* actor, const GzMacro::ActorState& state) {
     RestoreActorFields(actor, state.data.data());
+    if (sPending.actorTablesApply && RestoreOwnFields(actor, state.data)) {
+        return;
+    }
     if (actor->id == ACTOR_EN_ELF && actor->params == FAIRY_NAVI) {
         RestoreNavi((EnElf*)actor, state.data);
     }
@@ -677,6 +767,7 @@ bool Import(bool boot = false) {
     memcpy(sPending.precipitation, st.precipitation, sizeof(sPending.precipitation));
     sPending.kankyos = st.kankyos;
     sPending.actors = st.actors;
+    sPending.actorTablesApply = st.version == (uint16_t)GzMacro::GzVersion::Oot12;
     sPending.hasLink = st.linkFound;
     sPending.link = st.link;
     if (st.linkFound) {

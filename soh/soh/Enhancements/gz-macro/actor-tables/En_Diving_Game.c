@@ -1,0 +1,192 @@
+// Generated from SoH's actor sources and the actor overlays of an N64 OoT 1.2 ROM, by the gz macro tools.
+// Do not edit.
+
+#include <stddef.h>
+#include "global.h"
+#include "soh/Enhancements/gz-macro/GzActorTables.h"
+#include "overlays/actors/ovl_En_Diving_Game/z_en_diving_game.h"
+
+void EnDivingGame_Init(void*, void*);
+void EnDivingGame_Destroy(void*, void*);
+void EnDivingGame_SpawnRuppy(void*, void*);
+void func_809EDCB0(void*, void*);
+void EnDivingGame_Talk(void*, void*);
+void EnDivingGame_HandlePlayChoice(void*, void*);
+void func_809EE048(void*, void*);
+void func_809EE0FC(void*, void*);
+void func_809EE194(void*, void*);
+void EnDivingGame_SetupRupeeThrow(void*, void*);
+void EnDivingGame_RupeeThrow(void*, void*);
+void EnDivingGame_SetupUnderwaterViewCs(void*, void*);
+void func_809EE780(void*, void*);
+void func_809EE800(void*, void*);
+void func_809EE8F0(void*, void*);
+void func_809EE96C(void*, void*);
+void func_809EEA00(void*, void*);
+void func_809EEA90(void*, void*);
+void func_809EEAF8(void*, void*);
+void EnDivingGame_Update(void*, void*);
+void EnDivingGame_Draw(void*, void*);
+
+const GzActorSpan gGzEnDivingGameSpans[] = {
+    { offsetof(EnDivingGame, skelAnime.limbCount), 0, 0x13c, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.mode), 0, 0x13d, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.curFrame), 0, 0x154, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.playSpeed), 0, 0x158, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.jointTable), 0, 0x15c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, skelAnime.morphTable), 0, 0x160, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, skelAnime.morphWeight), 0, 0x164, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.morphRate), 0, 0x168, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.update.normal), 0, 0x16c, 0x0, 1, 4, GZ_SPAN_FUNCTION },
+    { offsetof(EnDivingGame, skelAnime.initFlags), 0, 0x170, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.movementFlags), 0, 0x171, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.prevRot), 0, 0x172, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.prevTransl.x), 0, 0x174, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.prevTransl.y), 0, 0x176, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.prevTransl.z), 0, 0x178, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.baseTransl.x), 0, 0x17a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.baseTransl.y), 0, 0x17c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, skelAnime.baseTransl.z), 0, 0x17e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, jointTable[0].x), offsetof(EnDivingGame, jointTable[1].x) - offsetof(EnDivingGame, jointTable[0].x), 0x180, 0x6, 20, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, jointTable[0].y), offsetof(EnDivingGame, jointTable[1].y) - offsetof(EnDivingGame, jointTable[0].y), 0x182, 0x6, 20, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, jointTable[0].z), offsetof(EnDivingGame, jointTable[1].z) - offsetof(EnDivingGame, jointTable[0].z), 0x184, 0x6, 20, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, morphTable[0].x), offsetof(EnDivingGame, morphTable[1].x) - offsetof(EnDivingGame, morphTable[0].x), 0x1f8, 0x6, 20, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, morphTable[0].y), offsetof(EnDivingGame, morphTable[1].y) - offsetof(EnDivingGame, morphTable[0].y), 0x1fa, 0x6, 20, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, morphTable[0].z), offsetof(EnDivingGame, morphTable[1].z) - offsetof(EnDivingGame, morphTable[0].z), 0x1fc, 0x6, 20, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, actionFunc), 0, 0x270, 0x0, 1, 4, GZ_SPAN_FUNCTION },
+    { offsetof(EnDivingGame, vec_284.x), 0, 0x274, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, vec_284.y), 0, 0x276, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, vec_284.z), 0, 0x278, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, vec_28A.x), 0, 0x27a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, vec_28A.y), 0, 0x27c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, vec_28A.z), 0, 0x27e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_290), 0, 0x280, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_292), 0, 0x282, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, csCameraTimer), 0, 0x284, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_296), 0, 0x286, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, eyeTimer), 0, 0x288, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, spawnRuppyTimer), 0, 0x28a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, phase), 0, 0x28c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, eyeTexIndex), 0, 0x28e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamId), 0, 0x290, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_2A2), 0, 0x292, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, grabbedRupeesCounter), 0, 0x294, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, rupeesLeftToThrow), 0, 0x296, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, state), 0, 0x298, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, extraWinCount), 0, 0x29a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_2AC[0]), offsetof(EnDivingGame, unk_2AC[1]) - offsetof(EnDivingGame, unk_2AC[0]), 0x29c, 0x1, 12, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, camLookAt.x), 0, 0x2a8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, camLookAt.y), 0, 0x2ac, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, camLookAt.z), 0, 0x2b0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, camEye.x), 0, 0x2b4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, camEye.y), 0, 0x2b8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, camEye.z), 0, 0x2bc, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeNext.x), 0, 0x2c0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeNext.y), 0, 0x2c4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeNext.z), 0, 0x2c8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeMaxVelFrac.x), 0, 0x2cc, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeMaxVelFrac.y), 0, 0x2d0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeMaxVelFrac.z), 0, 0x2d4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeVel.x), 0, 0x2d8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeVel.y), 0, 0x2dc, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamEyeVel.z), 0, 0x2e0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtNext.x), 0, 0x2e4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtNext.y), 0, 0x2e8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtNext.z), 0, 0x2ec, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtMaxVelFrac.x), 0, 0x2f0, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtMaxVelFrac.y), 0, 0x2f4, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtMaxVelFrac.z), 0, 0x2f8, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtVel.x), 0, 0x2fc, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtVel.y), 0, 0x300, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamAtVel.z), 0, 0x304, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, subCamVelFactor), 0, 0x308, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_31C), 0, 0x30c, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, notPlayingMinigame), 0, 0x30d, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, allRupeesThrown), 0, 0x30e, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_31F), 0, 0x30f, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, unk_320[0]), offsetof(EnDivingGame, unk_320[1]) - offsetof(EnDivingGame, unk_320[0]), 0x310, 0x1, 4, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.talkState), 0, 0x314, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.trackingMode), 0, 0x316, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.autoTurnTimer), 0, 0x318, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.autoTurnState), 0, 0x31a, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.headRot.x), 0, 0x31c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.headRot.y), 0, 0x31e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.headRot.z), 0, 0x320, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.torsoRot.x), 0, 0x322, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.torsoRot.y), 0, 0x324, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.torsoRot.z), 0, 0x326, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.yOffset), 0, 0x328, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.trackPos.x), 0, 0x32c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.trackPos.y), 0, 0x330, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.trackPos.z), 0, 0x334, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, interactInfo.unk_24[0]), offsetof(EnDivingGame, interactInfo.unk_24[1]) - offsetof(EnDivingGame, interactInfo.unk_24[0]), 0x338, 0x1, 4, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.base.actor), 0, 0x33c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.base.at), 0, 0x340, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.base.ac), 0, 0x344, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.base.oc), 0, 0x348, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.base.atFlags), 0, 0x34c, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.base.acFlags), 0, 0x34d, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.base.ocFlags1), 0, 0x34e, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.base.ocFlags2), 0, 0x34f, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.base.colType), 0, 0x350, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.base.shape), 0, 0x351, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.toucher.dmgFlags), 0, 0x354, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.toucher.effect), 0, 0x358, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.toucher.damage), 0, 0x359, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.bumper.dmgFlags), 0, 0x35c, 0x0, 1, 4, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.bumper.effect), 0, 0x360, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.bumper.defense), 0, 0x361, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.bumper.hitPos.x), 0, 0x362, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.bumper.hitPos.y), 0, 0x364, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.bumper.hitPos.z), 0, 0x366, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.elemType), 0, 0x368, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.toucherFlags), 0, 0x369, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.bumperFlags), 0, 0x36a, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.ocElemFlags), 0, 0x36b, 0x0, 1, 1, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.info.atHit), 0, 0x36c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.info.acHit), 0, 0x370, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.info.atHitInfo), 0, 0x374, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.info.acHitInfo), 0, 0x378, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, collider.dim.radius), 0, 0x37c, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.dim.height), 0, 0x37e, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.dim.yShift), 0, 0x380, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.dim.pos.x), 0, 0x382, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.dim.pos.y), 0, 0x384, 0x0, 1, 2, GZ_SPAN_VALUE },
+    { offsetof(EnDivingGame, collider.dim.pos.z), 0, 0x386, 0x0, 1, 2, GZ_SPAN_VALUE },
+};
+const size_t gGzEnDivingGameSpanCount = ARRAY_COUNT(gGzEnDivingGameSpans);
+
+const GzActorFunction gGzEnDivingGameFunctions[] = {
+    { 0x0, (void*)EnDivingGame_Init },
+    { 0x11c, (void*)EnDivingGame_Destroy },
+    { 0x15c, (void*)EnDivingGame_SpawnRuppy },
+    { 0x288, NULL },
+    { 0x434, (void*)func_809EDCB0 },
+    { 0x4d0, (void*)EnDivingGame_Talk },
+    { 0x660, (void*)EnDivingGame_HandlePlayChoice },
+    { 0x7cc, (void*)func_809EE048 },
+    { 0x880, (void*)func_809EE0FC },
+    { 0x918, (void*)func_809EE194 },
+    { 0x978, (void*)EnDivingGame_SetupRupeeThrow },
+    { 0xb8c, (void*)EnDivingGame_RupeeThrow },
+    { 0xe4c, (void*)EnDivingGame_SetupUnderwaterViewCs },
+    { 0xf04, (void*)func_809EE780 },
+    { 0xf84, (void*)func_809EE800 },
+    { 0x1074, (void*)func_809EE8F0 },
+    { 0x10f4, (void*)func_809EE96C },
+    { 0x1188, (void*)func_809EEA00 },
+    { 0x1218, (void*)func_809EEA90 },
+    { 0x1284, (void*)func_809EEAF8 },
+    { 0x1314, (void*)EnDivingGame_Update },
+    { 0x1540, NULL },
+    { 0x1564, NULL },
+    { 0x16c4, (void*)EnDivingGame_Draw },
+};
+const size_t gGzEnDivingGameFunctionCount = ARRAY_COUNT(gGzEnDivingGameFunctions);
