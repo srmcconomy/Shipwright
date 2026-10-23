@@ -1,6 +1,7 @@
 #include "GzState.h"
 #include "GzStateFile.h"
 
+#include <algorithm>
 #include <filesystem>
 
 #include <spdlog/spdlog.h>
@@ -24,6 +25,9 @@ extern "C" {
 extern PlayState* gPlayState;
 void Sram_InitDebugSave(void);
 #include "overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h"
+#include "overlays/actors/ovl_En_Elf/z_en_elf.h"
+// Sets Navi's mode, and the movement and timers that go with it
+void func_80A01C38(EnElf* elf, s32 mode);
 // Ends whatever Link is doing and leaves him standing, or treading water
 void func_8083C148(Player* player, PlayState* play);
 }
@@ -249,6 +253,7 @@ struct PendingArrival {
     uint8_t camera[GzMacro::N64_CAMERA_SIZE];
     uint8_t precipitation[4];
     std::vector<GzMacro::KankyoState> kankyos;
+    std::vector<GzMacro::ActorState> actors;
 };
 
 PendingArrival sPending;
@@ -402,6 +407,163 @@ void RestoreKankyos(const std::vector<GzMacro::KankyoState>& kankyos) {
     }
 }
 
+// Puts the Actor fields the N64 had back into one actor: where it is and how it is moving, its collision and
+// shape, and its timers. Pointers, flags and the actor's own fields keep what its fresh spawn set up.
+void RestoreActorFields(Actor* actor, const uint8_t* a) {
+    using GzMacro::ReadF32;
+    using GzMacro::ReadU16;
+    using GzMacro::ReadVec3f;
+    auto vec3sAt = [a](size_t offset) {
+        return Vec3s{ (s16)ReadU16(a + offset), (s16)ReadU16(a + offset + 2), (s16)ReadU16(a + offset + 4) };
+    };
+    actor->world.pos = ToVec3f(ReadVec3f(a + 0x24));
+    actor->world.rot = vec3sAt(0x30);
+    actor->focus.pos = ToVec3f(ReadVec3f(a + 0x38));
+    actor->focus.rot = vec3sAt(0x44);
+    actor->targetArrowOffset = ReadF32(a + 0x4C);
+    actor->scale = ToVec3f(ReadVec3f(a + 0x50));
+    actor->velocity = ToVec3f(ReadVec3f(a + 0x5C));
+    actor->speedXZ = ReadF32(a + 0x68);
+    actor->gravity = ReadF32(a + 0x6C);
+    actor->minVelocityY = ReadF32(a + 0x70);
+    actor->wallYaw = (s16)ReadU16(a + 0x7E);
+    actor->floorHeight = ReadF32(a + 0x80);
+    actor->yDistToWater = ReadF32(a + 0x84);
+    actor->bgCheckFlags = ReadU16(a + 0x88);
+    actor->yawTowardsPlayer = (s16)ReadU16(a + 0x8A);
+    actor->xyzDistToPlayerSq = ReadF32(a + 0x8C);
+    actor->xzDistToPlayer = ReadF32(a + 0x90);
+    actor->yDistToPlayer = ReadF32(a + 0x94);
+    actor->colChkInfo.displacement = ToVec3f(ReadVec3f(a + 0x9C));
+    actor->colChkInfo.cylRadius = (s16)ReadU16(a + 0xA8);
+    actor->colChkInfo.cylHeight = (s16)ReadU16(a + 0xAA);
+    actor->colChkInfo.cylYShift = (s16)ReadU16(a + 0xAC);
+    actor->colChkInfo.mass = a[0xAE];
+    actor->colChkInfo.health = a[0xAF];
+    actor->colChkInfo.damage = a[0xB0];
+    actor->colChkInfo.damageEffect = a[0xB1];
+    actor->colChkInfo.atHitEffect = a[0xB2];
+    actor->colChkInfo.acHitEffect = a[0xB3];
+    actor->shape.rot = vec3sAt(0xB4);
+    actor->shape.face = (s16)ReadU16(a + 0xBA);
+    actor->shape.yOffset = ReadF32(a + 0xBC);
+    actor->shape.shadowScale = ReadF32(a + 0xC4);
+    actor->shape.shadowAlpha = a[0xC8];
+    actor->shape.feetFloorFlags = a[0xC9];
+    actor->shape.feetPos[0] = ToVec3f(ReadVec3f(a + 0xCC));
+    actor->shape.feetPos[1] = ToVec3f(ReadVec3f(a + 0xD8));
+    actor->uncullZoneForward = ReadF32(a + 0xF4);
+    actor->uncullZoneScale = ReadF32(a + 0xF8);
+    actor->uncullZoneDownward = ReadF32(a + 0xFC);
+    actor->prevPos = ToVec3f(ReadVec3f(a + 0x100));
+    actor->targetPriority = a[0x10D];
+    actor->textId = ReadU16(a + 0x10E);
+    actor->freezeTimer = ReadU16(a + 0x110);
+    actor->colorFilterParams = ReadU16(a + 0x112);
+    actor->colorFilterTimer = a[0x114];
+    actor->dropFlag = a[0x116];
+    actor->naviEnemyId = a[0x117];
+}
+
+// The N64's offsets into Navi's own fields: the decomp's, less the debug ROM's 0x10 of Actor padding
+constexpr size_t N64_EN_ELF_SIZE = 0x2C0;
+
+// Navi spawns with Link, out of his hat and sparkling, where the state may have her hidden. Her mode, timers and
+// movement come from the state; the mode is set first, the way the game sets it, for the movement it runs.
+void RestoreNavi(EnElf* elf, const std::vector<uint8_t>& data) {
+    using GzMacro::ReadF32;
+    using GzMacro::ReadU16;
+    using GzMacro::ReadVec3f;
+    if (data.size() < N64_EN_ELF_SIZE) {
+        return;
+    }
+    const uint8_t* e = data.data();
+    auto colorAt = [e](size_t offset) {
+        return Color_RGBAf{ ReadF32(e + offset), ReadF32(e + offset + 4), ReadF32(e + offset + 8), ReadF32(e + offset + 12) };
+    };
+    func_80A01C38(elf, (s16)ReadU16(e + 0x298));
+    elf->innerColor = colorAt(0x234);
+    elf->outerColor = colorAt(0x244);
+    elf->unk_28C = ToVec3f(ReadVec3f(e + 0x27C));
+    elf->unk_29C = ReadF32(e + 0x28C);
+    elf->unk_2A0 = ReadF32(e + 0x290);
+    elf->unk_2A4 = ReadF32(e + 0x294);
+    elf->unk_2AA = (s16)ReadU16(e + 0x29A);
+    elf->unk_2AC = (s16)ReadU16(e + 0x29C);
+    elf->unk_2AE = (s16)ReadU16(e + 0x29E);
+    elf->unk_2B0 = (s16)ReadU16(e + 0x2A0);
+    elf->unk_2B4 = ReadF32(e + 0x2A4);
+    elf->unk_2B8 = ReadF32(e + 0x2A8);
+    elf->unk_2BC = (s16)ReadU16(e + 0x2AC);
+    elf->timer = ReadU16(e + 0x2AE);
+    elf->unk_2C0 = (s16)ReadU16(e + 0x2B0);
+    elf->disappearTimer = (s16)ReadU16(e + 0x2B2);
+    elf->fairyFlags = ReadU16(e + 0x2B4);
+    elf->unk_2C6 = e[0x2B6];
+    elf->unk_2C7 = e[0x2B7];
+}
+
+// Restores an actor from the state: its Actor fields, and its own for the actors that need them
+void RestoreActor(Actor* actor, const GzMacro::ActorState& state) {
+    RestoreActorFields(actor, state.data.data());
+    if (actor->id == ACTOR_EN_ELF && actor->params == FAIRY_NAVI) {
+        RestoreNavi((EnElf*)actor, state.data);
+    }
+}
+
+// Matches the scene's actors to the state's by id, params and where they were spawned, or by id and params alone
+// when there is only one of the kind on each side (Navi, who spawns wherever Link arrives), and restores each one's
+// Actor fields. Link is restored on his own.
+void RestoreActors(const std::vector<GzMacro::ActorState>& saved) {
+    std::vector<Actor*> live;
+    for (int category = 0; category < ACTORCAT_MAX; category++) {
+        for (Actor* actor = gPlayState->actorCtx.actorLists[category].head; actor != nullptr; actor = actor->next) {
+            if (actor->id != ACTOR_PLAYER) {
+                live.push_back(actor);
+            }
+        }
+    }
+    auto sameKind = [](const Actor* actor, const GzMacro::ActorState& state) {
+        return actor->id == state.id && actor->params == state.params;
+    };
+    std::vector<bool> used(saved.size(), false);
+    std::vector<bool> restored(live.size(), false);
+    for (size_t i = 0; i < live.size(); i++) {
+        for (size_t j = 0; j < saved.size(); j++) {
+            const Vec3f home = ToVec3f(saved[j].homePos);
+            if (!used[j] && sameKind(live[i], saved[j]) && home.x == live[i]->home.pos.x &&
+                home.y == live[i]->home.pos.y && home.z == live[i]->home.pos.z) {
+                RestoreActor(live[i], saved[j]);
+                used[j] = restored[i] = true;
+                break;
+            }
+        }
+    }
+    size_t matched = std::count(restored.begin(), restored.end(), true);
+    for (size_t i = 0; i < live.size(); i++) {
+        if (restored[i]) {
+            continue;
+        }
+        size_t liveCount = std::count_if(live.begin(), live.end(), [&](const Actor* other) {
+            return other->id == live[i]->id && other->params == live[i]->params;
+        });
+        size_t savedIndex = SIZE_MAX;
+        size_t savedCount = 0;
+        for (size_t j = 0; j < saved.size(); j++) {
+            if (sameKind(live[i], saved[j])) {
+                savedCount++;
+                savedIndex = j;
+            }
+        }
+        if (liveCount == 1 && savedCount == 1 && !used[savedIndex]) {
+            RestoreActor(live[i], saved[savedIndex]);
+            used[savedIndex] = restored[i] = true;
+            matched++;
+        }
+    }
+    SPDLOG_INFO("[gz state] restored {} of {} actors ({} in the state)", matched, live.size(), saved.size());
+}
+
 void ApplyArrival() {
     Player* player = GET_PLAYER(gPlayState);
     if (player == nullptr) {
@@ -441,6 +603,7 @@ void ApplyArrival() {
         }
         RestoreCamera(sPending.camera);
         memcpy(gPlayState->envCtx.unk_EE, sPending.precipitation, sizeof(gPlayState->envCtx.unk_EE));
+        RestoreActors(sPending.actors);
         RestoreKankyos(sPending.kankyos);
         Gz_Notify("gz savestate imported");
         if (sOnArrived != nullptr) {
@@ -513,6 +676,7 @@ bool Import(bool boot = false) {
     memcpy(sPending.camera, st.mainCamera, sizeof(sPending.camera));
     memcpy(sPending.precipitation, st.precipitation, sizeof(sPending.precipitation));
     sPending.kankyos = st.kankyos;
+    sPending.actors = st.actors;
     sPending.hasLink = st.linkFound;
     sPending.link = st.link;
     if (st.linkFound) {

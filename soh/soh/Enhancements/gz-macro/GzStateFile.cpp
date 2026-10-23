@@ -133,6 +133,52 @@ std::vector<KankyoState> FindKankyos(const uint8_t* data, size_t size, size_t st
     return found;
 }
 
+constexpr int16_t ACTOR_ID_MAX = 0x1D7;
+constexpr uint8_t ACTORCAT_MAX = 12;
+constexpr size_t ACTOR_ROOM = 0x003;
+constexpr size_t ACTOR_LINKS_AND_FUNCS = 0x118; // parent, child, prev, next, init, destroy, update, draw
+constexpr size_t ACTOR_LINKS_AND_FUNCS_COUNT = 8;
+
+// Whether a word is null or an address in the N64's RAM
+bool IsNullOrRamAddress(uint32_t value) {
+    return value == 0 || (value >= 0x80000000 && value < 0x80800000);
+}
+
+// Every actor in the saved heap other than Link: a heap node in use, big enough for an actor, that starts with a
+// valid actor id and category, a room, and pointers that all point into RAM
+std::vector<ActorState> FindActors(const uint8_t* data, size_t size, size_t start) {
+    std::vector<ActorState> found;
+    for (size_t pos = std::max(start, ARENA_RECORD_SIZE); pos + N64_ACTOR_SIZE <= size; pos++) {
+        const uint8_t* record = data + pos - ARENA_RECORD_SIZE;
+        if (ReadU16(record) != 0 || ReadU16(record + 2) != 0 || ReadU32(record + 4) < N64_ACTOR_SIZE) {
+            continue;
+        }
+        const uint8_t* p = data + pos;
+        int16_t id = (int16_t)ReadU16(p + ACTOR_ID);
+        int8_t room = (int8_t)p[ACTOR_ROOM];
+        if (id <= 0 || id >= ACTOR_ID_MAX || p[ACTOR_CATEGORY] >= ACTORCAT_MAX || room < -1 || room > 63) {
+            continue;
+        }
+        bool pointersOk = true;
+        for (size_t i = 0; i < ACTOR_LINKS_AND_FUNCS_COUNT && pointersOk; i++) {
+            pointersOk = IsNullOrRamAddress(ReadU32(p + ACTOR_LINKS_AND_FUNCS + i * 4));
+        }
+        // An actor always has an update function, or it would be gone
+        if (!pointersOk || ReadU32(p + ACTOR_LINKS_AND_FUNCS + 6 * 4) == 0) {
+            continue;
+        }
+        ActorState actor;
+        actor.id = id;
+        actor.params = (int16_t)ReadU16(p + ACTOR_PARAMS);
+        actor.homePos = ReadVec3f(p + ACTOR_HOME_POS);
+        // The whole heap node, for the actor's own fields beyond Actor
+        actor.data.assign(p, p + std::min<size_t>(ReadU32(record + 4), size - pos));
+        found.push_back(std::move(actor));
+        pos += N64_ACTOR_SIZE - 1;
+    }
+    return found;
+}
+
 // The display lists gz saves: its four buffers' sizes in Gfx (work, opaque, translucent, overlay), which the state
 // only gives offsets into.
 constexpr uint32_t DISP_BUFFER_SIZES[4] = { 0x80, 0x17E0, 0x800, 0x400 };
@@ -320,6 +366,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
 
     s.linkFound = FindLink(data, size, pos, cameraPos, s.link);
     s.kankyos = FindKankyos(data, size, pos);
+    s.actors = FindActors(data, size, pos);
     s.rngFound = FindRng(data, size, pos, s.stateVersion, s.version == (uint16_t)GzVersion::OotIQueC, s.rng);
 
     out = std::move(s);

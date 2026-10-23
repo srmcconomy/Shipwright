@@ -92,6 +92,17 @@ struct LinkState {
     int16_t blink[2];
 };
 
+// The size of the N64's Actor, without the debug ROM's padding
+constexpr size_t N64_ACTOR_SIZE = 0x13C;
+
+// An actor as the N64 has it, big endian (its whole heap node), with what identifies it in a freshly loaded scene
+struct ActorState {
+    int16_t id = 0;
+    int16_t params = 0;
+    Vec3fBE homePos = {};
+    std::vector<uint8_t> data;
+};
+
 // An Object_Kankyo actor as the N64 has it, big endian. It moves its effects around itself, so a fresh one (as a
 // reloaded scene has) spawns them all at once instead of carrying on.
 struct KankyoState {
@@ -114,6 +125,8 @@ struct StateFile {
     // builds up over many frames.
     uint8_t precipitation[4] = {};
     std::vector<KankyoState> kankyos;
+    // Every actor but Link
+    std::vector<ActorState> actors;
     // The main camera as the N64 has it, big endian, for the fields that can be restored
     uint8_t mainCamera[N64_CAMERA_SIZE] = {};
 
