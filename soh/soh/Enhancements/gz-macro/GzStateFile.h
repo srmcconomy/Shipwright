@@ -49,6 +49,13 @@ constexpr size_t N64_SAVE_CONTEXT_SIZE = 0x1428;
 constexpr size_t N64_PLAY_STATE_SIZE = 0x12518;
 constexpr size_t N64_GAME_INFO_SIZE = 0x15D4;
 constexpr size_t N64_PLAYER_SIZE = 0xA84;
+// Like Player, 0x10 smaller than in the decomp's comments, which follow the debug ROM's longer Actor
+constexpr size_t N64_OBJECT_KANKYO_SIZE = 0x1650;
+// Object_Kankyo's falling snow, fairies and the like: 64 of these from 0x13C
+constexpr size_t N64_KANKYO_EFFECTS = 0x13C;
+constexpr size_t N64_KANKYO_EFFECT_SIZE = 0x54;
+constexpr size_t N64_KANKYO_EFFECT_COUNT = 64;
+constexpr size_t N64_KANKYO_PREV_EYE_POS = 0x163C;
 
 enum class GzVersion : uint16_t {
     Oot10 = 0,
@@ -85,6 +92,13 @@ struct LinkState {
     int16_t blink[2];
 };
 
+// An Object_Kankyo actor as the N64 has it, big endian. It moves its effects around itself, so a fresh one (as a
+// reloaded scene has) spawns them all at once instead of carrying on.
+struct KankyoState {
+    int16_t params = 0;
+    std::vector<uint8_t> data;
+};
+
 struct StateFile {
     uint16_t version = 0;
     uint16_t stateVersion = 0;
@@ -96,6 +110,10 @@ struct StateFile {
     uint32_t gameplayFrames = 0;
     Vec3fBE cameraPlayerPos = {};
     Vec3sBE cameraPlayerRot = {};
+    // How much rain, lightning and snow is falling (envCtx.unk_EE). A scene loaded fresh starts with none and
+    // builds up over many frames.
+    uint8_t precipitation[4] = {};
+    std::vector<KankyoState> kankyos;
     // The main camera as the N64 has it, big endian, for the fields that can be restored
     uint8_t mainCamera[N64_CAMERA_SIZE] = {};
 

@@ -23,6 +23,7 @@ extern "C" {
 #include "functions.h"
 extern PlayState* gPlayState;
 void Sram_InitDebugSave(void);
+#include "overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h"
 // Ends whatever Link is doing and leaves him standing, or treading water
 void func_8083C148(Player* player, PlayState* play);
 }
@@ -246,13 +247,15 @@ struct PendingArrival {
     uint32_t tempClearFlags;
     uint32_t gameplayFrames;
     uint8_t camera[GzMacro::N64_CAMERA_SIZE];
+    uint8_t precipitation[4];
+    std::vector<GzMacro::KankyoState> kankyos;
 };
 
 PendingArrival sPending;
 void (*sOnArrived)() = nullptr;
 HOOK_ID sSceneInitHook = 0;
 HOOK_ID sPlayerUpdateHook = 0;
-HOOK_ID sCameraHook = 0;
+HOOK_ID sFrameEndHook = 0;
 // From importing a state until Link arrives in its scene
 bool sImporting = false;
 
@@ -354,6 +357,51 @@ void RestoreCamera(const uint8_t* c) {
     }
 }
 
+// Carries on each Object_Kankyo's effects (falling snow and the like) from where the state had them, instead of
+// the fresh actor spawning them all at once
+void RestoreKankyos(const std::vector<GzMacro::KankyoState>& kankyos) {
+    using GzMacro::ReadF32;
+    using GzMacro::ReadU16;
+    using GzMacro::ReadVec3f;
+    std::vector<bool> used(kankyos.size(), false);
+    for (Actor* actor = gPlayState->actorCtx.actorLists[ACTORCAT_ITEMACTION].head; actor != nullptr;
+         actor = actor->next) {
+        if (actor->id != ACTOR_OBJECT_KANKYO) {
+            continue;
+        }
+        size_t match = 0;
+        while (match < kankyos.size() && (used[match] || kankyos[match].params != actor->params)) {
+            match++;
+        }
+        if (match == kankyos.size()) {
+            continue;
+        }
+        used[match] = true;
+        ObjectKankyo* kankyo = (ObjectKankyo*)actor;
+        const uint8_t* data = kankyos[match].data.data();
+        for (size_t i = 0; i < GzMacro::N64_KANKYO_EFFECT_COUNT; i++) {
+            const uint8_t* e = data + GzMacro::N64_KANKYO_EFFECTS + i * GzMacro::N64_KANKYO_EFFECT_SIZE;
+            ObjectKankyoEffect* effect = &kankyo->effects[i];
+            effect->state = e[0x00];
+            effect->pos = ToVec3f(ReadVec3f(e + 0x04));
+            effect->prevPos = ToVec3f(ReadVec3f(e + 0x10));
+            effect->base = ToVec3f(ReadVec3f(e + 0x1C));
+            effect->dirPhase = ToVec3f(ReadVec3f(e + 0x28));
+            effect->speed = ReadF32(e + 0x34);
+            effect->targetSpeed = ReadF32(e + 0x38);
+            effect->alphaTimer = ReadU16(e + 0x3C);
+            effect->angle = ReadU16(e + 0x3E);
+            effect->alpha = e[0x40];
+            effect->size = ReadF32(e + 0x44);
+            effect->angleVel = ReadU16(e + 0x48);
+            effect->flightRadius = ReadU16(e + 0x4A);
+            effect->amplitude = ReadF32(e + 0x4C);
+            effect->timer = ReadU16(e + 0x50);
+        }
+        kankyo->prevEyePos = ToVec3f(ReadVec3f(data + GzMacro::N64_KANKYO_PREV_EYE_POS));
+    }
+}
+
 void ApplyArrival() {
     Player* player = GET_PLAYER(gPlayState);
     if (player == nullptr) {
@@ -382,21 +430,25 @@ void ApplyArrival() {
     gSaveContext.respawn[RESPAWN_MODE_DOWN] = sPending.voidOutRespawn;
     gPlayState->actorCtx.flags.tempClear = sPending.tempClearFlags;
     gPlayState->gameplayFrames = sPending.gameplayFrames;
-    // The camera updates after Link in this frame, so it is put back once the frame is done, ready for the next
-    GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDrawEnd>(sCameraHook);
-    sCameraHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayDrawEnd>([]() {
-        GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDrawEnd>(sCameraHook);
-        sCameraHook = 0;
-        if (gPlayState != nullptr) {
-            RestoreCamera(sPending.camera);
+    // The rest is put back once this frame is done, so the next one starts the way the N64 had it: the camera
+    // updates after Link, and the weather and the macro's random numbers are drawn on until the frame ends
+    GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDrawEnd>(sFrameEndHook);
+    sFrameEndHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayDrawEnd>([]() {
+        GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDrawEnd>(sFrameEndHook);
+        sFrameEndHook = 0;
+        if (gPlayState == nullptr) {
+            return;
+        }
+        RestoreCamera(sPending.camera);
+        memcpy(gPlayState->envCtx.unk_EE, sPending.precipitation, sizeof(gPlayState->envCtx.unk_EE));
+        RestoreKankyos(sPending.kankyos);
+        Gz_Notify("gz savestate imported");
+        if (sOnArrived != nullptr) {
+            void (*onArrived)() = sOnArrived;
+            sOnArrived = nullptr;
+            onArrived();
         }
     });
-    Gz_Notify("gz savestate imported");
-    if (sOnArrived != nullptr) {
-        void (*onArrived)() = sOnArrived;
-        sOnArrived = nullptr;
-        onArrived();
-    }
 }
 
 // Starts a temporary file that is never written to disk (SaveManager skips 0xFF), the same way Warping.cpp boots
@@ -459,6 +511,8 @@ bool Import(bool boot = false) {
     sPending.sceneId = st.sceneId;
     sPending.gameplayFrames = st.gameplayFrames;
     memcpy(sPending.camera, st.mainCamera, sizeof(sPending.camera));
+    memcpy(sPending.precipitation, st.precipitation, sizeof(sPending.precipitation));
+    sPending.kankyos = st.kankyos;
     sPending.hasLink = st.linkFound;
     sPending.link = st.link;
     if (st.linkFound) {

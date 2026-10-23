@@ -1,5 +1,7 @@
 #include "GzStateFile.h"
 
+#include <algorithm>
+
 #include <fstream>
 #include <iterator>
 
@@ -18,6 +20,7 @@ constexpr size_t CAMERA_PLAYER_POS_ROT = 0x094;
 constexpr size_t PLAY_ACTOR_FLAGS = 0x01D28;
 constexpr size_t PLAY_ROOM_CTX = 0x11CBC;
 constexpr size_t PLAY_GAMEPLAY_FRAMES = 0x11DE4;
+constexpr size_t PLAY_PRECIPITATION = 0x10B12;
 
 // Actor offsets. Retail builds do not have the debug ROM's padding at the end of Actor, so Player's own
 // fields are 0x10 lower than in the decomp's comments.
@@ -102,6 +105,32 @@ bool FindLink(const uint8_t* data, size_t size, size_t start, const uint8_t* cam
         return true;
     }
     return false;
+}
+
+constexpr uint16_t ACTOR_OBJECT_KANKYO = 0x0097;
+constexpr uint8_t ACTORCAT_ITEMACTION = 7;
+constexpr size_t ACTOR_PARAMS = 0x01C;
+
+// Every Object_Kankyo in the saved heap, found like Link: by its id and category, at the start of a heap node in use
+// that is big enough to hold one
+std::vector<KankyoState> FindKankyos(const uint8_t* data, size_t size, size_t start) {
+    std::vector<KankyoState> found;
+    for (size_t pos = std::max(start, ARENA_RECORD_SIZE); pos + N64_OBJECT_KANKYO_SIZE <= size; pos++) {
+        const uint8_t* p = data + pos;
+        if (ReadU16(p + ACTOR_ID) != ACTOR_OBJECT_KANKYO || p[ACTOR_CATEGORY] != ACTORCAT_ITEMACTION) {
+            continue;
+        }
+        const uint8_t* record = p - ARENA_RECORD_SIZE;
+        if (ReadU16(record) != 0 || ReadU16(record + 2) != 0 || ReadU32(record + 4) < N64_OBJECT_KANKYO_SIZE) {
+            continue;
+        }
+        KankyoState kankyo;
+        kankyo.params = (int16_t)ReadU16(p + ACTOR_PARAMS);
+        kankyo.data.assign(p, p + N64_OBJECT_KANKYO_SIZE);
+        found.push_back(std::move(kankyo));
+        pos += N64_OBJECT_KANKYO_SIZE - 1;
+    }
+    return found;
 }
 
 // The display lists gz saves: its four buffers' sizes in Gfx (work, opaque, translucent, overlay), which the state
@@ -274,6 +303,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     s.cameraPlayerPos = ReadVec3f(cameraPos);
     s.cameraPlayerRot = ReadVec3s(cameraPos + 12);
     memcpy(s.mainCamera, play + PLAY_MAIN_CAMERA, N64_CAMERA_SIZE);
+    memcpy(s.precipitation, play + PLAY_PRECIPITATION, sizeof(s.precipitation));
     const uint8_t* flags = play + PLAY_ACTOR_FLAGS;
     s.swchFlags = ReadU32(flags + 0x00);
     s.tempSwchFlags = ReadU32(flags + 0x04);
@@ -289,6 +319,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     pos += 4 + N64_GAME_INFO_SIZE; // game info pointer and game info
 
     s.linkFound = FindLink(data, size, pos, cameraPos, s.link);
+    s.kankyos = FindKankyos(data, size, pos);
     s.rngFound = FindRng(data, size, pos, s.stateVersion, s.version == (uint16_t)GzVersion::OotIQueC, s.rng);
 
     out = std::move(s);
