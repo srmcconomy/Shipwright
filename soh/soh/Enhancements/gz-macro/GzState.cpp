@@ -23,6 +23,8 @@ extern "C" {
 #include "functions.h"
 extern PlayState* gPlayState;
 void Sram_InitDebugSave(void);
+// Ends whatever Link is doing and leaves him standing, or treading water
+void func_8083C148(Player* player, PlayState* play);
 }
 
 #define CVAR_STATE_PATH_NAME CVAR_DEVELOPER_TOOLS("GzMacro.StatePath")
@@ -266,6 +268,9 @@ void ApplyArrival() {
         return;
     }
     sImporting = false;
+    // He spawned walking in from the entrance, which holds him still for 20 frames and would swallow the start of
+    // a macro. The state has him free to move.
+    func_8083C148(player, gPlayState);
     player->actor.world.pos = sPending.pos;
     player->actor.prevPos = sPending.pos;
     player->actor.world.rot = sPending.worldRot;
@@ -340,6 +345,14 @@ bool Import(bool boot = false) {
         flags.swch = st.swchFlags;
         flags.clear = st.clearFlags;
         flags.collect = st.collectFlags;
+        // Leaving a scene saves its live flags over these, so when the state is in the scene already playing (a
+        // macro played again), what the last playback did to it would come back
+        if (gPlayState != nullptr && gPlayState->sceneNum == st.sceneId) {
+            gPlayState->actorCtx.flags.chest = st.chestFlags;
+            gPlayState->actorCtx.flags.swch = st.swchFlags;
+            gPlayState->actorCtx.flags.clear = st.clearFlags;
+            gPlayState->actorCtx.flags.collect = st.collectFlags;
+        }
     }
 
     sPending.sceneId = st.sceneId;
