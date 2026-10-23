@@ -8098,6 +8098,15 @@ s16 Camera_GetCamDirPitch(Camera* camera) {
     return camDir.x;
 }
 
+// #region SOH [Enhancement]
+/**
+ * Which camera function the camera's current setting and mode run (one of CameraFuncType).
+ */
+s16 Camera_GetFuncIdx(Camera* camera) {
+    return sCameraSettings[camera->setting].cameraModes[camera->mode].funcIdx;
+}
+// #endregion
+
 s16 Camera_GetCamDirYaw(Camera* camera) {
     Vec3s camDir;
 

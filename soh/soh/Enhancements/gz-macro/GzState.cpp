@@ -245,12 +245,14 @@ struct PendingArrival {
     RespawnData voidOutRespawn;
     uint32_t tempClearFlags;
     uint32_t gameplayFrames;
+    uint8_t camera[GzMacro::N64_CAMERA_SIZE];
 };
 
 PendingArrival sPending;
 void (*sOnArrived)() = nullptr;
 HOOK_ID sSceneInitHook = 0;
 HOOK_ID sPlayerUpdateHook = 0;
+HOOK_ID sCameraHook = 0;
 // From importing a state until Link arrives in its scene
 bool sImporting = false;
 
@@ -260,6 +262,96 @@ Vec3f ToVec3f(const GzMacro::Vec3fBE& v) {
 
 Vec3s ToVec3s(const GzMacro::Vec3sBE& v) {
     return { v.x, v.y, v.z };
+}
+
+// Puts the main camera back where the N64 had it. Link moves relative to the camera, so a camera that starts
+// somewhere else turns the same stick input into a different path. Only plain values are restored: the fields
+// that point at things, or index tables this scene builds for itself, keep what the arrival set up.
+void RestoreCamera(const uint8_t* c) {
+    using GzMacro::ReadF32;
+    using GzMacro::ReadU16;
+    using GzMacro::ReadU32;
+    using GzMacro::ReadVec3f;
+    auto s16At = [c](size_t offset) { return (s16)ReadU16(c + offset); };
+    auto vec3sAt = [c](size_t offset) {
+        return Vec3s{ (s16)ReadU16(c + offset), (s16)ReadU16(c + offset + 2), (s16)ReadU16(c + offset + 4) };
+    };
+    Camera* camera = &gPlayState->mainCamera;
+    // A different setting or mode runs a different camera function, whose working data couldn't be carried over
+    if (camera->setting != s16At(0x142) || camera->mode != s16At(0x144)) {
+        SPDLOG_WARN("[gz state] camera setting {} mode {} differs from the state's {} {}, not restoring it",
+                    camera->setting, camera->mode, s16At(0x142), s16At(0x144));
+        return;
+    }
+
+    camera->at = ToVec3f(ReadVec3f(c + 0x50));
+    camera->eye = ToVec3f(ReadVec3f(c + 0x5C));
+    camera->up = ToVec3f(ReadVec3f(c + 0x68));
+    camera->eyeNext = ToVec3f(ReadVec3f(c + 0x74));
+    camera->skyboxOffset = ToVec3f(ReadVec3f(c + 0x80));
+    camera->playerPosRot.pos = ToVec3f(ReadVec3f(c + 0x94));
+    camera->playerPosRot.rot = vec3sAt(0xA0);
+    camera->targetPosRot.pos = ToVec3f(ReadVec3f(c + 0xAC));
+    camera->targetPosRot.rot = vec3sAt(0xB8);
+    camera->rUpdateRateInv = ReadF32(c + 0xC0);
+    camera->pitchUpdateRateInv = ReadF32(c + 0xC4);
+    camera->yawUpdateRateInv = ReadF32(c + 0xC8);
+    camera->xzOffsetUpdateRate = ReadF32(c + 0xCC);
+    camera->yOffsetUpdateRate = ReadF32(c + 0xD0);
+    camera->fovUpdateRate = ReadF32(c + 0xD4);
+    camera->xzSpeed = ReadF32(c + 0xD8);
+    camera->dist = ReadF32(c + 0xDC);
+    camera->speedRatio = ReadF32(c + 0xE0);
+    camera->posOffset = ToVec3f(ReadVec3f(c + 0xE4));
+    camera->playerPosDelta = ToVec3f(ReadVec3f(c + 0xF0));
+    camera->fov = ReadF32(c + 0xFC);
+    camera->atLERPStepScale = ReadF32(c + 0x100);
+    camera->playerGroundY = ReadF32(c + 0x104);
+    camera->floorNorm = ToVec3f(ReadVec3f(c + 0x108));
+    camera->waterYPos = ReadF32(c + 0x114);
+    camera->inputDir = vec3sAt(0x134);
+    camera->camDir = vec3sAt(0x13A);
+    camera->status = s16At(0x140);
+    camera->unk_14A = s16At(0x14A);
+    camera->unk_14C = s16At(0x14C);
+    camera->waterDistortionTimer = s16At(0x150);
+    camera->distortionFlags = s16At(0x152);
+    camera->prevSetting = s16At(0x154);
+    camera->roll = s16At(0x15A);
+    camera->paramFlags = s16At(0x15C);
+    camera->animState = s16At(0x15E);
+    camera->timer = s16At(0x160);
+    camera->unk_16A = s16At(0x16A);
+
+    // The working data of the function the camera is running. Only the usual one, Normal1, is understood.
+    if (Camera_GetFuncIdx(camera) == CAM_FUNC_NORM1) {
+        Normal1* norm1 = (Normal1*)camera->paramData;
+        norm1->yOffset = ReadF32(c + 0x00);
+        norm1->distMin = ReadF32(c + 0x04);
+        norm1->distMax = ReadF32(c + 0x08);
+        norm1->unk_0C = ReadF32(c + 0x0C);
+        norm1->unk_10 = ReadF32(c + 0x10);
+        norm1->unk_14 = ReadF32(c + 0x14);
+        norm1->fovTarget = ReadF32(c + 0x18);
+        norm1->atLERPScaleMax = ReadF32(c + 0x1C);
+        norm1->pitchTarget = s16At(0x20);
+        norm1->interfaceFlags = s16At(0x22);
+        Normal1Anim* anim = &norm1->anim;
+        anim->swing.collisionClosePoint = ToVec3f(ReadVec3f(c + 0x24));
+        // A pointer into the N64's collision, never read
+        anim->swing.atEyePoly = NULL;
+        anim->swing.swingUpdateRate = ReadF32(c + 0x34);
+        anim->swing.unk_14 = s16At(0x38);
+        anim->swing.unk_16 = s16At(0x3A);
+        anim->swing.unk_18 = s16At(0x3C);
+        anim->swing.swingUpdateRateTimer = s16At(0x3E);
+        anim->yOffset = ReadF32(c + 0x40);
+        anim->unk_20 = ReadF32(c + 0x44);
+        anim->slopePitchAdj = s16At(0x48);
+        anim->swingYawTarget = s16At(0x4A);
+        anim->unk_28 = s16At(0x4C);
+        anim->startSwingTimer = s16At(0x4E);
+    }
 }
 
 void ApplyArrival() {
@@ -290,6 +382,15 @@ void ApplyArrival() {
     gSaveContext.respawn[RESPAWN_MODE_DOWN] = sPending.voidOutRespawn;
     gPlayState->actorCtx.flags.tempClear = sPending.tempClearFlags;
     gPlayState->gameplayFrames = sPending.gameplayFrames;
+    // The camera updates after Link in this frame, so it is put back once the frame is done, ready for the next
+    GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDrawEnd>(sCameraHook);
+    sCameraHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayDrawEnd>([]() {
+        GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDrawEnd>(sCameraHook);
+        sCameraHook = 0;
+        if (gPlayState != nullptr) {
+            RestoreCamera(sPending.camera);
+        }
+    });
     Gz_Notify("gz savestate imported");
     if (sOnArrived != nullptr) {
         void (*onArrived)() = sOnArrived;
@@ -357,6 +458,7 @@ bool Import(bool boot = false) {
 
     sPending.sceneId = st.sceneId;
     sPending.gameplayFrames = st.gameplayFrames;
+    memcpy(sPending.camera, st.mainCamera, sizeof(sPending.camera));
     sPending.hasLink = st.linkFound;
     sPending.link = st.link;
     if (st.linkFound) {

@@ -25,6 +25,9 @@ inline float ReadF32(const uint8_t* p) {
     return f;
 }
 
+// The size of the N64's Camera
+constexpr size_t N64_CAMERA_SIZE = 0x16C;
+
 struct Vec3fBE {
     float x, y, z;
 };
@@ -93,6 +96,8 @@ struct StateFile {
     uint32_t gameplayFrames = 0;
     Vec3fBE cameraPlayerPos = {};
     Vec3sBE cameraPlayerRot = {};
+    // The main camera as the N64 has it, big endian, for the fields that can be restored
+    uint8_t mainCamera[N64_CAMERA_SIZE] = {};
 
     // Live flags of the current scene (actorCtx.flags), which only reach the save context on scene exit.
     uint32_t swchFlags = 0;

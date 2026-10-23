@@ -273,6 +273,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     const uint8_t* cameraPos = play + PLAY_MAIN_CAMERA + CAMERA_PLAYER_POS_ROT;
     s.cameraPlayerPos = ReadVec3f(cameraPos);
     s.cameraPlayerRot = ReadVec3s(cameraPos + 12);
+    memcpy(s.mainCamera, play + PLAY_MAIN_CAMERA, N64_CAMERA_SIZE);
     const uint8_t* flags = play + PLAY_ACTOR_FLAGS;
     s.swchFlags = ReadU32(flags + 0x00);
     s.tempSwchFlags = ReadU32(flags + 0x04);
