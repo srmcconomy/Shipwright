@@ -17,6 +17,7 @@ constexpr size_t PLAY_MAIN_CAMERA = 0x001E0;
 constexpr size_t CAMERA_PLAYER_POS_ROT = 0x094;
 constexpr size_t PLAY_ACTOR_FLAGS = 0x01D28;
 constexpr size_t PLAY_ROOM_CTX = 0x11CBC;
+constexpr size_t PLAY_GAMEPLAY_FRAMES = 0x11DE4;
 
 // Actor offsets. Retail builds do not have the debug ROM's padding at the end of Actor, so Player's own
 // fields are 0x10 lower than in the decomp's comments.
@@ -32,6 +33,7 @@ constexpr size_t ACTOR_MIN_VELOCITY_Y = 0x070;
 constexpr size_t ACTOR_BG_CHECK_FLAGS = 0x088;
 constexpr size_t ACTOR_SHAPE_ROT = 0x0B4;
 constexpr size_t PLAYER_CURRENT_MASK = 0x14F;
+constexpr size_t PLAYER_BLINK = 0x398;
 constexpr size_t PLAYER_STATE_FLAGS_1 = 0x66C;
 constexpr size_t PLAYER_STATE_FLAGS_2 = 0x670;
 constexpr size_t PLAYER_STATE_FLAGS_3 = 0x682;
@@ -59,6 +61,8 @@ LinkState ReadLink(const uint8_t* p) {
     link.stateFlags3 = p[PLAYER_STATE_FLAGS_3];
     link.linearVelocity = ReadF32(p + PLAYER_LINEAR_VELOCITY);
     link.yaw = (int16_t)ReadU16(p + PLAYER_YAW);
+    link.blink[0] = (int16_t)ReadU16(p + PLAYER_BLINK);
+    link.blink[1] = (int16_t)ReadU16(p + PLAYER_BLINK + 2);
     return link;
 }
 
@@ -265,6 +269,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     const uint8_t* play = data + pos;
     s.sceneId = (int16_t)ReadU16(play + PLAY_SCENE_ID);
     s.roomNum = (int8_t)play[PLAY_ROOM_CTX];
+    s.gameplayFrames = ReadU32(play + PLAY_GAMEPLAY_FRAMES);
     const uint8_t* cameraPos = play + PLAY_MAIN_CAMERA + CAMERA_PLAYER_POS_ROT;
     s.cameraPlayerPos = ReadVec3f(cameraPos);
     s.cameraPlayerRot = ReadVec3s(cameraPos + 12);

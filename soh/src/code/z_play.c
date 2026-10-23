@@ -199,6 +199,8 @@ void Play_Destroy(GameState* thisx) {
     PlayState* play = (PlayState*)thisx;
     Player* player = GET_PLAYER(play);
 
+    // Before the hooks, one of which resets it on the temporary file a gz macro plays on
+    GzMacro_NoteGameplayFrames(play->gameplayFrames);
     GameInteractor_ExecuteOnPlayDestroy();
 
     play->state.gfxCtx->callback = NULL;
@@ -372,6 +374,7 @@ void Play_Init(GameState* thisx) {
         play->gameplayFrames = 0;
         firstInit = 1;
     }
+    play->gameplayFrames = GzMacro_FilterGameplayFrames(play->gameplayFrames);
 
     // Invalid entrance, so immediately exit the game to opening title
     if (gSaveContext.entranceIndex == ENTR_LOAD_OPENING) {

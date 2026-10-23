@@ -217,6 +217,16 @@ void GzMacro_UpdateInput(Input* input) {
     MovieToInput(sPlayback.frame++, input);
 }
 
+static u32 sLastGameplayFrames = 0;
+
+void GzMacro_NoteGameplayFrames(u32 frames) {
+    sLastGameplayFrames = frames;
+}
+
+u32 GzMacro_FilterGameplayFrames(u32 frames) {
+    return sPlayback.playing ? sLastGameplayFrames : frames;
+}
+
 u32 GzMacro_FilterRandSeed(u32 seed) {
     if (!sPlayback.playing) {
         // The scene an imported state loads would seed the rng from the clock, and what it draws before the macro

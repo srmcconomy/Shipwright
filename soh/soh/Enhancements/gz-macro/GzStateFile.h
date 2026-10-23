@@ -78,6 +78,8 @@ struct LinkState {
     uint8_t stateFlags3;
     float linearVelocity;
     int16_t yaw;
+    // Link's eye state and the frames until his next blink, which draws a random number
+    int16_t blink[2];
 };
 
 struct StateFile {
@@ -87,6 +89,8 @@ struct StateFile {
 
     int16_t sceneId = 0;
     int8_t roomNum = 0;
+    // The play state's frame counter; some things happen only on even frames
+    uint32_t gameplayFrames = 0;
     Vec3fBE cameraPlayerPos = {};
     Vec3sBE cameraPlayerRot = {};
 

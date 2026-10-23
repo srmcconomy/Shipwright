@@ -22,6 +22,10 @@ u32 GzMacro_OcarinaMemoryGameRand(u8 songLength);
 // Whether a room load should take another frame, as it did when the macro was recorded.
 bool GzMacro_ShouldDelayRoomLoad(void);
 bool GzMacro_IsPlaying(void);
+// The N64 never sets a new scene's frame counter, which carries on from the last scene's in the same memory, and
+// some things happen only on even frames. While a macro plays, the counter carries on the same way.
+void GzMacro_NoteGameplayFrames(u32 frames);
+u32 GzMacro_FilterGameplayFrames(u32 frames);
 // The controller input the macro gave the game this frame, for the input viewer. Returns false when no macro is
 // playing.
 bool GzMacro_GetCurrentInput(u16* button, s8* stickX, s8* stickY);

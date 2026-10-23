@@ -242,6 +242,7 @@ struct PendingArrival {
     GzMacro::LinkState link;
     RespawnData voidOutRespawn;
     uint32_t tempClearFlags;
+    uint32_t gameplayFrames;
 };
 
 PendingArrival sPending;
@@ -276,10 +277,14 @@ void ApplyArrival() {
         player->linearVelocity = link.linearVelocity;
         player->yaw = link.yaw;
         player->currentMask = link.currentMask;
+        // His blink timer draws a random number when it runs out, so it has to run out when it did on the N64
+        player->unk_3A8[0] = link.blink[0];
+        player->unk_3A8[1] = link.blink[1];
     }
     // The warp used the void out respawn point to place Link, put back the one from the state.
     gSaveContext.respawn[RESPAWN_MODE_DOWN] = sPending.voidOutRespawn;
     gPlayState->actorCtx.flags.tempClear = sPending.tempClearFlags;
+    gPlayState->gameplayFrames = sPending.gameplayFrames;
     Gz_Notify("gz savestate imported");
     if (sOnArrived != nullptr) {
         void (*onArrived)() = sOnArrived;
@@ -338,6 +343,7 @@ bool Import(bool boot = false) {
     }
 
     sPending.sceneId = st.sceneId;
+    sPending.gameplayFrames = st.gameplayFrames;
     sPending.hasLink = st.linkFound;
     sPending.link = st.link;
     if (st.linkFound) {
