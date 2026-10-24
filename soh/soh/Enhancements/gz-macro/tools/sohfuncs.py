@@ -16,7 +16,7 @@ for actor_id, info in sorted(rom.items(), key=lambda x: int(x[0])):
         stats["missing"] += 1
         continue
     name, enum = ids[actor_id]
-    d = os.path.join(soh, "src/overlays/actors", "ovl_" + name)
+    d = os.path.join(soh, "src/overlays/actors", "ovl_player_actor" if actor_id == 0 else "ovl_" + name)
     if not os.path.isdir(d):
         stats["missing"] += 1
         continue
@@ -37,6 +37,16 @@ for actor_id, info in sorted(rom.items(), key=lambda x: int(x[0])):
                 init_names = [re.sub(r"\(ActorFunc\)|\(ActorResetFunc\)", "", n).strip() for n in names[5:9]]
     entry = {"name": name, "enum": enum, "vram": info["vram"], "instanceSize": info["instanceSize"],
              "romFunctions": info["functions"], "sohFunctions": funcs}
+    if info.get("addressTakenOnly"):
+        # Only the functions whose addresses are taken (their name used without a call), as the ROM's list is
+        used = set()
+        for f in sorted(os.listdir(d)):
+            if f.endswith(".c"):
+                src = re.sub(r"//[^\n]*", "", re.sub(r"/\*.*?\*/", "", open(os.path.join(d, f)).read(), flags=re.S))
+                used.update(m.group(1) for m in re.finditer(r"\b([A-Za-z_]\w*)\b(?!\s*\()", src))
+        funcs = [f for f in funcs if f in used]
+        entry["sohFunctions"] = funcs
+        init_names = None
     entry["initNames"] = init_names
     ok = len(funcs) == len(info["functions"])
     if ok and init_names:

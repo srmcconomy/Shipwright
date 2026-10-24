@@ -24,7 +24,7 @@ const GzActorSpan gGzEnJjSpans[] = {
     { offsetof(EnJj, skelAnime.dListCount), 0, 0x156, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnJj, skelAnime.taper), 0, 0x157, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnJj, skelAnime.skeleton), 0, 0x158, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnJj, skelAnime.animation), 0, 0x15c, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnJj, skelAnime.animation), 0, 0x15c, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnJj, skelAnime.startFrame), 0, 0x160, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnJj, skelAnime.endFrame), 0, 0x164, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnJj, skelAnime.animLength), 0, 0x168, 0x0, 1, 4, GZ_SPAN_VALUE },

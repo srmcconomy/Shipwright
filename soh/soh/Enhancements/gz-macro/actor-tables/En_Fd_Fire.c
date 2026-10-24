@@ -7,6 +7,7 @@
 #include "overlays/actors/ovl_En_Fd_Fire/z_en_fd_fire.h"
 
 void EnFdFire_UpdatePos(void*, void*);
+s32 EnFdFire_CheckCollider(void*, void*);
 void EnFdFire_Init(void*, void*);
 void EnFdFire_Destroy(void*, void*);
 void func_80A0E70C(void*, void*);
@@ -61,7 +62,7 @@ const size_t gGzEnFdFireSpanCount = ARRAY_COUNT(gGzEnFdFireSpans);
 
 const GzActorFunction gGzEnFdFireFunctions[] = {
     { 0x0, (void*)EnFdFire_UpdatePos },
-    { 0xc8, NULL },
+    { 0xc8, (void*)EnFdFire_CheckCollider },
     { 0x12c, (void*)EnFdFire_Init },
     { 0x234, (void*)EnFdFire_Destroy },
     { 0x260, (void*)func_80A0E70C },

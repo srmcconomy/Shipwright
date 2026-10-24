@@ -21,7 +21,7 @@ const GzActorSpan gGzEnNiwGirlSpans[] = {
     { offsetof(EnNiwGirl, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnNiwGirl, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnNiwGirl, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnNiwGirl, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnNiwGirl, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnNiwGirl, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnNiwGirl, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnNiwGirl, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },

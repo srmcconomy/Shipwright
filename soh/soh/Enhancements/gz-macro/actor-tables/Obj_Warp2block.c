@@ -7,7 +7,11 @@
 #include "overlays/actors/ovl_Obj_Warp2block/z_obj_warp2block.h"
 
 void ObjWarp2block_Spawn(void*, void*);
+s32 func_80BA1ECC(void*, void*);
 void ObjWarp2block_SwapWithChild(void*, void*);
+s32 func_80BA2218(void*, void*);
+s32 func_80BA228C(void*, void*);
+s32 func_80BA2304(void*, void*);
 void ObjWarp2block_Init(void*, void*);
 void ObjWarp2block_Destroy(void*, void*);
 void ObjWarp2block_DoNothing(void*, void*);
@@ -29,11 +33,11 @@ const size_t gGzObjWarp2blockSpanCount = ARRAY_COUNT(gGzObjWarp2blockSpans);
 
 const GzActorFunction gGzObjWarp2blockFunctions[] = {
     { 0x0, (void*)ObjWarp2block_Spawn },
-    { 0xdc, NULL },
+    { 0xdc, (void*)func_80BA1ECC },
     { 0x25c, (void*)ObjWarp2block_SwapWithChild },
-    { 0x42c, NULL },
-    { 0x4ac, NULL },
-    { 0x524, NULL },
+    { 0x42c, (void*)func_80BA2218 },
+    { 0x4ac, (void*)func_80BA228C },
+    { 0x524, (void*)func_80BA2304 },
     { 0x568, (void*)ObjWarp2block_Init },
     { 0x688, (void*)ObjWarp2block_Destroy },
     { 0x6c8, NULL },

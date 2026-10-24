@@ -40,7 +40,7 @@ const GzActorSpan gGzEnDekubabaSpans[] = {
     { offsetof(EnDekubaba, skelAnime.dListCount), 0, 0x16e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDekubaba, skelAnime.taper), 0, 0x16f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDekubaba, skelAnime.skeleton), 0, 0x170, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDekubaba, skelAnime.animation), 0, 0x174, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDekubaba, skelAnime.animation), 0, 0x174, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDekubaba, skelAnime.startFrame), 0, 0x178, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDekubaba, skelAnime.endFrame), 0, 0x17c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDekubaba, skelAnime.animLength), 0, 0x180, 0x0, 1, 4, GZ_SPAN_VALUE },

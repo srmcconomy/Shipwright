@@ -8,8 +8,17 @@
 
 void EnZl4_SetMove(void*, void*);
 void EnZl4_GetActionStartPos(void*, void*);
+s32 EnZl4_SetupFromLegendCs(void*, void*);
 void EnZl4_Init(void*, void*);
 void EnZl4_Destroy(void*, void*);
+s32 EnZl4_CsWaitForPlayer(void*, void*);
+s32 EnZl4_CsMeetPlayer(void*, void*);
+s32 EnZl4_CsAskStone(void*, void*);
+s32 EnZl4_CsAskName(void*, void*);
+s32 EnZl4_CsTellLegend(void*, void*);
+s32 EnZl4_CsLookWindow(void*, void*);
+s32 EnZl4_CsWarnAboutGanon(void*, void*);
+s32 EnZl4_CsMakePlan(void*, void*);
 void EnZl4_Idle(void*, void*);
 void EnZl4_TheEnd(void*, void*);
 void EnZl4_Update(void*, void*);
@@ -21,7 +30,7 @@ const GzActorSpan gGzEnZl4Spans[] = {
     { offsetof(EnZl4, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZl4, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZl4, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnZl4, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnZl4, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnZl4, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZl4, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZl4, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -120,20 +129,20 @@ const GzActorFunction gGzEnZl4Functions[] = {
     { 0x38c, (void*)EnZl4_SetMove },
     { 0x3cc, (void*)func_80B5BB78 },
     { 0x418, (void*)EnZl4_GetActionStartPos },
-    { 0x45c, NULL },
+    { 0x45c, (void*)EnZl4_SetupFromLegendCs },
     { 0x534, NULL },
     { 0x604, (void*)EnZl4_Init },
     { 0x7c0, (void*)EnZl4_Destroy },
     { 0x7ec, NULL },
     { 0x840, NULL },
-    { 0x868, NULL },
-    { 0x9c8, NULL },
-    { 0xcc0, NULL },
-    { 0x11ec, NULL },
-    { 0x17d8, NULL },
-    { 0x1c34, NULL },
-    { 0x1e78, NULL },
-    { 0x2340, NULL },
+    { 0x868, (void*)EnZl4_CsWaitForPlayer },
+    { 0x9c8, (void*)EnZl4_CsMeetPlayer },
+    { 0xcc0, (void*)EnZl4_CsAskStone },
+    { 0x11ec, (void*)EnZl4_CsAskName },
+    { 0x17d8, (void*)EnZl4_CsTellLegend },
+    { 0x1c34, (void*)EnZl4_CsLookWindow },
+    { 0x1e78, (void*)EnZl4_CsWarnAboutGanon },
+    { 0x2340, (void*)EnZl4_CsMakePlan },
     { 0x2684, (void*)EnZl4_Cutscene },
     { 0x28fc, (void*)EnZl4_Idle },
     { 0x2974, (void*)EnZl4_TheEnd },

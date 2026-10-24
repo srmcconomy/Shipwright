@@ -6,9 +6,14 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Hy/z_en_hy.h"
 
+s32 EnHy_FindSkelAndHeadObjects(void*, void*);
+s32 EnHy_AreSkelAndHeadObjectsLoaded(void*, void*);
+s32 EnHy_FindOsAnimeObject(void*, void*);
+s32 EnHy_IsOsAnimeObjectLoaded(void*, void*);
 void EnHy_UpdateCollider(void*, void*);
 void EnHy_OfferBuyBottledItem(void*, void*);
 void EnHy_UpdateNPC(void*, void*);
+s32 EnHy_ShouldSpawn(void*, void*);
 void EnHy_Init(void*, void*);
 void EnHy_Destroy(void*, void*);
 void EnHy_InitImpl(void*, void*);
@@ -28,7 +33,7 @@ const GzActorSpan gGzEnHySpans[] = {
     { offsetof(EnHy, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnHy, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnHy, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnHy, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnHy, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnHy, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnHy, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnHy, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -127,10 +132,10 @@ const GzActorSpan gGzEnHySpans[] = {
 const size_t gGzEnHySpanCount = ARRAY_COUNT(gGzEnHySpans);
 
 const GzActorFunction gGzEnHyFunctions[] = {
-    { 0x0, NULL },
-    { 0x114, NULL },
-    { 0x19c, NULL },
-    { 0x1ec, NULL },
+    { 0x0, (void*)EnHy_FindSkelAndHeadObjects },
+    { 0x114, (void*)EnHy_AreSkelAndHeadObjectsLoaded },
+    { 0x19c, (void*)EnHy_FindOsAnimeObject },
+    { 0x1ec, (void*)EnHy_IsOsAnimeObjectLoaded },
     { 0x22c, NULL },
     { 0x270, NULL },
     { 0xab8, NULL },
@@ -140,7 +145,7 @@ const GzActorFunction gGzEnHyFunctions[] = {
     { 0x1194, (void*)EnHy_UpdateCollider },
     { 0x1298, (void*)EnHy_OfferBuyBottledItem },
     { 0x13e0, (void*)EnHy_UpdateNPC },
-    { 0x1550, NULL },
+    { 0x1550, (void*)EnHy_ShouldSpawn },
     { 0x17ec, (void*)EnHy_Init },
     { 0x187c, (void*)EnHy_Destroy },
     { 0x18a8, (void*)EnHy_InitImpl },

@@ -6,8 +6,27 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Ko/z_en_ko.h"
 
+s32 EnKo_AreObjectsAvailable(void*, void*);
+s32 EnKo_AreObjectsLoaded(void*, void*);
+s32 EnKo_IsOsAnimeAvailable(void*, void*);
+s32 EnKo_IsOsAnimeLoaded(void*, void*);
+s32 func_80A97D68(void*, void*);
+s32 func_80A97E18(void*, void*);
+s32 func_80A97EB0(void*, void*);
+s32 func_80A97F20(void*, void*);
+s32 func_80A97F70(void*, void*);
+s32 func_80A98034(void*, void*);
+s32 func_80A98124(void*, void*);
+s32 func_80A98174(void*, void*);
+s32 EnKo_ChildStart(void*, void*);
+s32 EnKo_ChildStone(void*, void*);
+s32 EnKo_ChildSaria(void*, void*);
+s32 EnKo_AdultEnemy(void*, void*);
+s32 EnKo_AdultSaved(void*, void*);
 void func_80A9877C(void*, void*);
+s32 EnKo_CanSpawn(void*, void*);
 void func_80A98DB4(void*, void*);
+s32 func_80A98ECC(void*, void*);
 void EnKo_Init(void*, void*);
 void EnKo_Destroy(void*, void*);
 void func_80A99048(void*, void*);
@@ -23,7 +42,7 @@ const GzActorSpan gGzEnKoSpans[] = {
     { offsetof(EnKo, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnKo, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnKo, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnKo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnKo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnKo, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnKo, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnKo, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -116,10 +135,10 @@ const GzActorSpan gGzEnKoSpans[] = {
 const size_t gGzEnKoSpanCount = ARRAY_COUNT(gGzEnKoSpans);
 
 const GzActorFunction gGzEnKoFunctions[] = {
-    { 0x0, NULL },
-    { 0x118, NULL },
-    { 0x1a0, NULL },
-    { 0x1f0, NULL },
+    { 0x0, (void*)EnKo_AreObjectsAvailable },
+    { 0x118, (void*)EnKo_AreObjectsLoaded },
+    { 0x1a0, (void*)EnKo_IsOsAnimeAvailable },
+    { 0x1f0, (void*)EnKo_IsOsAnimeLoaded },
     { 0x230, NULL },
     { 0x598, NULL },
     { 0x870, NULL },
@@ -128,26 +147,26 @@ const GzActorFunction gGzEnKoFunctions[] = {
     { 0xe24, NULL },
     { 0xee0, NULL },
     { 0xf64, NULL },
-    { 0xfd0, NULL },
-    { 0x1080, NULL },
-    { 0x111c, NULL },
-    { 0x1190, NULL },
-    { 0x11e0, NULL },
-    { 0x12a4, NULL },
-    { 0x1398, NULL },
-    { 0x13e8, NULL },
-    { 0x14cc, NULL },
-    { 0x15d4, NULL },
-    { 0x16dc, NULL },
-    { 0x17e4, NULL },
-    { 0x18ec, NULL },
+    { 0xfd0, (void*)func_80A97D68 },
+    { 0x1080, (void*)func_80A97E18 },
+    { 0x111c, (void*)func_80A97EB0 },
+    { 0x1190, (void*)func_80A97F20 },
+    { 0x11e0, (void*)func_80A97F70 },
+    { 0x12a4, (void*)func_80A98034 },
+    { 0x1398, (void*)func_80A98124 },
+    { 0x13e8, (void*)func_80A98174 },
+    { 0x14cc, (void*)EnKo_ChildStart },
+    { 0x15d4, (void*)EnKo_ChildStone },
+    { 0x16dc, (void*)EnKo_ChildSaria },
+    { 0x17e4, (void*)EnKo_AdultEnemy },
+    { 0x18ec, (void*)EnKo_AdultSaved },
     { 0x19f4, (void*)func_80A9877C },
-    { 0x1bb0, NULL },
+    { 0x1bb0, (void*)EnKo_CanSpawn },
     { 0x1e94, NULL },
     { 0x1f54, NULL },
     { 0x1fac, NULL },
     { 0x2038, (void*)func_80A98DB4 },
-    { 0x2150, NULL },
+    { 0x2150, (void*)func_80A98ECC },
     { 0x2218, (void*)EnKo_Init },
     { 0x22a8, (void*)EnKo_Destroy },
     { 0x22d4, (void*)func_80A99048 },

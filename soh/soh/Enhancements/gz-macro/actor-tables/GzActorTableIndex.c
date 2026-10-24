@@ -5,6 +5,10 @@
 #include "global.h"
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 
+extern const GzActorSpan gGzPlayerSpans[];
+extern const size_t gGzPlayerSpanCount;
+extern const GzActorFunction gGzPlayerFunctions[];
+extern const size_t gGzPlayerFunctionCount;
 extern const GzActorSpan gGzEnTestSpans[];
 extern const size_t gGzEnTestSpanCount;
 extern const GzActorFunction gGzEnTestFunctions[];
@@ -1527,6 +1531,7 @@ extern const GzActorFunction gGzObjWarp2blockFunctions[];
 extern const size_t gGzObjWarp2blockFunctionCount;
 
 const GzActorTable gGzActorTables[] = {
+    { ACTOR_PLAYER, 0xa84, gGzPlayerSpans, &gGzPlayerSpanCount, gGzPlayerFunctions, &gGzPlayerFunctionCount, -1 },
     { ACTOR_EN_TEST, 0x918, gGzEnTestSpans, &gGzEnTestSpanCount, gGzEnTestFunctions, &gGzEnTestFunctionCount, 2 },
     { ACTOR_EN_PART, 0x14c, gGzEnPartSpans, &gGzEnPartSpanCount, gGzEnPartFunctions, &gGzEnPartFunctionCount, 1 },
     { ACTOR_EN_LIGHT, 0x154, gGzEnLightSpans, &gGzEnLightSpanCount, gGzEnLightFunctions, &gGzEnLightFunctionCount, 1 },

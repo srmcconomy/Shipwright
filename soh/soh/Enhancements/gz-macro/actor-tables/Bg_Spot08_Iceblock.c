@@ -6,6 +6,7 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_Bg_Spot08_Iceblock/z_bg_spot08_iceblock.h"
 
+s32 BgSpot08Iceblock_NormalizeVector(void*, void*);
 void BgSpot08Iceblock_Roll(void*, void*);
 void BgSpot08Iceblock_SpawnTwinFloe(void*, void*);
 void BgSpot08Iceblock_Init(void*, void*);
@@ -45,7 +46,7 @@ const GzActorFunction gGzBgSpot08IceblockFunctions[] = {
     { 0x1d0, NULL },
     { 0x1f0, NULL },
     { 0x224, NULL },
-    { 0x298, NULL },
+    { 0x298, (void*)BgSpot08Iceblock_NormalizeVector },
     { 0x334, (void*)BgSpot08Iceblock_Roll },
     { 0x6a8, (void*)BgSpot08Iceblock_SpawnTwinFloe },
     { 0x7a8, (void*)BgSpot08Iceblock_Init },

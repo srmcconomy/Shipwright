@@ -9,6 +9,8 @@
 void EnFirefly_Init(void*, void*);
 void EnFirefly_Destroy(void*, void*);
 void EnFirefly_SetupFrozenFall(void*, void*);
+s32 EnFirefly_ReturnToPerch(void*, void*);
+s32 EnFirefly_SeekTorch(void*, void*);
 void EnFirefly_FlyIdle(void*, void*);
 void EnFirefly_Fall(void*, void*);
 void EnFirefly_Die(void*, void*);
@@ -34,7 +36,7 @@ const GzActorSpan gGzEnFireflySpans[] = {
     { offsetof(EnFirefly, skelAnime.dListCount), 0, 0x162, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFirefly, skelAnime.taper), 0, 0x163, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFirefly, skelAnime.skeleton), 0, 0x164, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnFirefly, skelAnime.animation), 0, 0x168, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnFirefly, skelAnime.animation), 0, 0x168, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnFirefly, skelAnime.startFrame), 0, 0x16c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFirefly, skelAnime.endFrame), 0, 0x170, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFirefly, skelAnime.animLength), 0, 0x174, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -123,8 +125,8 @@ const GzActorFunction gGzEnFireflyFunctions[] = {
     { 0x550, (void*)EnFirefly_SetupFrozenFall },
     { 0x6f0, NULL },
     { 0x714, NULL },
-    { 0x750, NULL },
-    { 0x86c, NULL },
+    { 0x750, (void*)EnFirefly_ReturnToPerch },
+    { 0x86c, (void*)EnFirefly_SeekTorch },
     { 0x9bc, (void*)EnFirefly_FlyIdle },
     { 0xc4c, (void*)EnFirefly_Fall },
     { 0xd1c, (void*)EnFirefly_Die },

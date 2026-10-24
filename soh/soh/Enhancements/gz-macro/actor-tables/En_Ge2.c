@@ -8,6 +8,7 @@
 
 void EnGe2_Init(void*, void*);
 void EnGe2_Destroy(void*, void*);
+s32 Ge2_DetectPlayerInAction(void*, void*);
 void EnGe2_CaptureClose(void*, void*);
 void EnGe2_CaptureCharge(void*, void*);
 void EnGe2_CaptureTurn(void*, void*);
@@ -71,7 +72,7 @@ const GzActorSpan gGzEnGe2Spans[] = {
     { offsetof(EnGe2, skelAnime.dListCount), 0, 0x18a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGe2, skelAnime.taper), 0, 0x18b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGe2, skelAnime.skeleton), 0, 0x18c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnGe2, skelAnime.animation), 0, 0x190, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGe2, skelAnime.animation), 0, 0x190, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnGe2, skelAnime.startFrame), 0, 0x194, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGe2, skelAnime.endFrame), 0, 0x198, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGe2, skelAnime.animLength), 0, 0x19c, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -122,7 +123,7 @@ const GzActorFunction gGzEnGe2Functions[] = {
     { 0x0, NULL },
     { 0xa8, (void*)EnGe2_Init },
     { 0x2c0, (void*)EnGe2_Destroy },
-    { 0x2ec, NULL },
+    { 0x2ec, (void*)Ge2_DetectPlayerInAction },
     { 0x398, NULL },
     { 0x4c8, NULL },
     { 0x4f4, (void*)EnGe2_CaptureClose },

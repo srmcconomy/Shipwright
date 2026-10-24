@@ -6,9 +6,12 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Sw/z_en_sw.h"
 
+s32 func_80B0BE20(void*, void*);
 void EnSw_Init(void*, void*);
 void EnSw_Destroy(void*, void*);
+s32 func_80B0C9F0(void*, void*);
 void func_80B0CBE8(void*, void*);
+s32 func_80B0CCF4(void*, void*);
 void func_80B0CEA8(void*, void*);
 void func_80B0D364(void*, void*);
 void func_80B0D3AC(void*, void*);
@@ -16,6 +19,7 @@ void func_80B0D590(void*, void*);
 void func_80B0D878(void*, void*);
 void func_80B0DB00(void*, void*);
 void func_80B0DC7C(void*, void*);
+s32 func_80B0DFFC(void*, void*);
 void func_80B0E5E0(void*, void*);
 void func_80B0E728(void*, void*);
 void func_80B0E90C(void*, void*);
@@ -29,7 +33,7 @@ const GzActorSpan gGzEnSwSpans[] = {
     { offsetof(EnSw, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSw, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSw, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnSw, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnSw, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnSw, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSw, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSw, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -157,14 +161,14 @@ const size_t gGzEnSwSpanCount = ARRAY_COUNT(gGzEnSwSpans);
 
 const GzActorFunction gGzEnSwFunctions[] = {
     { 0x0, NULL },
-    { 0x74, NULL },
+    { 0x74, (void*)func_80B0BE20 },
     { 0x274, NULL },
     { 0x324, NULL },
     { 0x758, (void*)EnSw_Init },
     { 0xc20, (void*)EnSw_Destroy },
-    { 0xc4c, NULL },
+    { 0xc4c, (void*)func_80B0C9F0 },
     { 0xe48, (void*)func_80B0CBE8 },
-    { 0xf54, NULL },
+    { 0xf54, (void*)func_80B0CCF4 },
     { 0x1108, (void*)func_80B0CEA8 },
     { 0x11a8, NULL },
     { 0x13b0, NULL },
@@ -176,7 +180,7 @@ const GzActorFunction gGzEnSwFunctions[] = {
     { 0x1ee8, (void*)func_80B0DC7C },
     { 0x20a4, NULL },
     { 0x2120, NULL },
-    { 0x2274, NULL },
+    { 0x2274, (void*)func_80B0DFFC },
     { 0x258c, NULL },
     { 0x26a4, NULL },
     { 0x2854, (void*)func_80B0E5E0 },

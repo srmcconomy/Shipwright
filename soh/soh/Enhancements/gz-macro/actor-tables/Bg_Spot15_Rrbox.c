@@ -6,8 +6,12 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_Bg_Spot15_Rrbox/z_bg_spot15_rrbox.h"
 
+s32 func_808B3A40(void*, void*);
+s32 func_808B3AAC(void*, void*);
 void BgSpot15Rrbox_Init(void*, void*);
 void BgSpot15Rrbox_Destroy(void*, void*);
+s32 BgSpot15Rrbox_TrySnapToFloor(void*, void*);
+s32 func_808B4010(void*, void*);
 void func_808B4084(void*, void*);
 void func_808B40AC(void*, void*);
 void func_808B4178(void*, void*);
@@ -35,14 +39,14 @@ const GzActorFunction gGzBgSpot15RrboxFunctions[] = {
     { 0x0, NULL },
     { 0x58, NULL },
     { 0xac, NULL },
-    { 0xbc, NULL },
-    { 0x12c, NULL },
+    { 0xbc, (void*)func_808B3A40 },
+    { 0x12c, (void*)func_808B3AAC },
     { 0x214, (void*)BgSpot15Rrbox_Init },
     { 0x2e4, (void*)BgSpot15Rrbox_Destroy },
     { 0x320, NULL },
     { 0x460, NULL },
-    { 0x5e0, NULL },
-    { 0x6a0, NULL },
+    { 0x5e0, (void*)BgSpot15Rrbox_TrySnapToFloor },
+    { 0x6a0, (void*)func_808B4010 },
     { 0x714, (void*)func_808B4084 },
     { 0x740, (void*)func_808B40AC },
     { 0x80c, (void*)func_808B4178 },

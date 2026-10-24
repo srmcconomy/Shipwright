@@ -7,6 +7,7 @@
 #include "overlays/actors/ovl_Obj_Tsubo/z_obj_tsubo.h"
 
 void ObjTsubo_SpawnCollectible(void*, void*);
+s32 ObjTsubo_SnapToFloor(void*, void*);
 void ObjTsubo_InitCollider(void*, void*);
 void ObjTsubo_Init(void*, void*);
 void ObjTsubo_Destroy(void*, void*);
@@ -61,7 +62,7 @@ const size_t gGzObjTsuboSpanCount = ARRAY_COUNT(gGzObjTsuboSpans);
 const GzActorFunction gGzObjTsuboFunctions[] = {
     { 0x0, (void*)ObjTsubo_SpawnCollectible },
     { 0x60, NULL },
-    { 0x94, NULL },
+    { 0x94, (void*)ObjTsubo_SnapToFloor },
     { 0x130, (void*)ObjTsubo_InitCollider },
     { 0x188, (void*)ObjTsubo_Init },
     { 0x258, (void*)ObjTsubo_Destroy },

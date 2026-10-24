@@ -7,11 +7,17 @@
 #include "overlays/actors/ovl_En_Goroiwa/z_en_goroiwa.h"
 
 void EnGoroiwa_InitCollider(void*, void*);
+s32 EnGoroiwa_Vec3fNormalize(void*, void*);
 void EnGoroiwa_SetSpeed(void*, void*);
 void EnGoroiwa_FaceNextWaypoint(void*, void*);
 void EnGoroiwa_InitPath(void*, void*);
+s32 EnGoroiwa_GetAscendDirection(void*, void*);
 void EnGoroiwa_SpawnDust(void*, void*);
 void EnGoroiwa_SpawnWaterEffects(void*, void*);
+s32 EnGoroiwa_MoveAndFall(void*, void*);
+s32 EnGoroiwa_Move(void*, void*);
+s32 EnGoroiwa_MoveUpToNextWaypoint(void*, void*);
+s32 EnGoroiwa_MoveDownToNextWaypoint(void*, void*);
 void EnGoroiwa_UpdateRotation(void*, void*);
 void EnGoroiwa_NextWaypoint(void*, void*);
 void EnGoroiwa_SpawnFragments(void*, void*);
@@ -87,7 +93,7 @@ const GzActorFunction gGzEnGoroiwaFunctions[] = {
     { 0x0, NULL },
     { 0x6c, (void*)EnGoroiwa_InitCollider },
     { 0xd4, NULL },
-    { 0xf8, NULL },
+    { 0xf8, (void*)EnGoroiwa_Vec3fNormalize },
     { 0x17c, (void*)EnGoroiwa_SetSpeed },
     { 0x1a4, (void*)EnGoroiwa_FaceNextWaypoint },
     { 0x27c, NULL },
@@ -97,13 +103,13 @@ const GzActorFunction gGzEnGoroiwaFunctions[] = {
     { 0x4e4, (void*)EnGoroiwa_InitPath },
     { 0x524, NULL },
     { 0x5c8, NULL },
-    { 0x5e4, NULL },
+    { 0x5e4, (void*)EnGoroiwa_GetAscendDirection },
     { 0x6a8, (void*)EnGoroiwa_SpawnDust },
     { 0x898, (void*)EnGoroiwa_SpawnWaterEffects },
-    { 0x9cc, NULL },
-    { 0xb00, NULL },
-    { 0xd2c, NULL },
-    { 0xe4c, NULL },
+    { 0x9cc, (void*)EnGoroiwa_MoveAndFall },
+    { 0xb00, (void*)EnGoroiwa_Move },
+    { 0xd2c, (void*)EnGoroiwa_MoveUpToNextWaypoint },
+    { 0xe4c, (void*)EnGoroiwa_MoveDownToNextWaypoint },
     { 0x11ac, (void*)EnGoroiwa_UpdateRotation },
     { 0x134c, (void*)EnGoroiwa_NextWaypoint },
     { 0x13d4, (void*)EnGoroiwa_SpawnFragments },

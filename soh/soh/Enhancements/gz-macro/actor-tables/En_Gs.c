@@ -8,6 +8,7 @@
 
 void EnGs_Init(void*, void*);
 void EnGs_Destroy(void*, void*);
+s32 func_80A4E3EC(void*, void*);
 void func_80A4E470(void*, void*);
 void func_80A4E648(void*, void*);
 void func_80A4E910(void*, void*);
@@ -87,7 +88,7 @@ const size_t gGzEnGsSpanCount = ARRAY_COUNT(gGzEnGsSpans);
 const GzActorFunction gGzEnGsFunctions[] = {
     { 0x0, (void*)EnGs_Init },
     { 0xc4, (void*)EnGs_Destroy },
-    { 0xd4, NULL },
+    { 0xd4, (void*)func_80A4E3EC },
     { 0x15c, (void*)func_80A4E470 },
     { 0x31c, (void*)func_80A4E648 },
     { 0x42c, NULL },

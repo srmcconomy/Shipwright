@@ -8,6 +8,8 @@
 
 void BgMoriRakkatenjo_Init(void*, void*);
 void BgMoriRakkatenjo_Destroy(void*, void*);
+s32 BgMoriRakkatenjo_IsLinkUnder(void*, void*);
+s32 BgMoriRakkatenjo_IsLinkClose(void*, void*);
 void BgMoriRakkatenjo_WaitForMoriTex(void*, void*);
 void BgMoriRakkatenjo_Wait(void*, void*);
 void BgMoriRakkatenjo_Fall(void*, void*);
@@ -28,8 +30,8 @@ const size_t gGzBgMoriRakkatenjoSpanCount = ARRAY_COUNT(gGzBgMoriRakkatenjoSpans
 const GzActorFunction gGzBgMoriRakkatenjoFunctions[] = {
     { 0x0, (void*)BgMoriRakkatenjo_Init },
     { 0xb8, (void*)BgMoriRakkatenjo_Destroy },
-    { 0xec, NULL },
-    { 0x19c, NULL },
+    { 0xec, (void*)BgMoriRakkatenjo_IsLinkUnder },
+    { 0x19c, (void*)BgMoriRakkatenjo_IsLinkClose },
     { 0x24c, NULL },
     { 0x260, (void*)BgMoriRakkatenjo_WaitForMoriTex },
     { 0x2b8, NULL },

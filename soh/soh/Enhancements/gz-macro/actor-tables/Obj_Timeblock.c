@@ -9,6 +9,8 @@
 void ObjTimeblock_SpawnDemoEffect(void*, void*);
 void ObjTimeblock_Init(void*, void*);
 void ObjTimeblock_Destroy(void*, void*);
+s32 ObjTimeblock_WaitForOcarina(void*, void*);
+s32 ObjTimeblock_WaitForSong(void*, void*);
 void ObjTimeblock_DoNothing(void*, void*);
 void ObjTimeblock_Normal(void*, void*);
 void func_80BA06AC(void*, void*);
@@ -39,8 +41,8 @@ const GzActorFunction gGzObjTimeblockFunctions[] = {
     { 0x17c, (void*)ObjTimeblock_Init },
     { 0x330, (void*)ObjTimeblock_Destroy },
     { 0x364, NULL },
-    { 0x444, NULL },
-    { 0x4c4, NULL },
+    { 0x444, (void*)ObjTimeblock_WaitForOcarina },
+    { 0x4c4, (void*)ObjTimeblock_WaitForSong },
     { 0x53c, NULL },
     { 0x550, (void*)ObjTimeblock_DoNothing },
     { 0x560, NULL },

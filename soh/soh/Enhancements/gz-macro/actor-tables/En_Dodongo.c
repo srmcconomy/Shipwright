@@ -22,6 +22,7 @@ void EnDodongo_CollisionCheck(void*, void*);
 void EnDodongo_UpdateQuad(void*, void*);
 void EnDodongo_Update(void*, void*);
 void EnDodongo_Draw(void*, void*);
+s32 EnDodongo_AteBomb(void*, void*);
 
 const GzActorSpan gGzEnDodongoSpans[] = {
     { offsetof(EnDodongo, skelAnime.limbCount), 0, 0x13c, 0x0, 1, 1, GZ_SPAN_VALUE },
@@ -29,7 +30,7 @@ const GzActorSpan gGzEnDodongoSpans[] = {
     { offsetof(EnDodongo, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDodongo, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDodongo, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDodongo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDodongo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDodongo, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDodongo, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDodongo, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -283,6 +284,6 @@ const GzActorFunction gGzEnDodongoFunctions[] = {
     { 0x1f24, NULL },
     { 0x2360, (void*)EnDodongo_Draw },
     { 0x2450, NULL },
-    { 0x24b0, NULL },
+    { 0x24b0, (void*)EnDodongo_AteBomb },
 };
 const size_t gGzEnDodongoFunctionCount = ARRAY_COUNT(gGzEnDodongoFunctions);

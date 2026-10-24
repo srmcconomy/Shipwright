@@ -8,7 +8,10 @@
 
 void EnCs_Init(void*, void*);
 void EnCs_Destroy(void*, void*);
+s32 EnCs_GetTalkState(void*, void*);
+s32 EnCs_GetTextID(void*, void*);
 void EnCs_HandleTalking(void*, void*);
+s32 EnCs_HandleWalking(void*, void*);
 void EnCs_Walk(void*, void*);
 void EnCs_Wait(void*, void*);
 void EnCs_Talk(void*, void*);
@@ -21,7 +24,7 @@ const GzActorSpan gGzEnCsSpans[] = {
     { offsetof(EnCs, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnCs, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnCs, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnCs, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnCs, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnCs, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnCs, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnCs, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -122,12 +125,12 @@ const GzActorFunction gGzEnCsFunctions[] = {
     { 0x0, NULL },
     { 0x124, (void*)EnCs_Init },
     { 0x2b8, (void*)EnCs_Destroy },
-    { 0x2e4, NULL },
-    { 0x418, NULL },
+    { 0x2e4, (void*)EnCs_GetTalkState },
+    { 0x418, (void*)EnCs_GetTextID },
     { 0x49c, (void*)EnCs_HandleTalking },
     { 0x5e8, NULL },
     { 0x5fc, NULL },
-    { 0x690, NULL },
+    { 0x690, (void*)EnCs_HandleWalking },
     { 0x8a8, (void*)EnCs_Walk },
     { 0xa48, (void*)EnCs_Wait },
     { 0xad4, (void*)EnCs_Talk },

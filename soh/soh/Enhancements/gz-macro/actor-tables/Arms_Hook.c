@@ -9,6 +9,7 @@
 void ArmsHook_Init(void*, void*);
 void ArmsHook_Destroy(void*, void*);
 void ArmsHook_Wait(void*, void*);
+s32 ArmsHook_AttachToPlayer(void*, void*);
 void ArmsHook_AttachHookToActor(void*, void*);
 void ArmsHook_Shoot(void*, void*);
 void ArmsHook_Update(void*, void*);
@@ -80,7 +81,7 @@ const GzActorFunction gGzArmsHookFunctions[] = {
     { 0x80, (void*)ArmsHook_Destroy },
     { 0xc8, (void*)ArmsHook_Wait },
     { 0x148, NULL },
-    { 0x15c, NULL },
+    { 0x15c, (void*)ArmsHook_AttachToPlayer },
     { 0x18c, NULL },
     { 0x1b4, NULL },
     { 0x250, (void*)ArmsHook_AttachHookToActor },

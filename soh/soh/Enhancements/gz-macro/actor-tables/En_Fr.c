@@ -11,6 +11,8 @@ void EnFr_Update(void*, void*);
 void EnFr_Destroy(void*, void*);
 void EnFr_IsDivingIntoWater(void*, void*);
 void EnFr_DivingIntoWater(void*, void*);
+s32 EnFr_IsBelowLogSpot(void*, void*);
+s32 EnFr_IsAboveAndWithin30DistXZ(void*, void*);
 void EnFr_SetupJumpingOutOfWater(void*, void*);
 void EnFr_JumpingOutOfWater(void*, void*);
 void EnFr_OrientOnLogSpot(void*, void*);
@@ -28,6 +30,7 @@ void EnFr_ChildSong(void*, void*);
 void EnFr_ChildSongFirstTime(void*, void*);
 void EnFr_TalkBeforeFrogSong(void*, void*);
 void EnFr_SetupFrogSong(void*, void*);
+s32 EnFr_IsFrogSongComplete(void*, void*);
 void EnFr_OcarinaMistake(void*, void*);
 void EnFr_ContinueFrogSong(void*, void*);
 void EnFr_PrintTextBox(void*, void*);
@@ -44,7 +47,7 @@ const GzActorSpan gGzEnFrSpans[] = {
     { offsetof(EnFr, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnFr, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnFr, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnFr, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -75,7 +78,7 @@ const GzActorSpan gGzEnFrSpans[] = {
     { offsetof(EnFr, skelAnimeButterfly.dListCount), 0, 0x2a2, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnimeButterfly.taper), 0, 0x2a3, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnimeButterfly.skeleton), 0, 0x2a4, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnFr, skelAnimeButterfly.animation), 0, 0x2a8, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnFr, skelAnimeButterfly.animation), 0, 0x2a8, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnFr, skelAnimeButterfly.startFrame), 0, 0x2ac, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnimeButterfly.endFrame), 0, 0x2b0, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFr, skelAnimeButterfly.animLength), 0, 0x2b4, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -156,8 +159,8 @@ const GzActorFunction gGzEnFrFunctions[] = {
     { 0x500, (void*)EnFr_Destroy },
     { 0x534, (void*)EnFr_IsDivingIntoWater },
     { 0x5b8, (void*)EnFr_DivingIntoWater },
-    { 0x664, NULL },
-    { 0x6c0, NULL },
+    { 0x664, (void*)EnFr_IsBelowLogSpot },
+    { 0x6c0, (void*)EnFr_IsAboveAndWithin30DistXZ },
     { 0x73c, NULL },
     { 0x764, NULL },
     { 0x7f4, (void*)EnFr_SetupJumpingOutOfWater },
@@ -182,7 +185,7 @@ const GzActorFunction gGzEnFrFunctions[] = {
     { 0x192c, NULL },
     { 0x1974, NULL },
     { 0x19f0, (void*)EnFr_SetupFrogSong },
-    { 0x1a64, NULL },
+    { 0x1a64, (void*)EnFr_IsFrogSongComplete },
     { 0x1b14, (void*)EnFr_OcarinaMistake },
     { 0x1b70, (void*)EnFr_ContinueFrogSong },
     { 0x1d14, NULL },

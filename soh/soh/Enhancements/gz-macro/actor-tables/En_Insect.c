@@ -6,6 +6,8 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Insect/z_en_insect.h"
 
+s32 EnInsect_InBottleRange(void*, void*);
+s32 EnInsect_FoundNearbySoil(void*, void*);
 void EnInsect_Init(void*, void*);
 void EnInsect_Destroy(void*, void*);
 void EnInsect_SlowDown(void*, void*);
@@ -64,7 +66,7 @@ const GzActorSpan gGzEnInsectSpans[] = {
     { offsetof(EnInsect, skelAnime.dListCount), 0, 0x19e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnInsect, skelAnime.taper), 0, 0x19f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnInsect, skelAnime.skeleton), 0, 0x1a0, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnInsect, skelAnime.animation), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnInsect, skelAnime.animation), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnInsect, skelAnime.startFrame), 0, 0x1a8, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnInsect, skelAnime.endFrame), 0, 0x1ac, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnInsect, skelAnime.animLength), 0, 0x1b0, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -107,9 +109,9 @@ const size_t gGzEnInsectSpanCount = ARRAY_COUNT(gGzEnInsectSpans);
 const GzActorFunction gGzEnInsectFunctions[] = {
     { 0x0, NULL },
     { 0x24, NULL },
-    { 0x54, NULL },
+    { 0x54, (void*)EnInsect_InBottleRange },
     { 0x144, NULL },
-    { 0x190, NULL },
+    { 0x190, (void*)EnInsect_FoundNearbySoil },
     { 0x248, NULL },
     { 0x2dc, (void*)EnInsect_Init },
     { 0x528, (void*)EnInsect_Destroy },

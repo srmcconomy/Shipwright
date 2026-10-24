@@ -94,6 +94,7 @@ bool FindLink(const uint8_t* data, size_t size, size_t start, const uint8_t* cam
         }
         if (memcmp(p + ACTOR_WORLD_POS, cameraPos, 12) == 0) {
             out = ReadLink(p);
+            out.data.assign(p, p + N64_PLAYER_SIZE);
             return true;
         }
         if (fallback == SIZE_MAX && HasPlayerArenaRecord(data, pos)) {
@@ -102,6 +103,7 @@ bool FindLink(const uint8_t* data, size_t size, size_t start, const uint8_t* cam
     }
     if (fallback != SIZE_MAX) {
         out = ReadLink(data + fallback);
+        out.data.assign(data + fallback, data + fallback + N64_PLAYER_SIZE);
         return true;
     }
     return false;

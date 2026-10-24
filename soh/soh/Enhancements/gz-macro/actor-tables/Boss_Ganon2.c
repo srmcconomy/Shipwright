@@ -12,6 +12,7 @@ void BossGanon2_Destroy(void*, void*);
 void func_808FD5C4(void*, void*);
 void func_808FD5F4(void*, void*);
 void func_808FF898(void*, void*);
+s32 func_808FFA24(void*, void*);
 void func_808FFCFC(void*, void*);
 void func_808FFDB0(void*, void*);
 void func_808FFEBC(void*, void*);
@@ -51,7 +52,7 @@ const GzActorSpan gGzBossGanon2Spans[] = {
     { offsetof(BossGanon2, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(BossGanon2, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(BossGanon2, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(BossGanon2, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(BossGanon2, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(BossGanon2, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(BossGanon2, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(BossGanon2, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -274,7 +275,7 @@ const GzActorFunction gGzBossGanon2Functions[] = {
     { 0x64c, (void*)func_808FD5C4 },
     { 0x680, (void*)func_808FD5F4 },
     { 0x2930, (void*)func_808FF898 },
-    { 0x2abc, NULL },
+    { 0x2abc, (void*)func_808FFA24 },
     { 0x2b60, NULL },
     { 0x2c58, NULL },
     { 0x2d24, NULL },

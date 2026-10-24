@@ -10,6 +10,7 @@ void DoorKiller_Init(void*, void*);
 void DoorKiller_Destroy(void*, void*);
 void DoorKiller_SpawnRubble(void*, void*);
 void DoorKiller_FallAsRubble(void*, void*);
+s32 DoorKiller_IsHit(void*, void*);
 void DoorKiller_SetAC(void*, void*);
 void DoorKiller_Die(void*, void*);
 void DoorKiller_RiseBackUp(void*, void*);
@@ -30,7 +31,7 @@ const GzActorSpan gGzDoorKillerSpans[] = {
     { offsetof(DoorKiller, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(DoorKiller, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(DoorKiller, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(DoorKiller, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(DoorKiller, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(DoorKiller, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(DoorKiller, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(DoorKiller, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -141,7 +142,7 @@ const GzActorFunction gGzDoorKillerFunctions[] = {
     { 0x358, (void*)DoorKiller_Destroy },
     { 0x3a8, (void*)DoorKiller_SpawnRubble },
     { 0x550, (void*)DoorKiller_FallAsRubble },
-    { 0x610, NULL },
+    { 0x610, (void*)DoorKiller_IsHit },
     { 0x644, (void*)DoorKiller_SetAC },
     { 0x6a4, (void*)DoorKiller_Die },
     { 0x6f4, (void*)DoorKiller_RiseBackUp },

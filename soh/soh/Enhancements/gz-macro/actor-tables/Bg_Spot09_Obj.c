@@ -6,6 +6,13 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_Bg_Spot09_Obj/z_bg_spot09_obj.h"
 
+s32 func_808B1AE0(void*, void*);
+s32 func_808B1BA0(void*, void*);
+s32 func_808B1BEC(void*, void*);
+s32 func_808B1C70(void*, void*);
+s32 func_808B1CEC(void*, void*);
+s32 func_808B1D18(void*, void*);
+s32 func_808B1D44(void*, void*);
 void BgSpot09Obj_Init(void*, void*);
 void BgSpot09Obj_Destroy(void*, void*);
 void BgSpot09Obj_Update(void*, void*);
@@ -17,13 +24,13 @@ const GzActorSpan gGzBgSpot09ObjSpans[] = {
 const size_t gGzBgSpot09ObjSpanCount = ARRAY_COUNT(gGzBgSpot09ObjSpans);
 
 const GzActorFunction gGzBgSpot09ObjFunctions[] = {
-    { 0x0, NULL },
-    { 0xc0, NULL },
-    { 0x10c, NULL },
-    { 0x198, NULL },
-    { 0x214, NULL },
-    { 0x240, NULL },
-    { 0x26c, NULL },
+    { 0x0, (void*)func_808B1AE0 },
+    { 0xc0, (void*)func_808B1BA0 },
+    { 0x10c, (void*)func_808B1BEC },
+    { 0x198, (void*)func_808B1C70 },
+    { 0x214, (void*)func_808B1CEC },
+    { 0x240, (void*)func_808B1D18 },
+    { 0x26c, (void*)func_808B1D44 },
     { 0x2ac, (void*)BgSpot09Obj_Init },
     { 0x314, (void*)BgSpot09Obj_Destroy },
     { 0x354, (void*)BgSpot09Obj_Update },

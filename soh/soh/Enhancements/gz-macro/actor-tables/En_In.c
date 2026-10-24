@@ -7,6 +7,8 @@
 #include "overlays/actors/ovl_En_In/z_en_in.h"
 
 void func_80A795C8(void*, void*);
+s32 func_80A7975C(void*, void*);
+s32 EnIn_GetStartMode(void*, void*);
 void func_80A79AB4(void*, void*);
 void func_80A79C78(void*, void*);
 void EnIn_Init(void*, void*);
@@ -34,7 +36,7 @@ const GzActorSpan gGzEnInSpans[] = {
     { offsetof(EnIn, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnIn, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnIn, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnIn, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnIn, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnIn, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnIn, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnIn, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -145,8 +147,8 @@ const GzActorFunction gGzEnInFunctions[] = {
     { 0x614, (void*)func_80A795C8 },
     { 0x6dc, NULL },
     { 0x738, NULL },
-    { 0x7a8, NULL },
-    { 0x87c, NULL },
+    { 0x7a8, (void*)func_80A7975C },
+    { 0x87c, (void*)EnIn_GetStartMode },
     { 0xa78, NULL },
     { 0xb00, (void*)func_80A79AB4 },
     { 0xbf8, NULL },

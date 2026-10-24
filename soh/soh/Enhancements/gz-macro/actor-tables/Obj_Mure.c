@@ -6,6 +6,8 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_Obj_Mure/z_obj_mure.h"
 
+s32 ObjMure_SetCullingImpl(void*, void*);
+s32 ObjMure_SetCulling(void*, void*);
 void ObjMure_Init(void*, void*);
 void ObjMure_Destroy(void*, void*);
 void ObjMure_SpawnActors0(void*, void*);
@@ -36,8 +38,8 @@ const GzActorSpan gGzObjMureSpans[] = {
 const size_t gGzObjMureSpanCount = ARRAY_COUNT(gGzObjMureSpans);
 
 const GzActorFunction gGzObjMureFunctions[] = {
-    { 0x0, NULL },
-    { 0x58, NULL },
+    { 0x0, (void*)ObjMure_SetCullingImpl },
+    { 0x58, (void*)ObjMure_SetCulling },
     { 0x84, (void*)ObjMure_Init },
     { 0x134, (void*)ObjMure_Destroy },
     { 0x144, NULL },

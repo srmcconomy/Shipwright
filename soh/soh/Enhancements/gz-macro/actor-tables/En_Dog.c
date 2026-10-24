@@ -6,6 +6,8 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Dog/z_en_dog.h"
 
+s32 EnDog_UpdateWaypoint(void*, void*);
+s32 EnDog_Orient(void*, void*);
 void EnDog_Init(void*, void*);
 void EnDog_Destroy(void*, void*);
 void EnDog_FollowPath(void*, void*);
@@ -23,7 +25,7 @@ const GzActorSpan gGzEnDogSpans[] = {
     { offsetof(EnDog, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDog, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDog, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDog, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDog, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDog, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDog, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDog, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -101,8 +103,8 @@ const GzActorFunction gGzEnDogFunctions[] = {
     { 0xd0, NULL },
     { 0x138, NULL },
     { 0x2d0, NULL },
-    { 0x354, NULL },
-    { 0x3e0, NULL },
+    { 0x354, (void*)EnDog_UpdateWaypoint },
+    { 0x3e0, (void*)EnDog_Orient },
     { 0x484, (void*)EnDog_Init },
     { 0x6d4, (void*)EnDog_Destroy },
     { 0x700, (void*)EnDog_FollowPath },

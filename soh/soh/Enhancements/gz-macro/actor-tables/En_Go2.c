@@ -7,12 +7,20 @@
 #include "overlays/actors/ovl_En_Go2/z_en_go2.h"
 
 void EnGo2_DrawDust(void*, void*);
+s32 EnGo2_GetDialogState(void*, void*);
+s32 func_80A44790(void*, void*);
 void EnGo2_CheckCollision(void*, void*);
+s32 func_80A44AB0(void*, void*);
+s32 EnGo2_UpdateWaypoint(void*, void*);
+s32 EnGo2_Orient(void*, void*);
 void func_80A45288(void*, void*);
 void func_80A45360(void*, void*);
+s32 EnGo2_IsCameraModified(void*, void*);
 void EnGo2_WakeUp(void*, void*);
 void EnGo2_SetupRolling(void*, void*);
 void EnGo2_StopRolling(void*, void*);
+s32 EnGo2_IsFreeingGoronInFire(void*, void*);
+s32 EnGo2_IsGoronRollingBig(void*, void*);
 void EnGo2_GoronLinkAnimation(void*, void*);
 void EnGo2_GoronFireCamera(void*, void*);
 void EnGo2_GoronFireClearCamera(void*, void*);
@@ -30,6 +38,8 @@ void EnGo2_BiggoronEyedrops(void*, void*);
 void EnGo2_GoronLinkStopRolling(void*, void*);
 void EnGo2_GoronFireGenericAction(void*, void*);
 void EnGo2_Update(void*, void*);
+s32 EnGo2_DrawCurledUp(void*, void*);
+s32 EnGo2_DrawRolling(void*, void*);
 void EnGo2_Draw(void*, void*);
 
 const GzActorSpan gGzEnGo2Spans[] = {
@@ -38,7 +48,7 @@ const GzActorSpan gGzEnGo2Spans[] = {
     { offsetof(EnGo2, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGo2, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGo2, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnGo2, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGo2, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnGo2, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGo2, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGo2, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -343,7 +353,7 @@ const GzActorFunction gGzEnGo2Functions[] = {
     { 0x1b0, (void*)EnGo2_DrawDust },
     { 0x4a0, NULL },
     { 0x6b8, NULL },
-    { 0x6fc, NULL },
+    { 0x6fc, (void*)EnGo2_GetDialogState },
     { 0x77c, NULL },
     { 0x7f8, NULL },
     { 0x880, NULL },
@@ -375,14 +385,14 @@ const GzActorFunction gGzEnGo2Functions[] = {
     { 0x17dc, NULL },
     { 0x1818, NULL },
     { 0x195c, NULL },
-    { 0x1a74, NULL },
+    { 0x1a74, (void*)func_80A44790 },
     { 0x1b70, NULL },
     { 0x1bac, NULL },
     { 0x1c24, (void*)EnGo2_CheckCollision },
     { 0x1d80, NULL },
-    { 0x1d98, NULL },
-    { 0x1f54, NULL },
-    { 0x1fd0, NULL },
+    { 0x1d98, (void*)func_80A44AB0 },
+    { 0x1f54, (void*)EnGo2_UpdateWaypoint },
+    { 0x1fd0, (void*)EnGo2_Orient },
     { 0x2074, NULL },
     { 0x20ac, NULL },
     { 0x21dc, NULL },
@@ -392,7 +402,7 @@ const GzActorFunction gGzEnGo2Functions[] = {
     { 0x2760, NULL },
     { 0x27c0, NULL },
     { 0x286c, NULL },
-    { 0x2910, NULL },
+    { 0x2910, (void*)EnGo2_IsCameraModified },
     { 0x2a2c, NULL },
     { 0x2a84, NULL },
     { 0x2af4, NULL },
@@ -405,9 +415,9 @@ const GzActorFunction gGzEnGo2Functions[] = {
     { 0x3044, (void*)EnGo2_GetItemAnimation },
     { 0x30a8, (void*)EnGo2_SetupRolling },
     { 0x3150, (void*)EnGo2_StopRolling },
-    { 0x3210, NULL },
+    { 0x3210, (void*)EnGo2_IsFreeingGoronInFire },
     { 0x32a8, NULL },
-    { 0x3328, NULL },
+    { 0x3328, (void*)EnGo2_IsGoronRollingBig },
     { 0x3388, NULL },
     { 0x33c4, NULL },
     { 0x3420, NULL },
@@ -431,8 +441,8 @@ const GzActorFunction gGzEnGo2Functions[] = {
     { 0x47a0, (void*)EnGo2_GoronLinkStopRolling },
     { 0x4890, (void*)EnGo2_GoronFireGenericAction },
     { 0x4bbc, (void*)EnGo2_Update },
-    { 0x4cd0, NULL },
-    { 0x4d90, NULL },
+    { 0x4cd0, (void*)EnGo2_DrawCurledUp },
+    { 0x4d90, (void*)EnGo2_DrawRolling },
     { 0x4ecc, NULL },
     { 0x50e8, NULL },
     { 0x5144, (void*)EnGo2_Draw },

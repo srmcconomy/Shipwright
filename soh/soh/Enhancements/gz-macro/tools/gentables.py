@@ -2,12 +2,18 @@
 # its own fields (SoH offset by offsetof, the N64 offset) and its functions (offset in the N64 overlay, SoH function).
 import json, os, re, sys
 
+
+def header_path(soh_root, header):
+    """An actor's header is under src/; Player's is in include/."""
+    path = os.path.join(soh_root, "src", header)
+    return path if os.path.exists(path) else os.path.join(soh_root, "include", header)
+
 pairs = json.load(open(sys.argv[1]))
 spans = json.load(open(sys.argv[2]))
 soh_root, out_path = sys.argv[3], sys.argv[4]
 
-ACTION = re.compile(r"^void\s+(\w+)\s*\(\s*[\w\s]+?\*\s*\w+\s*,\s*[\w\s]+?\*\s*\w+\s*\)\s*\{", re.M)
-KINDS = {"value": "GZ_SPAN_VALUE", "ptr": "GZ_SPAN_POINTER", "func": "GZ_SPAN_FUNCTION"}
+ACTION = re.compile(r"^(void|s32)\s+(\w+)\s*\(\s*[\w\s]+?\*\s*\w+\s*,\s*[\w\s]+?\*\s*\w+\s*\)\s*\{", re.M)
+KINDS = {"value": "GZ_SPAN_VALUE", "ptr": "GZ_SPAN_POINTER", "func": "GZ_SPAN_FUNCTION", "anim": "GZ_SPAN_ANIMATION"}
 
 
 def designator(path, index):
@@ -18,6 +24,7 @@ def designator(path, index):
 
 
 out_dir = out_path
+SHARED_DECLARATIONS = open(os.path.join(soh_root, "include/functions.h")).read()
 os.makedirs(out_dir, exist_ok=True)
 for f in os.listdir(out_dir):
     if f.endswith(".c"):
@@ -27,13 +34,14 @@ GENERATED = ("// Generated from SoH's actor sources and the actor overlays of an
 entries, externs, total_functions = [], [], 0
 for actor_id, info in sorted(spans.items(), key=lambda x: int(x[0])):
     pair = pairs[actor_id]
-    d = os.path.join(soh_root, "src/overlays/actors", "ovl_" + pair["name"])
-    pointer_pair = set()
+    d = os.path.join(soh_root, "src/overlays/actors", "ovl_player_actor" if actor_id == "0" else "ovl_" + pair["name"])
+    pointer_pair = {}
     for f in sorted(os.listdir(d)):
         if f.endswith(".c"):
             src = re.sub(r"/\*.*?\*/", "", open(os.path.join(d, f)).read(), flags=re.S)
-            pointer_pair.update(m.group(1) for m in ACTION.finditer(src))
-    header_text = open(os.path.join(soh_root, "src", info["header"])).read()
+            pointer_pair.update({m.group(2): m.group(1) for m in ACTION.finditer(src)})
+    # What is declared already, by the actor's header or the headers every file includes
+    header_text = open(header_path(soh_root, info["header"])).read() + SHARED_DECLARATIONS
     struct, sym = info["struct"], "gGz" + info["struct"]
     lines = [GENERATED + "#include <stddef.h>\n#include \"global.h\"\n#include \"soh/Enhancements/gz-macro/GzActorTables.h\"\n#include \"" + info["header"] + "\"\n"]
     protos = []
@@ -42,7 +50,7 @@ for actor_id, info in sorted(spans.items(), key=lambda x: int(x[0])):
         if name in pointer_pair:
             if not re.search(r"\b" + re.escape(name) + r"\s*\(", header_text):
                 # Declared by its call signature alone, which is all a function pointer needs
-                protos.append(f"void {name}(void*, void*);")
+                protos.append(f"{pointer_pair[name]} {name}(void*, void*);")
             funcs.append(f"    {{ {offset:#x}, (void*){name} }},")
             total_functions += 1
         else:

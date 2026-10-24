@@ -8,7 +8,10 @@
 
 void EnDodojr_Init(void*, void*);
 void EnDodojr_Destroy(void*, void*);
+s32 EnDodojr_UpdateBounces(void*, void*);
+s32 EnDodojr_CheckNearbyBombs(void*, void*);
 void EnDodojr_UpdateCrawl(void*, void*);
+s32 EnDodojr_CheckDamaged(void*, void*);
 void EnDodojr_UpdateCollider(void*, void*);
 void EnDodojr_WaitUnderground(void*, void*);
 void EnDodojr_EmergeFromGround(void*, void*);
@@ -34,7 +37,7 @@ const GzActorSpan gGzEnDodojrSpans[] = {
     { offsetof(EnDodojr, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDodojr, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDodojr, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDodojr, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDodojr, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDodojr, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDodojr, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDodojr, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -116,19 +119,19 @@ const GzActorFunction gGzEnDodojrFunctions[] = {
     { 0x114, NULL },
     { 0x158, NULL },
     { 0x378, NULL },
-    { 0x4f8, NULL },
+    { 0x4f8, (void*)EnDodojr_UpdateBounces },
     { 0x5dc, NULL },
     { 0x664, NULL },
     { 0x708, NULL },
     { 0x778, NULL },
     { 0x7fc, NULL },
     { 0x868, NULL },
-    { 0x8e4, NULL },
+    { 0x8e4, (void*)EnDodojr_CheckNearbyBombs },
     { 0xa10, NULL },
     { 0xa94, (void*)EnDodojr_UpdateCrawl },
     { 0xca8, NULL },
     { 0xcd8, NULL },
-    { 0xd24, NULL },
+    { 0xd24, (void*)EnDodojr_CheckDamaged },
     { 0xee0, (void*)EnDodojr_UpdateCollider },
     { 0xff0, (void*)EnDodojr_WaitUnderground },
     { 0x1108, (void*)EnDodojr_EmergeFromGround },

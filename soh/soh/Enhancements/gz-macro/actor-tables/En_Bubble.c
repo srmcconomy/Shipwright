@@ -7,6 +7,7 @@
 #include "overlays/actors/ovl_En_Bubble/z_en_bubble.h"
 
 void EnBubble_DamagePlayer(void*, void*);
+s32 EnBubble_Explosion(void*, void*);
 void EnBubble_Fly(void*, void*);
 void EnBubble_Init(void*, void*);
 void EnBubble_Destroy(void*, void*);
@@ -95,7 +96,7 @@ const GzActorFunction gGzEnBubbleFunctions[] = {
     { 0xbc, NULL },
     { 0xf0, NULL },
     { 0x114, (void*)EnBubble_DamagePlayer },
-    { 0x180, NULL },
+    { 0x180, (void*)EnBubble_Explosion },
     { 0x3dc, NULL },
     { 0x428, NULL },
     { 0x47c, NULL },

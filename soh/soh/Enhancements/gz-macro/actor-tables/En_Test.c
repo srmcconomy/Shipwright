@@ -44,6 +44,7 @@ void EnTest_UpdateHeadRot(void*, void*);
 void EnTest_UpdateDamage(void*, void*);
 void EnTest_Update(void*, void*);
 void EnTest_Draw(void*, void*);
+s32 EnTest_ReactToProjectile(void*, void*);
 
 const GzActorSpan gGzEnTestSpans[] = {
     { offsetof(EnTest, bodyPartsPos[0].x), offsetof(EnTest, bodyPartsPos[1].x) - offsetof(EnTest, bodyPartsPos[0].x), 0x13c, 0x6, 10, 2, GZ_SPAN_VALUE },
@@ -54,7 +55,7 @@ const GzActorSpan gGzEnTestSpans[] = {
     { offsetof(EnTest, skelAnime.dListCount), 0, 0x17a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTest, skelAnime.taper), 0, 0x17b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTest, skelAnime.skeleton), 0, 0x17c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnTest, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnTest, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnTest, skelAnime.startFrame), 0, 0x184, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTest, skelAnime.endFrame), 0, 0x188, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTest, skelAnime.animLength), 0, 0x18c, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -85,7 +86,7 @@ const GzActorSpan gGzEnTestSpans[] = {
     { offsetof(EnTest, upperSkelanime.dListCount), 0, 0x49a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTest, upperSkelanime.taper), 0, 0x49b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTest, upperSkelanime.skeleton), 0, 0x49c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnTest, upperSkelanime.animation), 0, 0x4a0, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnTest, upperSkelanime.animation), 0, 0x4a0, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnTest, upperSkelanime.startFrame), 0, 0x4a4, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTest, upperSkelanime.endFrame), 0, 0x4a8, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTest, upperSkelanime.animLength), 0, 0x4ac, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -302,6 +303,6 @@ const GzActorFunction gGzEnTestFunctions[] = {
     { 0x4688, NULL },
     { 0x4a10, (void*)EnTest_Draw },
     { 0x4b24, NULL },
-    { 0x4bb4, NULL },
+    { 0x4bb4, (void*)EnTest_ReactToProjectile },
 };
 const size_t gGzEnTestFunctionCount = ARRAY_COUNT(gGzEnTestFunctions);

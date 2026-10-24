@@ -6,7 +6,10 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Fd/z_en_fd.h"
 
+s32 EnFd_SpawnCore(void*, void*);
 void EnFd_SpawnDot(void*, void*);
+s32 EnFd_CheckHammer(void*, void*);
+s32 EnFd_ColliderCheck(void*, void*);
 void EnFd_Fade(void*, void*);
 void EnFd_Init(void*, void*);
 void EnFd_Destroy(void*, void*);
@@ -28,7 +31,7 @@ const GzActorSpan gGzEnFdSpans[] = {
     { offsetof(EnFd, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFd, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFd, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnFd, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnFd, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnFd, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFd, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFd, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -3912,11 +3915,11 @@ const GzActorSpan gGzEnFdSpans[] = {
 const size_t gGzEnFdSpanCount = ARRAY_COUNT(gGzEnFdSpans);
 
 const GzActorFunction gGzEnFdFunctions[] = {
-    { 0x0, NULL },
+    { 0x0, (void*)EnFd_SpawnCore },
     { 0xf8, NULL },
     { 0x218, (void*)EnFd_SpawnDot },
-    { 0x384, NULL },
-    { 0x420, NULL },
+    { 0x384, (void*)EnFd_CheckHammer },
+    { 0x420, (void*)EnFd_ColliderCheck },
     { 0x5b8, NULL },
     { 0x6c8, NULL },
     { 0x788, NULL },

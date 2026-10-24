@@ -28,7 +28,7 @@ const GzActorSpan gGzEnKakasi3Spans[] = {
     { offsetof(EnKakasi3, skelAnime.dListCount), 0, 0x142, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnKakasi3, skelAnime.taper), 0, 0x143, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnKakasi3, skelAnime.skeleton), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnKakasi3, skelAnime.animation), 0, 0x148, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnKakasi3, skelAnime.animation), 0, 0x148, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnKakasi3, skelAnime.startFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnKakasi3, skelAnime.endFrame), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnKakasi3, skelAnime.animLength), 0, 0x154, 0x0, 1, 4, GZ_SPAN_VALUE },

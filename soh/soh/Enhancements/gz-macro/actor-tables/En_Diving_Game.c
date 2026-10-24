@@ -9,6 +9,7 @@
 void EnDivingGame_Init(void*, void*);
 void EnDivingGame_Destroy(void*, void*);
 void EnDivingGame_SpawnRuppy(void*, void*);
+s32 EnDivingGame_HasMinigameFinished(void*, void*);
 void func_809EDCB0(void*, void*);
 void EnDivingGame_Talk(void*, void*);
 void EnDivingGame_HandlePlayChoice(void*, void*);
@@ -34,7 +35,7 @@ const GzActorSpan gGzEnDivingGameSpans[] = {
     { offsetof(EnDivingGame, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDivingGame, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDivingGame, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDivingGame, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDivingGame, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDivingGame, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDivingGame, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDivingGame, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -167,7 +168,7 @@ const GzActorFunction gGzEnDivingGameFunctions[] = {
     { 0x0, (void*)EnDivingGame_Init },
     { 0x11c, (void*)EnDivingGame_Destroy },
     { 0x15c, (void*)EnDivingGame_SpawnRuppy },
-    { 0x288, NULL },
+    { 0x288, (void*)EnDivingGame_HasMinigameFinished },
     { 0x434, (void*)func_809EDCB0 },
     { 0x4d0, (void*)EnDivingGame_Talk },
     { 0x660, (void*)EnDivingGame_HandlePlayChoice },

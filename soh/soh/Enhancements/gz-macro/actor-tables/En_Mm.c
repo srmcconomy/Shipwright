@@ -8,7 +8,10 @@
 
 void EnMm_Init(void*, void*);
 void EnMm_Destroy(void*, void*);
+s32 func_80AADAA0(void*, void*);
+s32 EnMm_GetTextId(void*, void*);
 void func_80AADCD0(void*, void*);
+s32 func_80AADEF0(void*, void*);
 void func_80AAE224(void*, void*);
 void func_80AAE294(void*, void*);
 void func_80AAE50C(void*, void*);
@@ -22,7 +25,7 @@ const GzActorSpan gGzEnMmSpans[] = {
     { offsetof(EnMm, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnMm, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnMm, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnMm, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMm, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnMm, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnMm, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnMm, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -113,12 +116,12 @@ const GzActorFunction gGzEnMmFunctions[] = {
     { 0x124, (void*)EnMm_Init },
     { 0x2e0, (void*)EnMm_Destroy },
     { 0x30c, NULL },
-    { 0x340, NULL },
-    { 0x4d4, NULL },
+    { 0x340, (void*)func_80AADAA0 },
+    { 0x4d4, (void*)EnMm_GetTextId },
     { 0x574, (void*)func_80AADCD0 },
     { 0x6f4, NULL },
     { 0x708, NULL },
-    { 0x79c, NULL },
+    { 0x79c, (void*)func_80AADEF0 },
     { 0xaac, (void*)func_80AAE224 },
     { 0xb1c, (void*)func_80AAE294 },
     { 0xd94, (void*)func_80AAE50C },

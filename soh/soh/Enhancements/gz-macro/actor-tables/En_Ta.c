@@ -36,6 +36,7 @@ void EnTa_RemoveFloorCamera(void*, void*);
 void EnTa_TalkNotEnoughRupees(void*, void*);
 void EnTa_TalkFoundSuperCucco(void*, void*);
 void EnTa_IdleFoundSuperCucco(void*, void*);
+s32 EnTa_GetSuperCuccosCount(void*, void*);
 void EnTa_TransitionToPostCuccoGame(void*, void*);
 void EnTa_TalkCuccoGameEnd(void*, void*);
 void EnTa_RunCuccoGame(void*, void*);
@@ -63,7 +64,7 @@ const GzActorSpan gGzEnTaSpans[] = {
     { offsetof(EnTa, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTa, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTa, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnTa, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnTa, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnTa, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTa, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTa, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -185,7 +186,7 @@ const GzActorFunction gGzEnTaFunctions[] = {
     { 0x1618, NULL },
     { 0x166c, (void*)EnTa_TalkFoundSuperCucco },
     { 0x17cc, (void*)EnTa_IdleFoundSuperCucco },
-    { 0x183c, NULL },
+    { 0x183c, (void*)EnTa_GetSuperCuccosCount },
     { 0x1878, NULL },
     { 0x1944, (void*)EnTa_TransitionToPostCuccoGame },
     { 0x1994, (void*)EnTa_TalkCuccoGameEnd },

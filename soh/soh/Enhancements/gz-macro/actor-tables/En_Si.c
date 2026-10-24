@@ -8,6 +8,7 @@
 
 void EnSi_Init(void*, void*);
 void EnSi_Destroy(void*, void*);
+s32 func_80AFB748(void*, void*);
 void func_80AFB768(void*, void*);
 void func_80AFB89C(void*, void*);
 void func_80AFB950(void*, void*);
@@ -56,7 +57,7 @@ const size_t gGzEnSiSpanCount = ARRAY_COUNT(gGzEnSiSpans);
 const GzActorFunction gGzEnSiFunctions[] = {
     { 0x0, (void*)EnSi_Init },
     { 0x90, (void*)EnSi_Destroy },
-    { 0xbc, NULL },
+    { 0xbc, (void*)func_80AFB748 },
     { 0xe0, (void*)func_80AFB768 },
     { 0x214, (void*)func_80AFB89C },
     { 0x2cc, (void*)func_80AFB950 },

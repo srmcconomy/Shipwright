@@ -8,7 +8,9 @@
 
 void EnZf_Init(void*, void*);
 void EnZf_Destroy(void*, void*);
+s32 EnZf_CanAttack(void*, void*);
 void func_80B44DC4(void*, void*);
+s32 EnZf_ChooseAction(void*, void*);
 void EnZf_DropIn(void*, void*);
 void func_80B4543C(void*, void*);
 void EnZf_SetupApproachPlayer(void*, void*);
@@ -37,6 +39,8 @@ void EnZf_UpdateHeadRotation(void*, void*);
 void EnZf_UpdateDamage(void*, void*);
 void EnZf_Update(void*, void*);
 void EnZf_Draw(void*, void*);
+s32 EnZf_DodgeRangedEngaging(void*, void*);
+s32 EnZf_DodgeRangedWaiting(void*, void*);
 
 const GzActorSpan gGzEnZfSpans[] = {
     { offsetof(EnZf, skelAnime.limbCount), 0, 0x13c, 0x0, 1, 1, GZ_SPAN_VALUE },
@@ -44,7 +48,7 @@ const GzActorSpan gGzEnZfSpans[] = {
     { offsetof(EnZf, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZf, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZf, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnZf, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnZf, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnZf, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZf, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZf, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -181,9 +185,9 @@ const GzActorFunction gGzEnZfFunctions[] = {
     { 0x668, NULL },
     { 0x830, NULL },
     { 0xad4, NULL },
-    { 0xcb0, NULL },
+    { 0xcb0, (void*)EnZf_CanAttack },
     { 0xd84, (void*)func_80B44DC4 },
-    { 0xe50, NULL },
+    { 0xe50, (void*)EnZf_ChooseAction },
     { 0x1070, NULL },
     { 0x1138, (void*)EnZf_DropIn },
     { 0x1348, NULL },
@@ -227,7 +231,7 @@ const GzActorFunction gGzEnZfFunctions[] = {
     { 0x5694, NULL },
     { 0x58e8, (void*)EnZf_Draw },
     { 0x5b3c, NULL },
-    { 0x5c08, NULL },
-    { 0x5e34, NULL },
+    { 0x5c08, (void*)EnZf_DodgeRangedEngaging },
+    { 0x5e34, (void*)EnZf_DodgeRangedWaiting },
 };
 const size_t gGzEnZfFunctionCount = ARRAY_COUNT(gGzEnZfFunctions);

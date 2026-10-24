@@ -15,6 +15,7 @@
 #include "soh/OTRGlobals.h"
 #include "soh/ResourceManagerHelpers.h"
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/SohGui/SohGui.hpp"
 #include "soh/SohGui/UIWidgets.hpp"
 #include "soh/WebFiles.h"
@@ -26,6 +27,7 @@ extern "C" {
 #include "functions.h"
 extern PlayState* gPlayState;
 void Sram_InitDebugSave(void);
+extern EffectSsInfo sEffectSsInfo;
 #include "overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h"
 #include "overlays/actors/ovl_En_Elf/z_en_elf.h"
 // Sets Navi's mode, and the movement and timers that go with it
@@ -412,7 +414,7 @@ void RestoreKankyos(const std::vector<GzMacro::KankyoState>& kankyos) {
 }
 
 // Puts the Actor fields the N64 had back into one actor: where it is and how it is moving, its collision and
-// shape, and its timers. Pointers, flags and the actor's own fields keep what its fresh spawn set up.
+// shape, its flags and its timers. Pointers and the actor's own fields keep what its fresh spawn set up.
 void RestoreActorFields(Actor* actor, const uint8_t* a) {
     using GzMacro::ReadF32;
     using GzMacro::ReadU16;
@@ -420,6 +422,12 @@ void RestoreActorFields(Actor* actor, const uint8_t* a) {
     auto vec3sAt = [a](size_t offset) {
         return Vec3s{ (s16)ReadU16(a + offset), (s16)ReadU16(a + offset + 2), (s16)ReadU16(a + offset + 4) };
     };
+    // What the actor is set up to do, such as whether it keeps updating off screen, which some change as they go
+    actor->flags = GzMacro::ReadU32(a + 0x04);
+    // Some actors move their home with them, and it has done its job of matching the actor to the state's by now
+    actor->home.pos = ToVec3f(ReadVec3f(a + 0x08));
+    actor->home.rot = vec3sAt(0x14);
+    actor->targetMode = (s8)a[0x1F];
     actor->world.pos = ToVec3f(ReadVec3f(a + 0x24));
     actor->world.rot = vec3sAt(0x30);
     actor->focus.pos = ToVec3f(ReadVec3f(a + 0x38));
@@ -519,6 +527,41 @@ const GzActorTable* FindActorTable(s16 id) {
     return it != sTables.end() ? it->second : nullptr;
 }
 
+// The name SoH loads an N64 animation by, from the address the N64 had for it: an offset into the object in its
+// segment (the actor's own object, or one of the keep objects)
+const char* FindAnimation(Actor* actor, uint32_t address) {
+    static std::unordered_map<uint64_t, const char*> sAnimations;
+    if (sAnimations.empty()) {
+        for (size_t i = 0; i < gGzAnimationCount; i++) {
+            sAnimations[((uint64_t)(uint16_t)gGzAnimations[i].objectId << 32) | gGzAnimations[i].offset] =
+                gGzAnimations[i].name;
+        }
+    }
+    ObjectContext* objectCtx = &gPlayState->objectCtx;
+    s32 objectId;
+    switch (address >> 24) {
+        case 4:
+            objectId = OBJECT_GAMEPLAY_KEEP;
+            break;
+        case 5:
+            objectId = objectCtx->status[objectCtx->subKeepIndex].id;
+            break;
+        case 6:
+            if (actor->objBankIndex < 0) {
+                return nullptr;
+            }
+            objectId = objectCtx->status[actor->objBankIndex].id;
+            break;
+        default:
+            return nullptr;
+    }
+    auto it = sAnimations.find(((uint64_t)(uint16_t)objectId << 32) | (address & 0xFFFFFF));
+    return it != sAnimations.end() ? it->second : nullptr;
+}
+
+// Overlays are loaded above code, which ends here in N64 OoT 1.2
+constexpr uint32_t N64_CODE_END = 0x80115480;
+
 // Restores an actor's own fields from the state, for the actors whose N64 layout and code are known: numbers as they
 // were, and function pointers (what the actor is in the middle of doing) as the SoH function at the same place in
 // the actor's code. Pointers to data keep what the fresh actor set up. Returns whether it could.
@@ -533,6 +576,36 @@ bool RestoreOwnFields(Actor* actor, const std::vector<uint8_t>& data) {
     uint32_t destroy = GzMacro::ReadU32(n64 + N64_ACTOR_DESTROY);
     bool haveBase = table->destroyIndex >= 0 && destroy != 0;
     uint32_t base = haveBase ? destroy - table->functions[table->destroyIndex].n64Offset : 0;
+    if (table->destroyIndex < 0) {
+        // Without a destroy function in its own code (Player's are in code), the overlay's address is the one that
+        // makes the most of the actor's function pointers land on its functions
+        std::unordered_map<uint32_t, int> votes;
+        for (size_t s = 0; s < *table->spanCount; s++) {
+            const GzActorSpan& span = table->spans[s];
+            if (span.kind != GZ_SPAN_FUNCTION) {
+                continue;
+            }
+            for (size_t i = 0; i < span.count; i++) {
+                uint32_t address = GzMacro::ReadU32(n64 + span.n64Offset + i * span.n64Stride);
+                // A pointer into code (a SkelAnime's update, say) says nothing about where the overlay is
+                if (address < N64_CODE_END) {
+                    continue;
+                }
+                for (size_t f = 0; f < *table->functionCount; f++) {
+                    votes[address - table->functions[f].n64Offset]++;
+                }
+            }
+        }
+        int best = 0;
+        for (auto& [candidate, count] : votes) {
+            // The heap an overlay is loaded into hands out 16 byte aligned blocks
+            if (count > best && candidate % 16 == 0 && candidate >= N64_CODE_END && candidate < 0x80800000) {
+                best = count;
+                base = candidate;
+            }
+        }
+        haveBase = best > 0;
+    }
     auto translate = [&](uint32_t address, void* current) -> void* {
         if (address == 0) {
             return nullptr;
@@ -575,6 +648,18 @@ bool RestoreOwnFields(Actor* actor, const std::vector<uint8_t>& data) {
                         }
                     }
                     break;
+                case GZ_SPAN_ANIMATION: {
+                    const char* current;
+                    memcpy(&current, to, sizeof(current));
+                    const char* name = FindAnimation(actor, GzMacro::ReadU32(from));
+                    // The actor's own pointer is kept when it names the same animation: some actors compare it with
+                    // the animations they know, which are their own copies of the names
+                    if (name != nullptr &&
+                        (current == nullptr || !ResourceMgr_OTRSigCheck((char*)current) || strcmp(current, name) != 0)) {
+                        memcpy(to, &name, sizeof(name));
+                    }
+                    break;
+                }
                 case GZ_SPAN_FUNCTION: {
                     void* current;
                     memcpy(&current, to, sizeof(current));
@@ -605,6 +690,27 @@ void RestoreActor(Actor* actor, const GzMacro::ActorState& state) {
 // when there is only one of the kind on each side (Navi, who spawns wherever Link arrives), and restores each one's
 // Actor fields. Link is restored on his own.
 void RestoreActors(const std::vector<GzMacro::ActorState>& saved) {
+    // An actor whose object wasn't loaded when it spawned is initialised on the next actor update, which would undo
+    // what is restored here. SoH holds a new scene's objects back a frame, as the N64 takes that long to load them,
+    // but the state's actors were all set up long ago: so the objects are finished and those actors initialised now,
+    // as the next update would.
+    Object_UpdateBank(&gPlayState->objectCtx);
+    for (int category = 0; category < ACTORCAT_MAX; category++) {
+        for (Actor* actor = gPlayState->actorCtx.actorLists[category].head; actor != nullptr; actor = actor->next) {
+            if (actor->init == nullptr || !Object_IsLoaded(&gPlayState->objectCtx, actor->objBankIndex)) {
+                continue;
+            }
+            Actor_SetObjectDependency(gPlayState, actor);
+            if (GameInteractor_ShouldActorInit(actor)) {
+                actor->init(actor, gPlayState);
+                actor->init = nullptr;
+                GameInteractor_ExecuteOnActorInit(actor);
+            } else {
+                actor->init = nullptr;
+                Actor_Kill(actor);
+            }
+        }
+    }
     std::vector<Actor*> live;
     for (int category = 0; category < ACTORCAT_MAX; category++) {
         for (Actor* actor = gPlayState->actorCtx.actorLists[category].head; actor != nullptr; actor = actor->next) {
@@ -692,8 +798,23 @@ void ApplyArrival() {
             return;
         }
         RestoreCamera(sPending.camera);
+        // The effects the arrival spawned (Navi's sparkles as she appears) aren't the state's, and the ones that last
+        // draw random numbers every frame
+        for (s32 i = 0; i < sEffectSsInfo.tableSize; i++) {
+            if (sEffectSsInfo.table[i].life > -1) {
+                EffectSs_Delete(&sEffectSsInfo.table[i]);
+            }
+        }
         memcpy(gPlayState->envCtx.unk_EE, sPending.precipitation, sizeof(gPlayState->envCtx.unk_EE));
         RestoreActors(sPending.actors);
+        // Link, the same way, once his arrival is done
+        if (sPending.hasLink && sPending.link.data.size() >= GzMacro::N64_PLAYER_SIZE && GET_PLAYER(gPlayState) != nullptr) {
+            Player* player = GET_PLAYER(gPlayState);
+            RestoreActorFields(&player->actor, sPending.link.data.data());
+            if (sPending.actorTablesApply) {
+                RestoreOwnFields(&player->actor, sPending.link.data);
+            }
+        }
         RestoreKankyos(sPending.kankyos);
         Gz_Notify("gz savestate imported");
         if (sOnArrived != nullptr) {

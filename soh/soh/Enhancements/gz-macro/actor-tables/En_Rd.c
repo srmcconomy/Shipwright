@@ -36,7 +36,7 @@ const GzActorSpan gGzEnRdSpans[] = {
     { offsetof(EnRd, skelAnime.dListCount), 0, 0x17a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnRd, skelAnime.taper), 0, 0x17b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnRd, skelAnime.skeleton), 0, 0x17c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnRd, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnRd, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnRd, skelAnime.startFrame), 0, 0x184, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnRd, skelAnime.endFrame), 0, 0x188, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnRd, skelAnime.animLength), 0, 0x18c, 0x0, 1, 4, GZ_SPAN_VALUE },

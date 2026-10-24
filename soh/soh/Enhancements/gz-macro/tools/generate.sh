@@ -9,6 +9,7 @@
 # 3. dumplayouts.sh and spans.py: SoH's actor struct layouts, laid out again the N64's way and checked against the
 #                   instance sizes in the ROM
 # 4. gentables.py:  writes a table per actor and an index
+# 5. animations.py: the object animations, to turn a saved actor's animation into SoH's
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
 rom="$1"; build="$2"
@@ -19,4 +20,5 @@ python3 "$here/sohfuncs.py" "$soh" "$work/functions.json" "$work/pairs.json"
 "$here/dumplayouts.sh" "$build" "$work/layouts"
 python3 "$here/spans.py" "$work/layouts" "$work/pairs.json" "$soh" "$work/spans.json"
 python3 "$here/gentables.py" "$work/pairs.json" "$work/spans.json" "$soh" "$here/../actor-tables"
+python3 "$here/animations.py" "$soh" "$here/../actor-tables/GzAnimations.c"
 rm -rf "$work"

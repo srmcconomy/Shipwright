@@ -7,6 +7,8 @@
 #include "overlays/actors/ovl_En_Kz/z_en_kz.h"
 
 void func_80A9CB18(void*, void*);
+s32 EnKz_FollowPath(void*, void*);
+s32 EnKz_SetMovedPos(void*, void*);
 void EnKz_Init(void*, void*);
 void EnKz_Destroy(void*, void*);
 void EnKz_PreMweepWait(void*, void*);
@@ -25,7 +27,7 @@ const GzActorSpan gGzEnKzSpans[] = {
     { offsetof(EnKz, skelanime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnKz, skelanime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnKz, skelanime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnKz, skelanime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnKz, skelanime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnKz, skelanime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnKz, skelanime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnKz, skelanime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -121,8 +123,8 @@ const GzActorFunction gGzEnKzFunctions[] = {
     { 0x398, NULL },
     { 0x410, NULL },
     { 0x5cc, (void*)func_80A9CB18 },
-    { 0x78c, NULL },
-    { 0x8f8, NULL },
+    { 0x78c, (void*)EnKz_FollowPath },
+    { 0x8f8, (void*)EnKz_SetMovedPos },
     { 0x9c0, (void*)EnKz_Init },
     { 0xb4c, (void*)EnKz_Destroy },
     { 0xb78, (void*)EnKz_PreMweepWait },

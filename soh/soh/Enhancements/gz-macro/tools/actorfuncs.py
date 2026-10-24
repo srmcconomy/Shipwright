@@ -68,5 +68,38 @@ for actor_id in range(COUNT):
     init_funcs = [a - rs if a else None for a in struct.unpack(">IIII", ovl[init - rs + 0x10:init - rs + 0x20])]
     result[actor_id] = {"vram": rs, "functions": sorted(a - rs for a in starts), "instanceSize": instance_size, "initVars": init_funcs}
 
+# Player's code comes in through the kaleido manager instead of the actor overlay table, and its init, update, draw
+# and destroy are called from code, so only the functions whose addresses the overlay itself takes are listed
+# (those that can be in a function pointer). Its instance size is in its init vars, in code.
+name = code.find(b"player_actor\0")
+pointer = struct.pack(">I", CODE_VRAM + name)
+at = code.find(pointer)
+loaded, vs, ve, rs, re_, _, _ = struct.unpack(">IIIIIII", code[at - 0x18:at + 4])
+ovl = rom.file_by_vrom(vs)
+text, data, rodata, bss, relocs = overlay_header(ovl)
+taken = set()
+hi = {}
+for r in relocs:
+    section, kind, off = r >> 30, (r >> 24) & 0x3F, r & 0xFFFFFF
+    if section == 1:
+        word = struct.unpack(">I", ovl[off:off + 4])[0]
+        if kind == 5:
+            hi[(word >> 16) & 0x1F] = (word & 0xFFFF) << 16
+        elif kind == 6:
+            base = (word >> 21) & 0x1F
+            if base in hi:
+                target = (hi[base] + ((word & 0xFFFF) ^ 0x8000) - 0x8000) & 0xFFFFFFFF
+                if rs <= target < rs + text:
+                    taken.add(target)
+    elif section == 2 and kind == 2:
+        target = struct.unpack(">I", ovl[text + off:text + off + 4])[0]
+        if rs <= target < rs + text:
+            taken.add(target)
+player_init = entry(table, 0)[5]
+player_size = struct.unpack(">I", code[player_init - CODE_VRAM + 0x0C:player_init - CODE_VRAM + 0x10])[0]
+# Addresses that aren't word aligned are arithmetic on a code address, not functions
+result[0] = {"vram": rs, "functions": sorted(a - rs for a in taken if a % 4 == 0), "instanceSize": player_size,
+             "initVars": [None, None, None, None], "addressTakenOnly": True}
+
 json.dump(result, open(sys.argv[2], "w"))
 print(f"{len(result)} actor overlays", file=sys.stderr)

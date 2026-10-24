@@ -10,6 +10,7 @@ typedef enum {
     GZ_SPAN_VALUE,    // a number, big endian on the N64
     GZ_SPAN_POINTER,  // a pointer to data, which keeps what the fresh actor set up
     GZ_SPAN_FUNCTION, // a pointer to one of the actor's functions
+    GZ_SPAN_ANIMATION, // a SkelAnime's animation: an asset address on the N64, a resource name in SoH
 } GzSpanKind;
 
 // One of an actor's own fields, or the same field through an array
@@ -40,11 +41,20 @@ typedef struct {
     int destroyIndex;
 } GzActorTable;
 
+// An object's animation on the N64, at an offset into the object, and the name SoH loads it by
+typedef struct {
+    int16_t objectId;
+    uint32_t offset;
+    const char* name;
+} GzAnimation;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 extern const GzActorTable gGzActorTables[];
 extern const size_t gGzActorTableCount;
+extern const GzAnimation gGzAnimations[];
+extern const size_t gGzAnimationCount;
 #ifdef __cplusplus
 }
 #endif

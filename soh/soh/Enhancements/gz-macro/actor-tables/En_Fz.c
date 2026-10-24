@@ -9,6 +9,7 @@
 void EnFz_Init(void*, void*);
 void EnFz_Destroy(void*, void*);
 void EnFz_UpdateTargetPos(void*, void*);
+s32 EnFz_ReachedTarget(void*, void*);
 void EnFz_ApplyDamage(void*, void*);
 void EnFz_Disappear(void*, void*);
 void EnFz_Wait(void*, void*);
@@ -839,7 +840,7 @@ const GzActorFunction gGzEnFzFunctions[] = {
     { 0x0, (void*)EnFz_Init },
     { 0x180, (void*)EnFz_Destroy },
     { 0x1d0, (void*)EnFz_UpdateTargetPos },
-    { 0x2f0, NULL },
+    { 0x2f0, (void*)EnFz_ReachedTarget },
     { 0x340, NULL },
     { 0x534, NULL },
     { 0x540, NULL },

@@ -8,6 +8,9 @@
 
 void EnToryo_Init(void*, void*);
 void EnToryo_Destroy(void*, void*);
+s32 EnToryo_TalkRespond(void*, void*);
+s32 EnToryo_DoneTalking(void*, void*);
+s32 EnToryo_GetTextId(void*, void*);
 void EnToryo_HandleTalking(void*, void*);
 void EnToryo_Idle(void*, void*);
 void EnToryo_Update(void*, void*);
@@ -19,7 +22,7 @@ const GzActorSpan gGzEnToryoSpans[] = {
     { offsetof(EnToryo, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnToryo, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnToryo, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnToryo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnToryo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnToryo, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnToryo, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnToryo, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -104,10 +107,10 @@ const size_t gGzEnToryoSpanCount = ARRAY_COUNT(gGzEnToryoSpans);
 const GzActorFunction gGzEnToryoFunctions[] = {
     { 0x0, (void*)EnToryo_Init },
     { 0x244, (void*)EnToryo_Destroy },
-    { 0x270, NULL },
-    { 0x464, NULL },
+    { 0x270, (void*)EnToryo_TalkRespond },
+    { 0x464, (void*)EnToryo_DoneTalking },
     { 0x4d0, NULL },
-    { 0x53c, NULL },
+    { 0x53c, (void*)EnToryo_GetTextId },
     { 0x608, (void*)EnToryo_HandleTalking },
     { 0x7b8, (void*)EnToryo_Idle },
     { 0x81c, (void*)EnToryo_Update },

@@ -2,6 +2,12 @@
 # checked against the instance sizes in the ROM. A span is one field, or one field repeated through an array.
 import json, os, re, sys
 
+
+def header_path(soh_root, header):
+    """An actor's header is under src/; Player's is in include/."""
+    path = os.path.join(soh_root, "src", header)
+    return path if os.path.exists(path) else os.path.join(soh_root, "include", header)
+
 layout_dir, pairs_path, soh_root, out_path = sys.argv[1:5]
 pairs = json.load(open(pairs_path))
 
@@ -90,6 +96,9 @@ def record_spans(rtype, children, records, rname):
         if child.get("bitfield"):
             raise Unsupported("bitfield " + child["name"])
         f, s, a = field_spans(child, records)
+        if rname == "SkelAnime" and child["name"] == "animation":
+            # An asset address on the N64, a resource name in SoH
+            f = [dict(sp, kind="anim") for sp in f]
         start = 0 if is_union else (offset + a - 1) // a * a
         prefix = [("." + child["name"]) if child["name"] else ""]
         for sp in f:
@@ -155,7 +164,7 @@ result, stats, problems = {}, {"ok": 0, "trimmed": 0, "size mismatch": 0, "unsup
 for actor_id, pair in pairs.items():
     if not pair.get("paired"):
         continue
-    d = os.path.join(soh_root, "src/overlays/actors", "ovl_" + pair["name"])
+    d = os.path.join(soh_root, "src/overlays/actors", "ovl_player_actor" if actor_id == "0" else "ovl_" + pair["name"])
     struct_name = dump = header = None
     for f in sorted(os.listdir(d)):
         text = open(os.path.join(d, f)).read()
@@ -166,6 +175,9 @@ for actor_id, pair in pairs.items():
     for f in sorted(os.listdir(d)):
         if f.endswith(".h") and struct_name and re.search(r"\}\s*" + struct_name + r"\s*;", open(os.path.join(d, f)).read()):
             header = "overlays/actors/ovl_" + pair["name"] + "/" + f
+    if actor_id == "0":
+        # Player's init vars are in code, and its struct is shared, in include/
+        struct_name, header, dump = "Player", "z64player.h", os.path.join(layout_dir, "z_player.txt")
     if not struct_name or not header or not os.path.exists(dump):
         stats["no struct"] += 1
         continue
@@ -193,7 +205,7 @@ for actor_id, pair in pairs.items():
         continue
     # The header's offset comments come from the decomp (the debug ROM's, 0x10 more than retail past Actor). Every
     # commented field has to land where its comment says, and anything trimmed off the end has to be uncommented.
-    header_text = open(os.path.join(soh_root, "src", header)).read()
+    header_text = open(header_path(soh_root, header)).read()
     body = re.search(r"typedef struct\s*\w*\s*\{(.*?)\}\s*" + struct_name + r"\s*;", header_text, re.S)
     commented = {}
     if body:

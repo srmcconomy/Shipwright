@@ -37,7 +37,7 @@ const GzActorSpan gGzBgDyYoseizoSpans[] = {
     { offsetof(BgDyYoseizo, skelAnime.dListCount), 0, 0x142, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(BgDyYoseizo, skelAnime.taper), 0, 0x143, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(BgDyYoseizo, skelAnime.skeleton), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(BgDyYoseizo, skelAnime.animation), 0, 0x148, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(BgDyYoseizo, skelAnime.animation), 0, 0x148, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(BgDyYoseizo, skelAnime.startFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(BgDyYoseizo, skelAnime.endFrame), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(BgDyYoseizo, skelAnime.animLength), 0, 0x154, 0x0, 1, 4, GZ_SPAN_VALUE },

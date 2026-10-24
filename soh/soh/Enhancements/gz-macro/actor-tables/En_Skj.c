@@ -8,7 +8,11 @@
 
 void EnSkj_Init(void*, void*);
 void EnSkj_Destroy(void*, void*);
+s32 EnSkj_RangeCheck(void*, void*);
+s32 EnSkj_ShootNeedle(void*, void*);
 void EnSkj_SpawnBlood(void*, void*);
+s32 EnSkj_CollisionCheck(void*, void*);
+s32 func_80AFEDF8(void*, void*);
 void EnSkj_Fade(void*, void*);
 void EnSkj_WaitToShootNeedle(void*, void*);
 void EnSkj_SariasSongKidIdle(void*, void*);
@@ -64,7 +68,7 @@ const GzActorSpan gGzEnSkjSpans[] = {
     { offsetof(EnSkj, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSkj, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSkj, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnSkj, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnSkj, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnSkj, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSkj, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSkj, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -158,13 +162,13 @@ const GzActorFunction gGzEnSkjFunctions[] = {
     { 0x178, NULL },
     { 0x1fc, (void*)EnSkj_Init },
     { 0x548, (void*)EnSkj_Destroy },
-    { 0x574, NULL },
+    { 0x574, (void*)EnSkj_RangeCheck },
     { 0x5f0, NULL },
     { 0x638, NULL },
-    { 0x664, NULL },
+    { 0x664, (void*)EnSkj_ShootNeedle },
     { 0x77c, (void*)EnSkj_SpawnBlood },
-    { 0x8d4, NULL },
-    { 0xa90, NULL },
+    { 0x8d4, (void*)EnSkj_CollisionCheck },
+    { 0xa90, (void*)func_80AFEDF8 },
     { 0xb1c, NULL },
     { 0xb64, (void*)EnSkj_Fade },
     { 0xbf4, NULL },

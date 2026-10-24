@@ -6,6 +6,7 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Ma1/z_en_ma1.h"
 
+s32 EnMa1_ShouldSpawn(void*, void*);
 void EnMa1_UpdateTracking(void*, void*);
 void EnMa1_Init(void*, void*);
 void EnMa1_Destroy(void*, void*);
@@ -24,7 +25,7 @@ const GzActorSpan gGzEnMa1Spans[] = {
     { offsetof(EnMa1, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnMa1, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnMa1, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnMa1, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnMa1, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnMa1, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnMa1, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnMa1, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -103,7 +104,7 @@ const size_t gGzEnMa1SpanCount = ARRAY_COUNT(gGzEnMa1Spans);
 const GzActorFunction gGzEnMa1Functions[] = {
     { 0x0, NULL },
     { 0xe8, NULL },
-    { 0x234, NULL },
+    { 0x234, (void*)EnMa1_ShouldSpawn },
     { 0x380, NULL },
     { 0x3f8, NULL },
     { 0x468, (void*)EnMa1_UpdateTracking },

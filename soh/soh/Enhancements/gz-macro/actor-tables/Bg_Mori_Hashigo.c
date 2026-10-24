@@ -7,6 +7,9 @@
 #include "overlays/actors/ovl_Bg_Mori_Hashigo/z_bg_mori_hashigo.h"
 
 void BgMoriHashigo_InitCollider(void*, void*);
+s32 BgMoriHashigo_SpawnLadder(void*, void*);
+s32 BgMoriHashigo_InitClasp(void*, void*);
+s32 BgMoriHashigo_InitLadder(void*, void*);
 void BgMoriHashigo_Init(void*, void*);
 void BgMoriHashigo_Destroy(void*, void*);
 void BgMoriHashigo_WaitForMoriTex(void*, void*);
@@ -66,9 +69,9 @@ const size_t gGzBgMoriHashigoSpanCount = ARRAY_COUNT(gGzBgMoriHashigoSpans);
 const GzActorFunction gGzBgMoriHashigoFunctions[] = {
     { 0x0, NULL },
     { 0x58, (void*)BgMoriHashigo_InitCollider },
-    { 0x104, NULL },
-    { 0x1bc, NULL },
-    { 0x248, NULL },
+    { 0x104, (void*)BgMoriHashigo_SpawnLadder },
+    { 0x1bc, (void*)BgMoriHashigo_InitClasp },
+    { 0x248, (void*)BgMoriHashigo_InitLadder },
     { 0x28c, (void*)BgMoriHashigo_Init },
     { 0x350, (void*)BgMoriHashigo_Destroy },
     { 0x3a8, NULL },

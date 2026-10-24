@@ -8,6 +8,7 @@
 
 void EnIk_Destroy(void*, void*);
 void func_80A74398(void*, void*);
+s32 func_80A745E4(void*, void*);
 void func_80A747C0(void*, void*);
 void func_80A7492C(void*, void*);
 void func_80A74BA4(void*, void*);
@@ -51,7 +52,7 @@ const GzActorSpan gGzEnIkSpans[] = {
     { offsetof(EnIk, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnIk, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnIk, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnIk, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnIk, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnIk, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnIk, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnIk, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -237,7 +238,7 @@ const GzActorFunction gGzEnIkFunctions[] = {
     { 0x0, (void*)EnIk_Destroy },
     { 0x80, NULL },
     { 0x8c, (void*)func_80A74398 },
-    { 0x2d8, NULL },
+    { 0x2d8, (void*)func_80A745E4 },
     { 0x368, NULL },
     { 0x408, NULL },
     { 0x4b4, (void*)func_80A747C0 },

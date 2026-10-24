@@ -8,6 +8,8 @@
 
 void EnFish_Init(void*, void*);
 void EnFish_Destroy(void*, void*);
+s32 EnFish_InBottleRange(void*, void*);
+s32 EnFish_CheckXZDistanceToPlayer(void*, void*);
 void EnFish_Respawning_SlowDown(void*, void*);
 void EnFish_Respawning_FollowChild(void*, void*);
 void EnFish_Respawning_FleePlayer(void*, void*);
@@ -69,7 +71,7 @@ const GzActorSpan gGzEnFishSpans[] = {
     { offsetof(EnFish, skelAnime.dListCount), 0, 0x19e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFish, skelAnime.taper), 0, 0x19f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFish, skelAnime.skeleton), 0, 0x1a0, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnFish, skelAnime.animation), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnFish, skelAnime.animation), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnFish, skelAnime.startFrame), 0, 0x1a8, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFish, skelAnime.endFrame), 0, 0x1ac, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFish, skelAnime.animLength), 0, 0x1b0, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -114,8 +116,8 @@ const GzActorFunction gGzEnFishFunctions[] = {
     { 0x1ec, (void*)EnFish_Init },
     { 0x330, (void*)EnFish_Destroy },
     { 0x35c, NULL },
-    { 0x414, NULL },
-    { 0x504, NULL },
+    { 0x414, (void*)EnFish_InBottleRange },
+    { 0x504, (void*)EnFish_CheckXZDistanceToPlayer },
     { 0x534, NULL },
     { 0x58c, (void*)EnFish_Respawning_SlowDown },
     { 0x680, NULL },

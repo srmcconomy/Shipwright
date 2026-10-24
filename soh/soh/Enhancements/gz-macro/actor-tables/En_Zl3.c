@@ -54,19 +54,32 @@ void func_80B56CE4(void*, void*);
 void func_80B56D44(void*, void*);
 void func_80B56E38(void*, void*);
 void func_80B56EB8(void*, void*);
+s32 func_80B56EE4(void*, void*);
 void func_80B56F10(void*, void*);
+s32 func_80B57324(void*, void*);
 void func_80B57350(void*, void*);
+s32 func_80B573C8(void*, void*);
+s32 func_80B57458(void*, void*);
+s32 func_80B57564(void*, void*);
+s32 func_80B575B0(void*, void*);
+s32 func_80B575D0(void*, void*);
+s32 func_80B575F0(void*, void*);
 void func_80B5764C(void*, void*);
+s32 func_80B576C8(void*, void*);
 void func_80B57704(void*, void*);
 void func_80B5772C(void*, void*);
 void func_80B57754(void*, void*);
 void func_80B577BC(void*, void*);
+s32 func_80B57890(void*, void*);
 void func_80B57AE0(void*, void*);
+s32 func_80B57C7C(void*, void*);
 void func_80B57CB4(void*, void*);
 void func_80B57D60(void*, void*);
+s32 func_80B57D80(void*, void*);
 void func_80B57EAC(void*, void*);
 void func_80B57EEC(void*, void*);
 void func_80B57F1C(void*, void*);
+s32 func_80B57F84(void*, void*);
 void func_80B58014(void*, void*);
 void func_80B58214(void*, void*);
 void func_80B58268(void*, void*);
@@ -76,6 +89,8 @@ void func_80B58624(void*, void*);
 void func_80B5884C(void*, void*);
 void func_80B58898(void*, void*);
 void func_80B588E8(void*, void*);
+s32 func_80B58938(void*, void*);
+s32 func_80B5899C(void*, void*);
 void func_80B58A1C(void*, void*);
 void func_80B58A50(void*, void*);
 void func_80B58AAC(void*, void*);
@@ -95,6 +110,8 @@ void func_80B5922C(void*, void*);
 void func_80B592A8(void*, void*);
 void func_80B59340(void*, void*);
 void func_80B593D0(void*, void*);
+s32 func_80B59698(void*, void*);
+s32 func_80B59768(void*, void*);
 void func_80B59828(void*, void*);
 void func_80B59A80(void*, void*);
 void func_80B59AD0(void*, void*);
@@ -113,7 +130,7 @@ const GzActorSpan gGzEnZl3Spans[] = {
     { offsetof(EnZl3, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZl3, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZl3, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnZl3, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnZl3, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnZl3, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZl3, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZl3, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -366,7 +383,7 @@ const GzActorFunction gGzEnZl3Functions[] = {
     { 0x3ad8, NULL },
     { 0x3b24, (void*)func_80B56E38 },
     { 0x3ba4, (void*)func_80B56EB8 },
-    { 0x3bd4, NULL },
+    { 0x3bd4, (void*)func_80B56EE4 },
     { 0x3c04, (void*)func_80B56F10 },
     { 0x3c58, NULL },
     { 0x3c78, NULL },
@@ -377,36 +394,36 @@ const GzActorFunction gGzEnZl3Functions[] = {
     { 0x3f18, NULL },
     { 0x3f70, NULL },
     { 0x3fc8, NULL },
-    { 0x4000, NULL },
+    { 0x4000, (void*)func_80B57324 },
     { 0x402c, (void*)func_80B57350 },
-    { 0x40a4, NULL },
+    { 0x40a4, (void*)func_80B573C8 },
     { 0x40d8, NULL },
-    { 0x4134, NULL },
-    { 0x4244, NULL },
-    { 0x4298, NULL },
-    { 0x42b8, NULL },
-    { 0x42d8, NULL },
+    { 0x4134, (void*)func_80B57458 },
+    { 0x4244, (void*)func_80B57564 },
+    { 0x4298, (void*)func_80B575B0 },
+    { 0x42b8, (void*)func_80B575D0 },
+    { 0x42d8, (void*)func_80B575F0 },
     { 0x4334, (void*)func_80B5764C },
-    { 0x43b4, NULL },
+    { 0x43b4, (void*)func_80B576C8 },
     { 0x43f8, (void*)func_80B57704 },
     { 0x4424, (void*)func_80B5772C },
     { 0x4450, (void*)func_80B57754 },
     { 0x44bc, (void*)func_80B577BC },
     { 0x455c, NULL },
-    { 0x4598, NULL },
+    { 0x4598, (void*)func_80B57890 },
     { 0x4780, NULL },
     { 0x47b8, NULL },
     { 0x47ec, (void*)func_80B57AE0 },
     { 0x4964, NULL },
-    { 0x498c, NULL },
+    { 0x498c, (void*)func_80B57C7C },
     { 0x49a0, NULL },
     { 0x49c8, (void*)func_80B57CB4 },
     { 0x4a70, (void*)func_80B57D60 },
-    { 0x4a94, NULL },
+    { 0x4a94, (void*)func_80B57D80 },
     { 0x4bcc, (void*)func_80B57EAC },
     { 0x4c14, (void*)func_80B57EEC },
     { 0x4c48, (void*)func_80B57F1C },
-    { 0x4cb4, NULL },
+    { 0x4cb4, (void*)func_80B57F84 },
     { 0x4d4c, (void*)func_80B58014 },
     { 0x4f58, (void*)func_80B58214 },
     { 0x4fb0, (void*)func_80B58268 },
@@ -416,8 +433,8 @@ const GzActorFunction gGzEnZl3Functions[] = {
     { 0x559c, (void*)func_80B5884C },
     { 0x55e8, (void*)func_80B58898 },
     { 0x5638, (void*)func_80B588E8 },
-    { 0x5688, NULL },
-    { 0x56f0, NULL },
+    { 0x5688, (void*)func_80B58938 },
+    { 0x56f0, (void*)func_80B5899C },
     { 0x5770, (void*)func_80B58A1C },
     { 0x57ac, (void*)func_80B58A50 },
     { 0x580c, (void*)func_80B58AAC },
@@ -438,8 +455,8 @@ const GzActorFunction gGzEnZl3Functions[] = {
     { 0x6108, (void*)func_80B59340 },
     { 0x61a0, (void*)func_80B593D0 },
     { 0x6224, NULL },
-    { 0x6420, NULL },
-    { 0x64f0, NULL },
+    { 0x6420, (void*)func_80B59698 },
+    { 0x64f0, (void*)func_80B59768 },
     { 0x65b0, (void*)func_80B59828 },
     { 0x6810, (void*)func_80B59A80 },
     { 0x6860, (void*)func_80B59AD0 },

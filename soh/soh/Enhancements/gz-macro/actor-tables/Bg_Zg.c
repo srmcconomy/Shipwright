@@ -7,6 +7,7 @@
 #include "overlays/actors/ovl_Bg_Zg/z_bg_zg.h"
 
 void BgZg_Destroy(void*, void*);
+s32 func_808C0C98(void*, void*);
 void func_808C0CD4(void*, void*);
 void func_808C0D08(void*, void*);
 void BgZg_Update(void*, void*);
@@ -23,7 +24,7 @@ const size_t gGzBgZgSpanCount = ARRAY_COUNT(gGzBgZgSpans);
 const GzActorFunction gGzBgZgFunctions[] = {
     { 0x0, (void*)BgZg_Destroy },
     { 0x34, NULL },
-    { 0x7c, NULL },
+    { 0x7c, (void*)func_808C0C98 },
     { 0xb0, NULL },
     { 0xc0, (void*)func_808C0CD4 },
     { 0x10c, (void*)func_808C0D08 },

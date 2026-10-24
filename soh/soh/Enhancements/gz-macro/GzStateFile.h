@@ -90,6 +90,8 @@ struct LinkState {
     int16_t yaw;
     // Link's eye state and the frames until his next blink, which draws a random number
     int16_t blink[2];
+    // All of Link, as the N64 has him, big endian
+    std::vector<uint8_t> data;
 };
 
 // The size of the N64's Actor, without the debug ROM's padding

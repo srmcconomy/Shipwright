@@ -11,6 +11,7 @@ void ObjBean_FindFloor(void*, void*);
 void ObjBean_SetupPathCount(void*, void*);
 void ObjBean_SetupPath(void*, void*);
 void ObjBean_FollowPath(void*, void*);
+s32 ObjBean_CheckForHorseTrample(void*, void*);
 void ObjBean_Break(void*, void*);
 void ObjBean_Init(void*, void*);
 void ObjBean_Destroy(void*, void*);
@@ -114,7 +115,7 @@ const GzActorFunction gGzObjBeanFunctions[] = {
     { 0x4a4, (void*)ObjBean_SetupPathCount },
     { 0x4e4, (void*)ObjBean_SetupPath },
     { 0x560, (void*)ObjBean_FollowPath },
-    { 0x808, NULL },
+    { 0x808, (void*)ObjBean_CheckForHorseTrample },
     { 0x898, (void*)ObjBean_Break },
     { 0xb10, NULL },
     { 0xbcc, NULL },

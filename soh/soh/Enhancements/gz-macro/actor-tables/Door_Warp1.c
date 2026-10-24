@@ -23,6 +23,7 @@ void DoorWarp1_AwaitClearFlag(void*, void*);
 void func_809995D4(void*, void*);
 void DoorWarp1_WarpAppear(void*, void*);
 void func_809998A4(void*, void*);
+s32 DoorWarp1_PlayerInRange(void*, void*);
 void DoorWarp1_ChildWarpIdle(void*, void*);
 void DoorWarp1_ChildWarpOut(void*, void*);
 void DoorWarp1_RutoWarpIdle(void*, void*);
@@ -48,7 +49,7 @@ const GzActorSpan gGzDoorWarp1Spans[] = {
     { offsetof(DoorWarp1, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(DoorWarp1, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(DoorWarp1, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(DoorWarp1, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(DoorWarp1, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(DoorWarp1, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(DoorWarp1, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(DoorWarp1, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -124,7 +125,7 @@ const GzActorFunction gGzDoorWarp1Functions[] = {
     { 0xe5c, (void*)func_809995D4 },
     { 0xfac, (void*)DoorWarp1_WarpAppear },
     { 0x1130, (void*)func_809998A4 },
-    { 0x11c8, NULL },
+    { 0x11c8, (void*)DoorWarp1_PlayerInRange },
     { 0x1234, (void*)DoorWarp1_ChildWarpIdle },
     { 0x1300, (void*)DoorWarp1_ChildWarpOut },
     { 0x16f4, (void*)DoorWarp1_RutoWarpIdle },

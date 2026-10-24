@@ -16,6 +16,7 @@ void EnSb_TurnAround(void*, void*);
 void EnSb_Lunge(void*, void*);
 void EnSb_Bounce(void*, void*);
 void EnSb_Cooldown(void*, void*);
+s32 EnSb_UpdateDamage(void*, void*);
 void EnSb_Update(void*, void*);
 void EnSb_Draw(void*, void*);
 
@@ -25,7 +26,7 @@ const GzActorSpan gGzEnSbSpans[] = {
     { offsetof(EnSb, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSb, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSb, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnSb, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnSb, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnSb, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSb, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSb, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -113,7 +114,7 @@ const GzActorFunction gGzEnSbFunctions[] = {
     { 0x8f4, (void*)EnSb_Bounce },
     { 0xa28, (void*)EnSb_Cooldown },
     { 0xa90, NULL },
-    { 0xbd8, NULL },
+    { 0xbd8, (void*)EnSb_UpdateDamage },
     { 0xeb4, (void*)EnSb_Update },
     { 0x1034, NULL },
     { 0x1084, (void*)EnSb_Draw },

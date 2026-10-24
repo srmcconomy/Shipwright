@@ -6,6 +6,8 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Fw/z_en_fw.h"
 
+s32 EnFw_PlayerInRange(void*, void*);
+s32 EnFw_CheckCollider(void*, void*);
 void EnFw_Init(void*, void*);
 void EnFw_Destroy(void*, void*);
 void EnFw_Bounce(void*, void*);
@@ -22,7 +24,7 @@ const GzActorSpan gGzEnFwSpans[] = {
     { offsetof(EnFw, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFw, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnFw, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnFw, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnFw, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnFw, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFw, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnFw, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -488,9 +490,9 @@ const size_t gGzEnFwSpanCount = ARRAY_COUNT(gGzEnFwSpans);
 
 const GzActorFunction gGzEnFwFunctions[] = {
     { 0x0, NULL },
-    { 0xc8, NULL },
+    { 0xc8, (void*)EnFw_PlayerInRange },
     { 0x1c4, NULL },
-    { 0x298, NULL },
+    { 0x298, (void*)EnFw_CheckCollider },
     { 0x358, NULL },
     { 0x5a0, (void*)EnFw_Init },
     { 0x6a8, (void*)EnFw_Destroy },

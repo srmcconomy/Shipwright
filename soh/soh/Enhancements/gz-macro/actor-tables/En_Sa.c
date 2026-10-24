@@ -7,6 +7,7 @@
 #include "overlays/actors/ovl_En_Sa/z_en_sa.h"
 
 void func_80AF57D8(void*, void*);
+s32 func_80AF5DFC(void*, void*);
 void func_80AF5F34(void*, void*);
 void func_80AF6130(void*, void*);
 void func_80AF6170(void*, void*);
@@ -25,7 +26,7 @@ const GzActorSpan gGzEnSaSpans[] = {
     { offsetof(EnSa, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSa, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSa, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnSa, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnSa, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnSa, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSa, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSa, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -133,7 +134,7 @@ const GzActorFunction gGzEnSaFunctions[] = {
     { 0x77c, NULL },
     { 0x794, NULL },
     { 0x83c, NULL },
-    { 0x8ac, NULL },
+    { 0x8ac, (void*)func_80AF5DFC },
     { 0x9e4, (void*)func_80AF5F34 },
     { 0xaec, NULL },
     { 0xb4c, NULL },

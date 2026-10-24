@@ -8,13 +8,20 @@
 
 void EnSt_SpawnBlastEffect(void*, void*);
 void EnSt_SpawnDeadEffect(void*, void*);
+s32 EnSt_CheckCeilingPos(void*, void*);
 void EnSt_InitColliders(void*, void*);
 void EnSt_CheckBodyStickHit(void*, void*);
 void EnSt_SetBodyCylinderAC(void*, void*);
 void EnSt_SetLegsCylinderAC(void*, void*);
+s32 EnSt_SetCylinderOC(void*, void*);
 void EnSt_UpdateCylinders(void*, void*);
+s32 EnSt_CheckHitLink(void*, void*);
+s32 EnSt_CheckHitBackside(void*, void*);
+s32 EnSt_CheckColliders(void*, void*);
 void EnSt_UpdateYaw(void*, void*);
+s32 EnSt_IsDoneBouncing(void*, void*);
 void EnSt_Bob(void*, void*);
+s32 EnSt_IsCloseToPlayer(void*, void*);
 void EnSt_Init(void*, void*);
 void EnSt_Destroy(void*, void*);
 void EnSt_WaitOnCeiling(void*, void*);
@@ -35,7 +42,7 @@ const GzActorSpan gGzEnStSpans[] = {
     { offsetof(EnSt, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSt, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSt, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnSt, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnSt, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnSt, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSt, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSt, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -175,7 +182,7 @@ const GzActorFunction gGzEnStFunctions[] = {
     { 0x22c, (void*)EnSt_SpawnBlastEffect },
     { 0x2b4, (void*)EnSt_SpawnDeadEffect },
     { 0x3f0, NULL },
-    { 0x4ec, NULL },
+    { 0x4ec, (void*)EnSt_CheckCeilingPos },
     { 0x5bc, NULL },
     { 0x6c4, NULL },
     { 0x6f0, NULL },
@@ -186,19 +193,19 @@ const GzActorFunction gGzEnStFunctions[] = {
     { 0x95c, (void*)EnSt_CheckBodyStickHit },
     { 0x9d0, (void*)EnSt_SetBodyCylinderAC },
     { 0xa14, (void*)EnSt_SetLegsCylinderAC },
-    { 0xacc, NULL },
+    { 0xacc, (void*)EnSt_SetCylinderOC },
     { 0xca4, (void*)EnSt_UpdateCylinders },
-    { 0xd68, NULL },
+    { 0xd68, (void*)EnSt_CheckHitLink },
     { 0xe54, NULL },
-    { 0xe94, NULL },
-    { 0x1084, NULL },
+    { 0xe94, (void*)EnSt_CheckHitBackside },
+    { 0x1084, (void*)EnSt_CheckColliders },
     { 0x110c, NULL },
     { 0x1278, NULL },
     { 0x13a8, NULL },
     { 0x13c8, (void*)EnSt_UpdateYaw },
-    { 0x1668, NULL },
+    { 0x1668, (void*)EnSt_IsDoneBouncing },
     { 0x1730, (void*)EnSt_Bob },
-    { 0x179c, NULL },
+    { 0x179c, (void*)EnSt_IsCloseToPlayer },
     { 0x1844, NULL },
     { 0x187c, NULL },
     { 0x18bc, NULL },

@@ -8,6 +8,8 @@
 
 void func_808B4C4C(void*, void*);
 void func_808B4D04(void*, void*);
+s32 func_808B4D9C(void*, void*);
+s32 func_808B4E58(void*, void*);
 void BgSpot16Bombstone_Init(void*, void*);
 void BgSpot16Bombstone_Destroy(void*, void*);
 void BgSpot16Bombstone_SpawnDust(void*, void*);
@@ -113,8 +115,8 @@ const GzActorFunction gGzBgSpot16BombstoneFunctions[] = {
     { 0x0, NULL },
     { 0x20, (void*)func_808B4C4C },
     { 0xd4, (void*)func_808B4D04 },
-    { 0x168, NULL },
-    { 0x218, NULL },
+    { 0x168, (void*)func_808B4D9C },
+    { 0x218, (void*)func_808B4E58 },
     { 0x414, (void*)BgSpot16Bombstone_Init },
     { 0x4c8, (void*)BgSpot16Bombstone_Destroy },
     { 0x514, (void*)BgSpot16Bombstone_SpawnDust },

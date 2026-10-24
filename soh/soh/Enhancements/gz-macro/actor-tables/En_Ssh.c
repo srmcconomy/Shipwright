@@ -7,14 +7,20 @@
 #include "overlays/actors/ovl_En_Ssh/z_en_ssh.h"
 
 void EnSsh_SpawnShockwave(void*, void*);
+s32 EnSsh_CheckCeilingPos(void*, void*);
 void EnSsh_InitColliders(void*, void*);
 void EnSsh_Turn(void*, void*);
 void EnSsh_Stunned(void*, void*);
 void EnSsh_UpdateYaw(void*, void*);
 void EnSsh_Bob(void*, void*);
+s32 EnSsh_IsCloseToLink(void*, void*);
 void EnSsh_CheckBodyStickHit(void*, void*);
+s32 EnSsh_CheckHitPlayer(void*, void*);
+s32 EnSsh_CheckHitBack(void*, void*);
+s32 EnSsh_CollisionCheck(void*, void*);
 void EnSsh_SetBodyCylinderAC(void*, void*);
 void EnSsh_SetLegsCylinderAC(void*, void*);
+s32 EnSsh_SetCylinderOC(void*, void*);
 void EnSsh_SetColliders(void*, void*);
 void EnSsh_Init(void*, void*);
 void EnSsh_Destroy(void*, void*);
@@ -34,7 +40,7 @@ const GzActorSpan gGzEnSshSpans[] = {
     { offsetof(EnSsh, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSsh, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnSsh, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnSsh, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnSsh, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnSsh, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSsh, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnSsh, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -162,7 +168,7 @@ const GzActorFunction gGzEnSshFunctions[] = {
     { 0x0, NULL },
     { 0xc, (void*)EnSsh_SpawnShockwave },
     { 0x94, NULL },
-    { 0x190, NULL },
+    { 0x190, (void*)EnSsh_CheckCeilingPos },
     { 0x228, NULL },
     { 0x330, NULL },
     { 0x35c, (void*)EnSsh_InitColliders },
@@ -178,18 +184,18 @@ const GzActorFunction gGzEnSshFunctions[] = {
     { 0xa08, (void*)EnSsh_Stunned },
     { 0xaa8, (void*)EnSsh_UpdateYaw },
     { 0xae4, (void*)EnSsh_Bob },
-    { 0xb50, NULL },
+    { 0xb50, (void*)EnSsh_IsCloseToLink },
     { 0xc38, NULL },
     { 0xc70, NULL },
     { 0xcb0, NULL },
     { 0xdf4, (void*)EnSsh_CheckBodyStickHit },
-    { 0xe68, NULL },
+    { 0xe68, (void*)EnSsh_CheckHitPlayer },
     { 0xf70, NULL },
-    { 0xfcc, NULL },
-    { 0x10a4, NULL },
+    { 0xfcc, (void*)EnSsh_CheckHitBack },
+    { 0x10a4, (void*)EnSsh_CollisionCheck },
     { 0x1158, (void*)EnSsh_SetBodyCylinderAC },
     { 0x119c, (void*)EnSsh_SetLegsCylinderAC },
-    { 0x1254, NULL },
+    { 0x1254, (void*)EnSsh_SetCylinderOC },
     { 0x142c, (void*)EnSsh_SetColliders },
     { 0x14f4, (void*)EnSsh_Init },
     { 0x1688, (void*)EnSsh_Destroy },

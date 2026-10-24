@@ -8,6 +8,7 @@
 
 void BgHidanFirewall_Init(void*, void*);
 void BgHidanFirewall_Destroy(void*, void*);
+s32 BgHidanFirewall_CheckProximity(void*, void*);
 void BgHidanFirewall_Wait(void*, void*);
 void BgHidanFirewall_Countdown(void*, void*);
 void BgHidanFirewall_Erupt(void*, void*);
@@ -58,7 +59,7 @@ const size_t gGzBgHidanFirewallSpanCount = ARRAY_COUNT(gGzBgHidanFirewallSpans);
 const GzActorFunction gGzBgHidanFirewallFunctions[] = {
     { 0x0, (void*)BgHidanFirewall_Init },
     { 0xa0, (void*)BgHidanFirewall_Destroy },
-    { 0xcc, NULL },
+    { 0xcc, (void*)BgHidanFirewall_CheckProximity },
     { 0x13c, (void*)BgHidanFirewall_Wait },
     { 0x184, (void*)BgHidanFirewall_Countdown },
     { 0x1b8, (void*)BgHidanFirewall_Erupt },

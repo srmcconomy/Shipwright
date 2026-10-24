@@ -61,7 +61,7 @@ const GzActorSpan gGzEnCowSpans[] = {
     { offsetof(EnCow, skelAnime.dListCount), 0, 0x1d6, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnCow, skelAnime.taper), 0, 0x1d7, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnCow, skelAnime.skeleton), 0, 0x1d8, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnCow, skelAnime.animation), 0, 0x1dc, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnCow, skelAnime.animation), 0, 0x1dc, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnCow, skelAnime.startFrame), 0, 0x1e0, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnCow, skelAnime.endFrame), 0, 0x1e4, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnCow, skelAnime.animLength), 0, 0x1e8, 0x0, 1, 4, GZ_SPAN_VALUE },

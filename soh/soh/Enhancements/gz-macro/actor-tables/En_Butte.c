@@ -62,7 +62,7 @@ const GzActorSpan gGzEnButteSpans[] = {
     { offsetof(EnButte, skelAnime.dListCount), 0, 0x19e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnButte, skelAnime.taper), 0, 0x19f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnButte, skelAnime.skeleton), 0, 0x1a0, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnButte, skelAnime.animation), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnButte, skelAnime.animation), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnButte, skelAnime.startFrame), 0, 0x1a8, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnButte, skelAnime.endFrame), 0, 0x1ac, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnButte, skelAnime.animLength), 0, 0x1b0, 0x0, 1, 4, GZ_SPAN_VALUE },

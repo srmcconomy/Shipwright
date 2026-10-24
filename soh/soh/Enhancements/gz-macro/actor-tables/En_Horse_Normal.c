@@ -33,7 +33,7 @@ const GzActorSpan gGzEnHorseNormalSpans[] = {
     { offsetof(EnHorseNormal, skin.skelAnime.dListCount), 0, 0x192, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnHorseNormal, skin.skelAnime.taper), 0, 0x193, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnHorseNormal, skin.skelAnime.skeleton), 0, 0x194, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnHorseNormal, skin.skelAnime.animation), 0, 0x198, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnHorseNormal, skin.skelAnime.animation), 0, 0x198, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnHorseNormal, skin.skelAnime.startFrame), 0, 0x19c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnHorseNormal, skin.skelAnime.endFrame), 0, 0x1a0, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnHorseNormal, skin.skelAnime.animLength), 0, 0x1a4, 0x0, 1, 4, GZ_SPAN_VALUE },

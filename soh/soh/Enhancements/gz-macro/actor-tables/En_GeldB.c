@@ -32,6 +32,7 @@ void EnGeldB_TurnHead(void*, void*);
 void EnGeldB_CollisionCheck(void*, void*);
 void EnGeldB_Update(void*, void*);
 void EnGeldB_Draw(void*, void*);
+s32 EnGeldB_DodgeRanged(void*, void*);
 
 const GzActorSpan gGzEnGeldBSpans[] = {
     { offsetof(EnGeldB, bodyPartsPos[0].x), offsetof(EnGeldB, bodyPartsPos[1].x) - offsetof(EnGeldB, bodyPartsPos[0].x), 0x13c, 0x6, 10, 2, GZ_SPAN_VALUE },
@@ -42,7 +43,7 @@ const GzActorSpan gGzEnGeldBSpans[] = {
     { offsetof(EnGeldB, skelAnime.dListCount), 0, 0x17a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGeldB, skelAnime.taper), 0, 0x17b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGeldB, skelAnime.skeleton), 0, 0x17c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnGeldB, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGeldB, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnGeldB, skelAnime.startFrame), 0, 0x184, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGeldB, skelAnime.endFrame), 0, 0x188, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGeldB, skelAnime.animLength), 0, 0x18c, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -273,6 +274,6 @@ const GzActorFunction gGzEnGeldBFunctions[] = {
     { 0x43bc, NULL },
     { 0x4504, NULL },
     { 0x477c, (void*)EnGeldB_Draw },
-    { 0x4aec, NULL },
+    { 0x4aec, (void*)EnGeldB_DodgeRanged },
 };
 const size_t gGzEnGeldBFunctionCount = ARRAY_COUNT(gGzEnGeldBFunctions);

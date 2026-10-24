@@ -14,6 +14,7 @@ void func_80ABCEEC(void*, void*);
 void EnNy_Move(void*, void*);
 void EnNy_TurnToStone(void*, void*);
 void func_80ABD11C(void*, void*);
+s32 EnNy_CollisionCheck(void*, void*);
 void EnNy_Update(void*, void*);
 void EnNy_SetupDie(void*, void*);
 void EnNy_Die(void*, void*);
@@ -101,7 +102,7 @@ const GzActorFunction gGzEnNyFunctions[] = {
     { 0x38c, (void*)EnNy_Move },
     { 0x4a0, (void*)EnNy_TurnToStone },
     { 0x560, (void*)func_80ABD11C },
-    { 0x5d4, NULL },
+    { 0x5d4, (void*)EnNy_CollisionCheck },
     { 0x7fc, NULL },
     { 0x8e4, (void*)EnNy_Update },
     { 0xb70, (void*)EnNy_SetupDie },

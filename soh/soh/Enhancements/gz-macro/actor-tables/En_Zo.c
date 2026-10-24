@@ -11,6 +11,7 @@ void EnZo_DrawRipples(void*, void*);
 void EnZo_DrawBubbles(void*, void*);
 void EnZo_DrawSplashes(void*, void*);
 void EnZo_Dialog(void*, void*);
+s32 EnZo_PlayerInProximity(void*, void*);
 void EnZo_Init(void*, void*);
 void EnZo_Destroy(void*, void*);
 void EnZo_Standing(void*, void*);
@@ -27,7 +28,7 @@ const GzActorSpan gGzEnZoSpans[] = {
     { offsetof(EnZo, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZo, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnZo, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnZo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnZo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnZo, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZo, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnZo, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -148,7 +149,7 @@ const GzActorFunction gGzEnZoFunctions[] = {
     { 0xfc4, NULL },
     { 0x1128, NULL },
     { 0x11a0, (void*)EnZo_Dialog },
-    { 0x1280, NULL },
+    { 0x1280, (void*)EnZo_PlayerInProximity },
     { 0x1320, NULL },
     { 0x1418, (void*)EnZo_Init },
     { 0x1620, (void*)EnZo_Destroy },

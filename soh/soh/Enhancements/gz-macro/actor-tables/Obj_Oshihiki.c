@@ -14,6 +14,9 @@ void ObjOshihiki_Init(void*, void*);
 void ObjOshihiki_Destroy(void*, void*);
 void ObjOshihiki_SetFloors(void*, void*);
 void ObjOshihiki_SetGround(void*, void*);
+s32 ObjOshihiki_CheckFloor(void*, void*);
+s32 ObjOshihiki_CheckGround(void*, void*);
+s32 ObjOshihiki_MoveWithBlockUnder(void*, void*);
 void ObjOshihiki_SetupOnScene(void*, void*);
 void ObjOshihiki_OnScene(void*, void*);
 void ObjOshihiki_SetupOnActor(void*, void*);
@@ -66,10 +69,10 @@ const GzActorFunction gGzObjOshihikiFunctions[] = {
     { 0x6d4, (void*)ObjOshihiki_SetFloors },
     { 0x834, NULL },
     { 0x980, (void*)ObjOshihiki_SetGround },
-    { 0x9d8, NULL },
-    { 0xa30, NULL },
+    { 0x9d8, (void*)ObjOshihiki_CheckFloor },
+    { 0xa30, (void*)ObjOshihiki_CheckGround },
     { 0xaa8, NULL },
-    { 0xcfc, NULL },
+    { 0xcfc, (void*)ObjOshihiki_MoveWithBlockUnder },
     { 0xdf8, (void*)ObjOshihiki_SetupOnScene },
     { 0xe30, (void*)ObjOshihiki_OnScene },
     { 0xf1c, (void*)ObjOshihiki_SetupOnActor },

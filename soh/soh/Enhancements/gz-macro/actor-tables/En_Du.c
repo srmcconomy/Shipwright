@@ -6,6 +6,7 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Du/z_en_du.h"
 
+s32 func_809FDDB4(void*, void*);
 void func_809FDE24(void*, void*);
 void func_809FDFC0(void*, void*);
 void func_809FE000(void*, void*);
@@ -32,7 +33,7 @@ const GzActorSpan gGzEnDuSpans[] = {
     { offsetof(EnDu, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDu, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDu, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDu, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDu, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDu, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDu, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDu, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -121,7 +122,7 @@ const GzActorFunction gGzEnDuFunctions[] = {
     { 0x0, NULL },
     { 0xc, NULL },
     { 0xb0, NULL },
-    { 0x18c, NULL },
+    { 0x18c, (void*)func_809FDDB4 },
     { 0x1fc, (void*)func_809FDE24 },
     { 0x274, NULL },
     { 0x398, (void*)func_809FDFC0 },

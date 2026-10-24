@@ -28,6 +28,7 @@ void func_80B36F40(void*, void*);
 void EnWf_UpdateDamage(void*, void*);
 void EnWf_Update(void*, void*);
 void EnWf_Draw(void*, void*);
+s32 EnWf_DodgeRanged(void*, void*);
 
 const GzActorSpan gGzEnWfSpans[] = {
     { offsetof(EnWf, bodyPartsPos[0].x), offsetof(EnWf, bodyPartsPos[1].x) - offsetof(EnWf, bodyPartsPos[0].x), 0x13c, 0x6, 10, 2, GZ_SPAN_VALUE },
@@ -38,7 +39,7 @@ const GzActorSpan gGzEnWfSpans[] = {
     { offsetof(EnWf, skelAnime.dListCount), 0, 0x17a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnWf, skelAnime.taper), 0, 0x17b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnWf, skelAnime.skeleton), 0, 0x17c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnWf, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnWf, skelAnime.animation), 0, 0x180, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnWf, skelAnime.startFrame), 0, 0x184, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnWf, skelAnime.endFrame), 0, 0x188, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnWf, skelAnime.animLength), 0, 0x18c, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -237,6 +238,6 @@ const GzActorFunction gGzEnWfFunctions[] = {
     { 0x37b0, NULL },
     { 0x37f4, NULL },
     { 0x399c, (void*)EnWf_Draw },
-    { 0x3b58, NULL },
+    { 0x3b58, (void*)EnWf_DodgeRanged },
 };
 const size_t gGzEnWfFunctionCount = ARRAY_COUNT(gGzEnWfFunctions);

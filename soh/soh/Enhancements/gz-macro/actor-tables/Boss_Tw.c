@@ -14,6 +14,9 @@ void BossTw_TurnToPlayer(void*, void*);
 void BossTw_SetupFlyTo(void*, void*);
 void BossTw_FlyTo(void*, void*);
 void BossTw_SetupShootBeam(void*, void*);
+s32 BossTw_BeamHitPlayerCheck(void*, void*);
+s32 BossTw_CheckBeamReflection(void*, void*);
+s32 BossTw_BeamReflHitCheck(void*, void*);
 void BossTw_ShootBeam(void*, void*);
 void BossTw_SetupFinishBeamShoot(void*, void*);
 void BossTw_FinishBeamShoot(void*, void*);
@@ -53,6 +56,7 @@ void func_80944C50(void*, void*);
 void BossTw_TwinrovaDraw(void*, void*);
 void BossTw_BlastFire(void*, void*);
 void BossTw_BlastIce(void*, void*);
+s32 BossTw_BlastShieldCheck(void*, void*);
 void BossTw_BlastUpdate(void*, void*);
 void BossTw_BlastDraw(void*, void*);
 void BossTw_DrawDeathBall(void*, void*);
@@ -159,7 +163,7 @@ const GzActorSpan gGzBossTwSpans[] = {
     { offsetof(BossTw, skelAnime.dListCount), 0, 0x55a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(BossTw, skelAnime.taper), 0, 0x55b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(BossTw, skelAnime.skeleton), 0, 0x55c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(BossTw, skelAnime.animation), 0, 0x560, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(BossTw, skelAnime.animation), 0, 0x560, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(BossTw, skelAnime.startFrame), 0, 0x564, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(BossTw, skelAnime.endFrame), 0, 0x568, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(BossTw, skelAnime.animLength), 0, 0x56c, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -272,9 +276,9 @@ const GzActorFunction gGzBossTwFunctions[] = {
     { 0x15f0, (void*)BossTw_FlyTo },
     { 0x1824, (void*)BossTw_SetupShootBeam },
     { 0x190c, NULL },
-    { 0x1c88, NULL },
-    { 0x1e80, NULL },
-    { 0x2108, NULL },
+    { 0x1c88, (void*)BossTw_BeamHitPlayerCheck },
+    { 0x1e80, (void*)BossTw_CheckBeamReflection },
+    { 0x2108, (void*)BossTw_BeamReflHitCheck },
     { 0x2230, NULL },
     { 0x2504, (void*)BossTw_ShootBeam },
     { 0x34bc, (void*)BossTw_SetupFinishBeamShoot },
@@ -319,7 +323,7 @@ const GzActorFunction gGzBossTwFunctions[] = {
     { 0xc06c, (void*)BossTw_TwinrovaDraw },
     { 0xc3a4, (void*)BossTw_BlastFire },
     { 0xccdc, (void*)BossTw_BlastIce },
-    { 0xd850, NULL },
+    { 0xd850, (void*)BossTw_BlastShieldCheck },
     { 0xdae0, (void*)BossTw_BlastUpdate },
     { 0xdc5c, (void*)BossTw_BlastDraw },
     { 0xe1b8, (void*)BossTw_DrawDeathBall },

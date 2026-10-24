@@ -6,7 +6,11 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_En_Go/z_en_go.h"
 
+s32 EnGo_IsActorSpawned(void*, void*);
 void func_80A3F060(void*, void*);
+s32 EnGo_IsCameraModified(void*, void*);
+s32 EnGo_FollowPath(void*, void*);
+s32 EnGo_SetMovedPos(void*, void*);
 void func_80A3F908(void*, void*);
 void EnGo_Init(void*, void*);
 void EnGo_Destroy(void*, void*);
@@ -39,7 +43,7 @@ const GzActorSpan gGzEnGoSpans[] = {
     { offsetof(EnGo, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGo, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnGo, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnGo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnGo, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnGo, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGo, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnGo, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -510,15 +514,15 @@ const GzActorFunction gGzEnGoFunctions[] = {
     { 0x39c, NULL },
     { 0x7bc, NULL },
     { 0x87c, NULL },
-    { 0x92c, NULL },
+    { 0x92c, (void*)EnGo_IsActorSpawned },
     { 0xa8c, NULL },
     { 0xb04, (void*)func_80A3F060 },
     { 0xb88, NULL },
-    { 0xc00, NULL },
+    { 0xc00, (void*)EnGo_IsCameraModified },
     { 0xd04, NULL },
     { 0xd1c, NULL },
-    { 0xda8, NULL },
-    { 0xf64, NULL },
+    { 0xda8, (void*)EnGo_FollowPath },
+    { 0xf64, (void*)EnGo_SetMovedPos },
     { 0x103c, NULL },
     { 0x1268, NULL },
     { 0x13b4, (void*)func_80A3F908 },

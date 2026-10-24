@@ -8,6 +8,7 @@
 
 void BgMoriElevator_Init(void*, void*);
 void BgMoriElevator_Destroy(void*, void*);
+s32 BgMoriElevator_IsPlayerRiding(void*, void*);
 void BgMoriElevator_WaitAfterInit(void*, void*);
 void BgMoriElevator_MoveIntoGround(void*, void*);
 void func_808A1CF4(void*, void*);
@@ -32,7 +33,7 @@ const GzActorFunction gGzBgMoriElevatorFunctions[] = {
     { 0xf8, NULL },
     { 0x180, (void*)BgMoriElevator_Init },
     { 0x264, (void*)BgMoriElevator_Destroy },
-    { 0x2a4, NULL },
+    { 0x2a4, (void*)BgMoriElevator_IsPlayerRiding },
     { 0x304, NULL },
     { 0x318, (void*)BgMoriElevator_WaitAfterInit },
     { 0x3bc, NULL },

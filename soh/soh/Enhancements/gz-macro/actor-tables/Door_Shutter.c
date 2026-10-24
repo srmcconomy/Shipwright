@@ -6,13 +6,16 @@
 #include "soh/Enhancements/gz-macro/GzActorTables.h"
 #include "overlays/actors/ovl_Door_Shutter/z_door_shutter.h"
 
+s32 DoorShutter_SetupDoor(void*, void*);
 void DoorShutter_Init(void*, void*);
 void DoorShutter_Destroy(void*, void*);
 void DoorShutter_SetupType(void*, void*);
+s32 DoorShutter_GetPlayerSide(void*, void*);
 void DoorShutter_WaitClear(void*, void*);
 void DoorShutter_Unopenable(void*, void*);
 void DoorShutter_Idle(void*, void*);
 void DoorShutter_InitOpeningDoorCam(void*, void*);
+s32 DoorShutter_UpdateOpening(void*, void*);
 void DoorShutter_BarAndWaitSwitchFlag(void*, void*);
 void DoorShutter_UnbarredCheckSwitchFlag(void*, void*);
 void DoorShutter_Open(void*, void*);
@@ -25,6 +28,7 @@ void DoorShutter_GohmaBlockFall(void*, void*);
 void DoorShutter_GohmaBlockBounce(void*, void*);
 void DoorShutter_PhantomGanonBarsRaise(void*, void*);
 void DoorShutter_Update(void*, void*);
+s32 DoorShutter_ShouldDraw(void*, void*);
 void DoorShutter_Draw(void*, void*);
 
 const GzActorSpan gGzDoorShutterSpans[] = {
@@ -44,17 +48,17 @@ const size_t gGzDoorShutterSpanCount = ARRAY_COUNT(gGzDoorShutterSpans);
 
 const GzActorFunction gGzDoorShutterFunctions[] = {
     { 0x0, NULL },
-    { 0x10, NULL },
+    { 0x10, (void*)DoorShutter_SetupDoor },
     { 0x1f8, (void*)DoorShutter_Init },
     { 0x410, (void*)DoorShutter_Destroy },
     { 0x480, (void*)DoorShutter_SetupType },
     { 0x5bc, NULL },
-    { 0x654, NULL },
+    { 0x654, (void*)DoorShutter_GetPlayerSide },
     { 0x7d4, (void*)DoorShutter_WaitClear },
     { 0x880, (void*)DoorShutter_Unopenable },
     { 0x890, (void*)DoorShutter_Idle },
     { 0x9e4, (void*)DoorShutter_InitOpeningDoorCam },
-    { 0xa9c, NULL },
+    { 0xa9c, (void*)DoorShutter_UpdateOpening },
     { 0xb94, NULL },
     { 0xc78, (void*)DoorShutter_BarAndWaitSwitchFlag },
     { 0xd30, (void*)DoorShutter_UnbarredCheckSwitchFlag },
@@ -69,7 +73,7 @@ const GzActorFunction gGzDoorShutterFunctions[] = {
     { 0x14f0, (void*)DoorShutter_PhantomGanonBarsRaise },
     { 0x1580, (void*)DoorShutter_Update },
     { 0x15d4, NULL },
-    { 0x17c4, NULL },
+    { 0x17c4, (void*)DoorShutter_ShouldDraw },
     { 0x1870, (void*)DoorShutter_Draw },
     { 0x1d78, NULL },
 };

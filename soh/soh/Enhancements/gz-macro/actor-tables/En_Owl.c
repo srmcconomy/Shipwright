@@ -54,6 +54,7 @@ void func_80ACBF50(void*, void*);
 void func_80ACC00C(void*, void*);
 void func_80ACC23C(void*, void*);
 void func_80ACC30C(void*, void*);
+s32 func_80ACC624(void*, void*);
 void EnOwl_Update(void*, void*);
 void EnOwl_Draw(void*, void*);
 void func_80ACD2CC(void*, void*);
@@ -98,7 +99,7 @@ const GzActorSpan gGzEnOwlSpans[] = {
     { offsetof(EnOwl, skelAnime.dListCount), 0, 0x18a, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime.taper), 0, 0x18b, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime.skeleton), 0, 0x18c, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnOwl, skelAnime.animation), 0, 0x190, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnOwl, skelAnime.animation), 0, 0x190, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnOwl, skelAnime.startFrame), 0, 0x194, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime.endFrame), 0, 0x198, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime.animLength), 0, 0x19c, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -129,7 +130,7 @@ const GzActorSpan gGzEnOwlSpans[] = {
     { offsetof(EnOwl, skelAnime2.dListCount), 0, 0x2ca, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime2.taper), 0, 0x2cb, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime2.skeleton), 0, 0x2cc, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnOwl, skelAnime2.animation), 0, 0x2d0, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnOwl, skelAnime2.animation), 0, 0x2d0, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnOwl, skelAnime2.startFrame), 0, 0x2d4, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime2.endFrame), 0, 0x2d8, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnOwl, skelAnime2.animLength), 0, 0x2dc, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -242,7 +243,7 @@ const GzActorFunction gGzEnOwlFunctions[] = {
     { 0x24d8, NULL },
     { 0x25b8, NULL },
     { 0x2644, NULL },
-    { 0x269c, NULL },
+    { 0x269c, (void*)func_80ACC624 },
     { 0x2718, (void*)EnOwl_Update },
     { 0x2e68, NULL },
     { 0x2f94, NULL },

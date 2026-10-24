@@ -8,6 +8,7 @@
 
 void EnDaiku_Init(void*, void*);
 void EnDaiku_Destroy(void*, void*);
+s32 EnDaiku_UpdateTalking(void*, void*);
 void EnDaiku_UpdateText(void*, void*);
 void EnDaiku_TentIdle(void*, void*);
 void EnDaiku_Jailed(void*, void*);
@@ -27,7 +28,7 @@ const GzActorSpan gGzEnDaikuSpans[] = {
     { offsetof(EnDaiku, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDaiku, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDaiku, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDaiku, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDaiku, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDaiku, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDaiku, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDaiku, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -140,7 +141,7 @@ const GzActorFunction gGzEnDaikuFunctions[] = {
     { 0x0, NULL },
     { 0xb4, (void*)EnDaiku_Init },
     { 0x3fc, (void*)EnDaiku_Destroy },
-    { 0x428, NULL },
+    { 0x428, (void*)EnDaiku_UpdateTalking },
     { 0x544, (void*)EnDaiku_UpdateText },
     { 0x814, (void*)EnDaiku_TentIdle },
     { 0x84c, (void*)EnDaiku_Jailed },

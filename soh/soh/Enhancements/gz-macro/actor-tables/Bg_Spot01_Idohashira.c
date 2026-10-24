@@ -10,6 +10,7 @@ void BgSpot01Idohashira_PlayBreakSfx2(void*, void*);
 void func_808AAE6C(void*, void*);
 void func_808AAF34(void*, void*);
 void BgSpot01Idohashira_Destroy(void*, void*);
+s32 func_808AB29C(void*, void*);
 void func_808AB3F8(void*, void*);
 void func_808AB414(void*, void*);
 void func_808AB444(void*, void*);
@@ -41,7 +42,7 @@ const GzActorFunction gGzBgSpot01IdohashiraFunctions[] = {
     { 0x47c, NULL },
     { 0x4c8, NULL },
     { 0x51c, NULL },
-    { 0x5c0, NULL },
+    { 0x5c0, (void*)func_808AB29C },
     { 0x70c, NULL },
     { 0x720, (void*)func_808AB3F8 },
     { 0x740, (void*)func_808AB414 },

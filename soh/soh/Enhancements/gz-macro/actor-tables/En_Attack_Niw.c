@@ -8,6 +8,7 @@
 
 void EnAttackNiw_Init(void*, void*);
 void EnAttackNiw_Destroy(void*, void*);
+s32 func_809B55EC(void*, void*);
 void func_809B5670(void*, void*);
 void func_809B59B0(void*, void*);
 void func_809B5C18(void*, void*);
@@ -20,7 +21,7 @@ const GzActorSpan gGzEnAttackNiwSpans[] = {
     { offsetof(EnAttackNiw, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnAttackNiw, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnAttackNiw, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnAttackNiw, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnAttackNiw, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnAttackNiw, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnAttackNiw, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnAttackNiw, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -95,7 +96,7 @@ const GzActorFunction gGzEnAttackNiwFunctions[] = {
     { 0x0, (void*)EnAttackNiw_Init },
     { 0x134, (void*)EnAttackNiw_Destroy },
     { 0x168, NULL },
-    { 0x4f0, NULL },
+    { 0x4f0, (void*)func_809B55EC },
     { 0x574, (void*)func_809B5670 },
     { 0x8b4, (void*)func_809B59B0 },
     { 0xb24, (void*)func_809B5C18 },

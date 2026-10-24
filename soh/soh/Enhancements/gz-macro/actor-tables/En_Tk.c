@@ -10,6 +10,8 @@ void EnTkEff_Draw(void*, void*);
 void EnTk_RestAnim(void*, void*);
 void EnTk_WalkAnim(void*, void*);
 void EnTk_DigAnim(void*, void*);
+s32 EnTk_CheckNextSpot(void*, void*);
+s32 EnTk_Orient(void*, void*);
 void EnTk_Init(void*, void*);
 void EnTk_Destroy(void*, void*);
 void EnTk_Rest(void*, void*);
@@ -24,7 +26,7 @@ const GzActorSpan gGzEnTkSpans[] = {
     { offsetof(EnTk, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTk, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnTk, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnTk, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnTk, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnTk, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTk, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnTk, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -428,10 +430,10 @@ const GzActorFunction gGzEnTkFunctions[] = {
     { 0x648, (void*)EnTk_DigAnim },
     { 0x6c8, NULL },
     { 0x78c, NULL },
-    { 0x810, NULL },
+    { 0x810, (void*)EnTk_CheckNextSpot },
     { 0x8f8, NULL },
     { 0x970, NULL },
-    { 0xa98, NULL },
+    { 0xa98, (void*)EnTk_Orient },
     { 0xc08, NULL },
     { 0xc5c, NULL },
     { 0xdf8, NULL },

@@ -8,6 +8,7 @@
 
 void EnDaikuKakariko_Init(void*, void*);
 void EnDaikuKakariko_Destroy(void*, void*);
+s32 EnDaikuKakariko_GetTalkState(void*, void*);
 void EnDaikuKakariko_HandleTalking(void*, void*);
 void EnDaikuKakariko_Talk(void*, void*);
 void EnDaikuKakariko_Wait(void*, void*);
@@ -22,7 +23,7 @@ const GzActorSpan gGzEnDaikuKakarikoSpans[] = {
     { offsetof(EnDaikuKakariko, skelAnime.dListCount), 0, 0x13e, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDaikuKakariko, skelAnime.taper), 0, 0x13f, 0x0, 1, 1, GZ_SPAN_VALUE },
     { offsetof(EnDaikuKakariko, skelAnime.skeleton), 0, 0x140, 0x0, 1, 4, GZ_SPAN_POINTER },
-    { offsetof(EnDaikuKakariko, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_POINTER },
+    { offsetof(EnDaikuKakariko, skelAnime.animation), 0, 0x144, 0x0, 1, 4, GZ_SPAN_ANIMATION },
     { offsetof(EnDaikuKakariko, skelAnime.startFrame), 0, 0x148, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDaikuKakariko, skelAnime.endFrame), 0, 0x14c, 0x0, 1, 4, GZ_SPAN_VALUE },
     { offsetof(EnDaikuKakariko, skelAnime.animLength), 0, 0x150, 0x0, 1, 4, GZ_SPAN_VALUE },
@@ -120,7 +121,7 @@ const GzActorFunction gGzEnDaikuKakarikoFunctions[] = {
     { 0x0, NULL },
     { 0xb4, (void*)EnDaikuKakariko_Init },
     { 0x40c, (void*)EnDaikuKakariko_Destroy },
-    { 0x438, NULL },
+    { 0x438, (void*)EnDaikuKakariko_GetTalkState },
     { 0x4dc, (void*)EnDaikuKakariko_HandleTalking },
     { 0x698, (void*)EnDaikuKakariko_Talk },
     { 0x76c, (void*)EnDaikuKakariko_Wait },
