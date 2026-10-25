@@ -28,6 +28,12 @@
 // Clicking or dragging along the progress bar goes to that frame. When the macro ends, the game pauses on its last
 // frame and the player offers to replay it.
 //
+// A page can also drive a player from script, as the wiki's macro editor does:
+//   player.setTimeline(data) plays from that object instead of src (same fields, paths relative to the page). It
+//     takes effect at once: a playing macro keeps its place and follows the new speeds, pauses and annotations.
+//   player.started is whether it has the game; player.frame is the macro frame it is on.
+//   player.seek(frame) goes to a frame, staying paused if it was.
+//
 // A page has one game (see soh-runtime.js), so one player plays at a time: playing another moves
 // the game to it, and this one goes back to its poster. The game is only watched, never controlled.
 // The visitor's own ROM is needed once; it is converted and kept in the browser like the launcher's.
@@ -73,13 +79,18 @@
 
   const NO_INPUT = { buttons: 0, x: 0, y: 0 };
 
-  // Reads a player's JSON file, resolving its paths against it and putting its lists in frame order
+  // Reads a player's JSON file
   async function loadTimeline(src) {
+    if (!src) throw new Error("the player has no src");
     const url = new URL(src, document.baseURI);
     const response = await fetch(url);
     if (!response.ok) throw new Error(`could not load ${src} (${response.status})`);
-    const data = await response.json();
-    if (!data.savestate) throw new Error(src + " names no savestate");
+    return readTimeline(await response.json(), url, src);
+  }
+
+  // Resolves a player file's paths against its URL and puts its lists in frame order
+  function readTimeline(data, url, name = "the player's file") {
+    if (!data.savestate) throw new Error(name + " names no savestate");
     const byFrame = (list) => (Array.isArray(list) ? [...list] : []).sort((a, b) => a.frame - b.frame);
     const annotations = byFrame(data.annotations);
     return {
@@ -385,21 +396,56 @@
       this.showMuted();
       this.showView();
       this.timeline ||= loadTimeline(this.getAttribute("src"));
-      this.timeline.then((timeline) => {
-        this.inputs.hidden = !timeline.macro || this.getAttribute("inputs") === "off";
-        this.notes.hidden = !timeline.annotations.length;
-        this.side.hidden = this.inputs.hidden && this.notes.hidden;
-        this.layout.classList.toggle("with-side", !this.side.hidden);
-        // The ⋮ menu downloads the files, under their own names
-        const offer = (link, url) => {
-          link.hidden = !url;
-          if (!url) return;
-          link.href = url;
-          link.download = decodeURIComponent(new URL(url).pathname.split("/").pop());
-        };
-        offer(this.shadowRoot.querySelector(".download-macro"), timeline.macro);
-        offer(this.shadowRoot.querySelector(".download-state"), timeline.savestate);
-      }, (err) => this.setNote(err.message, "err"));
+      this.timeline.then((timeline) => this.showTimeline(timeline), (err) => this.setNote(err.message, "err"));
+    }
+
+    get started() {
+      return SohPlayer.active === this;
+    }
+
+    // Plays from this object instead of the src file, at once if it is playing (see the top of this file)
+    setTimeline(data) {
+      const timeline = readTimeline(data, new URL(document.baseURI));
+      const previous = this.loaded;
+      this.timeline = Promise.resolve(timeline);
+      this.showTimeline(timeline);
+      this.setNote(null);
+      if (!previous) return;
+      if (previous.savestate !== timeline.savestate || previous.macro !== timeline.macro) {
+        // Other files: start over from the poster
+        this.macroBytes = null;
+        this.macroInputs = null;
+        this.loaded = null;
+        if (this.started) {
+          this.deactivate();
+          this.runtime.pause();
+        }
+        return;
+      }
+      this.loaded = timeline;
+      if (!this.started) return;
+      this.runtime.setTrail(timeline.trail);
+      this.scriptedSpeed = this.scriptedSpeedAt(this.frame);
+      this.applySpeed();
+      this.showAnnotations(this.frame);
+      if (!this.paused && !this.seeking) this.holdAtNextPause();
+    }
+
+    // Shows the side panel for what the file has, and offers its files in the ⋮ menu
+    showTimeline(timeline) {
+      this.inputs.hidden = !timeline.macro || this.getAttribute("inputs") === "off";
+      this.notes.hidden = !timeline.annotations.length;
+      this.side.hidden = this.inputs.hidden && this.notes.hidden;
+      this.layout.classList.toggle("with-side", !this.side.hidden);
+      // The ⋮ menu downloads the files, under their own names
+      const offer = (link, url) => {
+        link.hidden = !url;
+        if (!url) return;
+        link.href = url;
+        link.download = decodeURIComponent(new URL(url).pathname.split("/").pop());
+      };
+      offer(this.shadowRoot.querySelector(".download-macro"), timeline.macro);
+      offer(this.shadowRoot.querySelector(".download-state"), timeline.savestate);
     }
 
     disconnectedCallback() {
