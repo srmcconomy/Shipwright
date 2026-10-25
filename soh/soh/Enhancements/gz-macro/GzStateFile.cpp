@@ -22,6 +22,7 @@ constexpr size_t PLAY_ACTOR_FLAGS = 0x01D28;
 constexpr size_t PLAY_ROOM_CTX = 0x11CBC;
 constexpr size_t PLAY_GAMEPLAY_FRAMES = 0x11DE4;
 constexpr size_t PLAY_PRECIPITATION = 0x10B12;
+constexpr size_t PLAY_PAUSE_CTX = 0x10760;
 
 // Actor offsets. Retail builds do not have the debug ROM's padding at the end of Actor, so Player's own
 // fields are 0x10 lower than in the decomp's comments.
@@ -354,6 +355,19 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     s.cameraPlayerRot = ReadVec3s(cameraPos + 12);
     memcpy(s.mainCamera, play + PLAY_MAIN_CAMERA, N64_CAMERA_SIZE);
     memcpy(s.precipitation, play + PLAY_PRECIPITATION, sizeof(s.precipitation));
+    const uint8_t* pause = play + PLAY_PAUSE_CTX;
+    s.pause.pageIndex = ReadU16(pause + 0x1E8);
+    for (int i = 0; i < 5; i++) {
+        s.pause.cursorPoint[i] = (int16_t)ReadU16(pause + 0x218 + i * 2);
+        s.pause.cursorX[i] = (int16_t)ReadU16(pause + 0x222 + i * 2);
+        s.pause.cursorY[i] = (int16_t)ReadU16(pause + 0x22C + i * 2);
+    }
+    s.pause.dungeonMapSlot = (int16_t)ReadU16(pause + 0x236);
+    s.pause.cursorSpecialPos = (int16_t)ReadU16(pause + 0x238);
+    for (int i = 0; i < 4; i++) {
+        s.pause.cursorItem[i] = ReadU16(pause + 0x23E + i * 2);
+        s.pause.cursorSlot[i] = ReadU16(pause + 0x246 + i * 2);
+    }
     const uint8_t* flags = play + PLAY_ACTOR_FLAGS;
     s.swchFlags = ReadU32(flags + 0x00);
     s.tempSwchFlags = ReadU32(flags + 0x04);

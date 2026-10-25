@@ -34,6 +34,8 @@ extern EffectSsInfo sEffectSsInfo;
 void func_80A01C38(EnElf* elf, s32 mode);
 // Ends whatever Link is doing and leaves him standing, or treading water
 void func_8083C148(Player* player, PlayState* play);
+// The display lists for each of Link's model types, adult and child (z_player_lib.c)
+extern Gfx** sPlayerDListGroups[PLAYER_MODELTYPE_MAX];
 }
 
 #define CVAR_STATE_PATH_NAME CVAR_DEVELOPER_TOOLS("GzMacro.StatePath")
@@ -262,6 +264,7 @@ struct PendingArrival {
     uint32_t gameplayFrames;
     uint8_t camera[GzMacro::N64_CAMERA_SIZE];
     uint8_t precipitation[4];
+    GzMacro::PauseState pause;
     std::vector<GzMacro::KankyoState> kankyos;
     std::vector<GzMacro::ActorState> actors;
     // The actor tables describe the N64 1.2 versions of the actors
@@ -695,26 +698,32 @@ void RestoreActor(Actor* actor, const GzMacro::ActorState& state) {
 // Matches the scene's actors to the state's by id, params and where they were spawned, or by id and params alone
 // when there is only one of the kind on each side (Navi, who spawns wherever Link arrives), and restores each one's
 // Actor fields. Link is restored on his own.
-void RestoreActors(const std::vector<GzMacro::ActorState>& saved) {
+// Initialises an actor now if its object is loaded, as the next actor update would: restoring it before then would
+// be undone by its init
+void InitActorNow(Actor* actor) {
+    if (actor->init == nullptr || !Object_IsLoaded(&gPlayState->objectCtx, actor->objBankIndex)) {
+        return;
+    }
+    Actor_SetObjectDependency(gPlayState, actor);
+    if (GameInteractor_ShouldActorInit(actor)) {
+        actor->init(actor, gPlayState);
+        actor->init = nullptr;
+        GameInteractor_ExecuteOnActorInit(actor);
+    } else {
+        actor->init = nullptr;
+        Actor_Kill(actor);
+    }
+}
+
+// Returns the live actor each saved one was restored into, or null where none matched
+std::vector<Actor*> RestoreActors(const std::vector<GzMacro::ActorState>& saved) {
     // An actor whose object wasn't loaded when it spawned is initialised on the next actor update, which would undo
     // what is restored here. SoH holds a new scene's objects back a frame, as the N64 takes that long to load them,
-    // but the state's actors were all set up long ago: so the objects are finished and those actors initialised now,
-    // as the next update would.
+    // but the state's actors were all set up long ago: so the objects are finished and those actors initialised now.
     Object_UpdateBank(&gPlayState->objectCtx);
     for (int category = 0; category < ACTORCAT_MAX; category++) {
         for (Actor* actor = gPlayState->actorCtx.actorLists[category].head; actor != nullptr; actor = actor->next) {
-            if (actor->init == nullptr || !Object_IsLoaded(&gPlayState->objectCtx, actor->objBankIndex)) {
-                continue;
-            }
-            Actor_SetObjectDependency(gPlayState, actor);
-            if (GameInteractor_ShouldActorInit(actor)) {
-                actor->init(actor, gPlayState);
-                actor->init = nullptr;
-                GameInteractor_ExecuteOnActorInit(actor);
-            } else {
-                actor->init = nullptr;
-                Actor_Kill(actor);
-            }
+            InitActorNow(actor);
         }
     }
     std::vector<Actor*> live;
@@ -730,6 +739,7 @@ void RestoreActors(const std::vector<GzMacro::ActorState>& saved) {
     };
     std::vector<bool> used(saved.size(), false);
     std::vector<bool> restored(live.size(), false);
+    std::vector<Actor*> into(saved.size(), nullptr);
     for (size_t i = 0; i < live.size(); i++) {
         for (size_t j = 0; j < saved.size(); j++) {
             const Vec3f home = ToVec3f(saved[j].homePos);
@@ -737,6 +747,7 @@ void RestoreActors(const std::vector<GzMacro::ActorState>& saved) {
                 home.y == live[i]->home.pos.y && home.z == live[i]->home.pos.z) {
                 RestoreActor(live[i], saved[j]);
                 used[j] = restored[i] = true;
+                into[j] = live[i];
                 break;
             }
         }
@@ -760,10 +771,87 @@ void RestoreActors(const std::vector<GzMacro::ActorState>& saved) {
         if (liveCount == 1 && savedCount == 1 && !used[savedIndex]) {
             RestoreActor(live[i], saved[savedIndex]);
             used[savedIndex] = restored[i] = true;
+            into[savedIndex] = live[i];
             matched++;
         }
     }
     SPDLOG_INFO("[gz state] restored {} of {} actors ({} in the state)", matched, live.size(), saved.size());
+    return into;
+}
+
+// Gives Link back the actor he had as his child, such as the hookshot's hook, which he spawns himself when he takes
+// the hookshot out, so a fresh scene doesn't have it. Without the hook, Link waits for it to come back and never
+// moves again. The state's actor whose parent is Link is his child; it is spawned if no live actor matched it.
+void RestoreLinkChild(Player* player, const std::vector<GzMacro::ActorState>& saved, const std::vector<Actor*>& into) {
+    constexpr size_t N64_ACTOR_PARENT = 0x118;
+    constexpr size_t N64_ACTOR_CHILD = 0x11C;
+    constexpr size_t N64_PLAYER_HELD_ACTOR = 0x39C;
+    constexpr size_t N64_CAMERA_PLAYER = 0x90;
+    const uint8_t* link = sPending.link.data.data();
+    uint32_t child = GzMacro::ReadU32(link + N64_ACTOR_CHILD);
+    uint32_t linkAddress = GzMacro::ReadU32(sPending.camera + N64_CAMERA_PLAYER);
+    if (child == 0 || linkAddress == 0) {
+        return;
+    }
+    size_t found = SIZE_MAX;
+    for (size_t j = 0; j < saved.size(); j++) {
+        if (saved[j].data.size() >= GzMacro::N64_ACTOR_SIZE &&
+            GzMacro::ReadU32(saved[j].data.data() + N64_ACTOR_PARENT) == linkAddress) {
+            if (found != SIZE_MAX) {
+                // The state doesn't say where its actors were, so with two it isn't known which is the child
+                SPDLOG_WARN("[gz state] more than one actor has Link as its parent, not restoring his child");
+                return;
+            }
+            found = j;
+        }
+    }
+    if (found == SIZE_MAX) {
+        return;
+    }
+    const GzMacro::ActorState& state = saved[found];
+    Actor* actor = into[found];
+    if (actor == nullptr) {
+        const Vec3f pos = ToVec3f(GzMacro::ReadVec3f(state.data.data() + 0x24));
+        actor = Actor_SpawnAsChild(&gPlayState->actorCtx, &player->actor, gPlayState, state.id, pos.x, pos.y, pos.z,
+                                   0, player->actor.shape.rot.y, 0, state.params);
+        if (actor == nullptr) {
+            return;
+        }
+        InitActorNow(actor);
+        RestoreActor(actor, state);
+    }
+    actor->parent = &player->actor;
+    player->actor.child = actor;
+    if (GzMacro::ReadU32(link + N64_PLAYER_HELD_ACTOR) == child) {
+        player->heldActor = actor;
+    }
+}
+
+// Puts back the pause menu's page and cursors, so the next pause opens where the macro expects
+void RestorePause(const GzMacro::PauseState& saved) {
+    PauseContext* pauseCtx = &gPlayState->pauseCtx;
+    pauseCtx->pageIndex = saved.pageIndex;
+    for (int i = 0; i < 5; i++) {
+        pauseCtx->cursorPoint[i] = saved.cursorPoint[i];
+        pauseCtx->cursorX[i] = saved.cursorX[i];
+        pauseCtx->cursorY[i] = saved.cursorY[i];
+    }
+    pauseCtx->dungeonMapSlot = saved.dungeonMapSlot;
+    pauseCtx->cursorSpecialPos = saved.cursorSpecialPos;
+    for (int i = 0; i < 4; i++) {
+        pauseCtx->cursorItem[i] = saved.cursorItem[i];
+        pauseCtx->cursorSlot[i] = saved.cursorSlot[i];
+    }
+}
+
+// Link's hands, sheath and waist: which models they show (the types) come back with his fields, but what draws them
+// are pointers into SoH's tables, which are set from the types here as Player_SetModels does
+void RestoreLinkModels(Player* player) {
+    s32 age = gSaveContext.linkAge;
+    player->leftHandDLists = &sPlayerDListGroups[player->leftHandType][age];
+    player->rightHandDLists = &sPlayerDListGroups[player->rightHandType][age];
+    player->sheathDLists = &sPlayerDListGroups[player->sheathType][age];
+    player->waistDLists = &sPlayerDListGroups[gPlayerModelTypes[player->modelGroup][PLAYER_MODELGROUPENTRY_WAIST]][age];
 }
 
 void ApplyArrival() {
@@ -794,6 +882,7 @@ void ApplyArrival() {
     gSaveContext.respawn[RESPAWN_MODE_DOWN] = sPending.voidOutRespawn;
     gPlayState->actorCtx.flags.tempClear = sPending.tempClearFlags;
     gPlayState->gameplayFrames = sPending.gameplayFrames;
+    RestorePause(sPending.pause);
     // The rest is put back once this frame is done, so the next one starts the way the N64 had it: the camera
     // updates after Link, and the weather and the macro's random numbers are drawn on until the frame ends
     GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDrawEnd>(sFrameEndHook);
@@ -817,13 +906,14 @@ void ApplyArrival() {
         memcpy(gPlayState->envCtx.unk_EE, sPending.precipitation, sizeof(gPlayState->envCtx.unk_EE));
         // gz saves it partway through a frame, before that frame counts it up, which this one does as it ends
         gPlayState->state.frames = sPending.stateFrames;
-        RestoreActors(sPending.actors);
+        std::vector<Actor*> restoredInto = RestoreActors(sPending.actors);
         // Link, the same way, once his arrival is done
         if (sPending.hasLink && sPending.link.data.size() >= GzMacro::N64_PLAYER_SIZE && GET_PLAYER(gPlayState) != nullptr) {
             Player* player = GET_PLAYER(gPlayState);
             RestoreActorFields(&player->actor, sPending.link.data.data());
-            if (sPending.actorTablesApply) {
-                RestoreOwnFields(&player->actor, sPending.link.data);
+            if (sPending.actorTablesApply && RestoreOwnFields(&player->actor, sPending.link.data)) {
+                RestoreLinkModels(player);
+                RestoreLinkChild(player, sPending.actors, restoredInto);
             }
         }
         RestoreKankyos(sPending.kankyos);
@@ -903,6 +993,7 @@ bool Import(bool boot = false) {
     sPending.gameplayFrames = st.gameplayFrames;
     memcpy(sPending.camera, st.mainCamera, sizeof(sPending.camera));
     memcpy(sPending.precipitation, st.precipitation, sizeof(sPending.precipitation));
+    sPending.pause = st.pause;
     sPending.kankyos = st.kankyos;
     sPending.actors = st.actors;
     sPending.actorTablesApply = st.version == (uint16_t)GzMacro::GzVersion::Oot12;

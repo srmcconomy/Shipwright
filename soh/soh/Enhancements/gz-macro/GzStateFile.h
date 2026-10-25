@@ -112,6 +112,18 @@ struct KankyoState {
     std::vector<uint8_t> data;
 };
 
+// The pause menu's page and cursors (pauseCtx), which stay as they were from one pause to the next
+struct PauseState {
+    uint16_t pageIndex = 0;
+    int16_t cursorPoint[5] = {};
+    int16_t cursorX[5] = {};
+    int16_t cursorY[5] = {};
+    int16_t dungeonMapSlot = 0;
+    int16_t cursorSpecialPos = 0;
+    uint16_t cursorItem[4] = {};
+    uint16_t cursorSlot[4] = {};
+};
+
 struct StateFile {
     uint16_t version = 0;
     uint16_t stateVersion = 0;
@@ -129,6 +141,8 @@ struct StateFile {
     // How much rain, lightning and snow is falling (envCtx.unk_EE). A scene loaded fresh starts with none and
     // builds up over many frames.
     uint8_t precipitation[4] = {};
+    // The pause menu opens on the page it was last left on, which a macro's inputs expect
+    PauseState pause;
     std::vector<KankyoState> kankyos;
     // Every actor but Link
     std::vector<ActorState> actors;
