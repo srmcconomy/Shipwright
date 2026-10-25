@@ -8105,6 +8105,17 @@ s16 Camera_GetCamDirPitch(Camera* camera) {
 s16 Camera_GetFuncIdx(Camera* camera) {
     return sCameraSettings[camera->setting].cameraModes[camera->mode].funcIdx;
 }
+
+/**
+ * Sets what the camera last found of the floor ahead of the player. It looks only every other frame and works from
+ * what it found in between.
+ */
+void Camera_SetFloorAhead(f32 floorYNear, f32 floorYFar, Vec3f* farPos, Vec3f* farNorm) {
+    D_8015CE50 = floorYNear;
+    D_8015CE54 = floorYFar;
+    D_8015CE58.pos = *farPos;
+    D_8015CE58.norm = *farNorm;
+}
 // #endregion
 
 s16 Camera_GetCamDirYaw(Camera* camera) {

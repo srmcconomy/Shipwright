@@ -5,6 +5,17 @@
 
 #include "math.h"
 
+// #region SOH [Enhancement]
+// The N64's sinf and cosf round differently from the C library's for some numbers, so gz macros from the N64 play
+// back with them (GzN64Trig.c). The game's C calls go through a switch between the two.
+#if !defined(__cplusplus) && !defined(GZ_N64_TRIG_IMPL)
+float Math_SinFN64Aware(float x);
+float Math_CosFN64Aware(float x);
+#define sinf(x) Math_SinFN64Aware(x)
+#define cosf(x) Math_CosFN64Aware(x)
+#endif
+// #endregion
+
 #include "functions.h"
 #include "variables.h"
 #include "macros.h"

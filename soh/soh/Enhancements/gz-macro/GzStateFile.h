@@ -119,6 +119,9 @@ struct StateFile {
 
     int16_t sceneId = 0;
     int8_t roomNum = 0;
+    // The game state's frame counter; the camera looks at the floor ahead only every other frame, and the snow
+    // thickens only every 16th
+    uint32_t stateFrames = 0;
     // The play state's frame counter; some things happen only on even frames
     uint32_t gameplayFrames = 0;
     Vec3fBE cameraPlayerPos = {};
@@ -150,6 +153,12 @@ struct StateFile {
     // The rng when the state was saved, which a macro recorded from it starts with
     bool rngFound = false;
     uint32_t rng = 0;
+    // What the camera last found of the floor ahead of Link (sFloorYNear, sFloorYFar and sFarColChk's position and
+    // normal), saved after the rng
+    float floorYNear = 0.0f;
+    float floorYFar = 0.0f;
+    Vec3fBE floorFarPos = {};
+    Vec3fBE floorFarNorm = {};
 };
 
 bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& error);

@@ -253,6 +253,12 @@ struct PendingArrival {
     GzMacro::LinkState link;
     RespawnData voidOutRespawn;
     uint32_t tempClearFlags;
+    uint32_t stateFrames;
+    bool hasFloorAhead;
+    float floorYNear;
+    float floorYFar;
+    Vec3f floorFarPos;
+    Vec3f floorFarNorm;
     uint32_t gameplayFrames;
     uint8_t camera[GzMacro::N64_CAMERA_SIZE];
     uint8_t precipitation[4];
@@ -798,6 +804,9 @@ void ApplyArrival() {
             return;
         }
         RestoreCamera(sPending.camera);
+        if (sPending.hasFloorAhead) {
+            Camera_SetFloorAhead(sPending.floorYNear, sPending.floorYFar, &sPending.floorFarPos, &sPending.floorFarNorm);
+        }
         // The effects the arrival spawned (Navi's sparkles as she appears) aren't the state's, and the ones that last
         // draw random numbers every frame
         for (s32 i = 0; i < sEffectSsInfo.tableSize; i++) {
@@ -806,6 +815,8 @@ void ApplyArrival() {
             }
         }
         memcpy(gPlayState->envCtx.unk_EE, sPending.precipitation, sizeof(gPlayState->envCtx.unk_EE));
+        // gz saves it partway through a frame, before that frame counts it up, which this one does as it ends
+        gPlayState->state.frames = sPending.stateFrames;
         RestoreActors(sPending.actors);
         // Link, the same way, once his arrival is done
         if (sPending.hasLink && sPending.link.data.size() >= GzMacro::N64_PLAYER_SIZE && GET_PLAYER(gPlayState) != nullptr) {
@@ -883,6 +894,12 @@ bool Import(bool boot = false) {
     }
 
     sPending.sceneId = st.sceneId;
+    sPending.stateFrames = st.stateFrames;
+    sPending.hasFloorAhead = st.rngFound;
+    sPending.floorYNear = st.floorYNear;
+    sPending.floorYFar = st.floorYFar;
+    sPending.floorFarPos = { st.floorFarPos.x, st.floorFarPos.y, st.floorFarPos.z };
+    sPending.floorFarNorm = { st.floorFarNorm.x, st.floorFarNorm.y, st.floorFarNorm.z };
     sPending.gameplayFrames = st.gameplayFrames;
     memcpy(sPending.camera, st.mainCamera, sizeof(sPending.camera));
     memcpy(sPending.precipitation, st.precipitation, sizeof(sPending.precipitation));

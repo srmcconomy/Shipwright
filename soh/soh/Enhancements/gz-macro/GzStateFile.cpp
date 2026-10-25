@@ -15,6 +15,7 @@ constexpr uint16_t MIN_STATE_VERSION = 0x0003;
 
 // PlayState offsets
 constexpr size_t PLAY_SCENE_ID = 0x000A4;
+constexpr size_t PLAY_STATE_FRAMES = 0x0009C;
 constexpr size_t PLAY_MAIN_CAMERA = 0x001E0;
 constexpr size_t CAMERA_PLAYER_POS_ROT = 0x094;
 constexpr size_t PLAY_ACTOR_FLAGS = 0x01D28;
@@ -250,10 +251,10 @@ size_t TailEnd(const uint8_t* data, size_t size, size_t rngPos, uint16_t stateVe
 // The rng comes after the actor code, heap and particles, which can only be walked with the ROM in hand. What
 // follows it can be walked without, so the rng is found where a walk from it ends exactly at the end of the file.
 // That checks dozens of fields; the search runs from the end, as a false match is only ever found earlier.
-bool FindRng(const uint8_t* data, size_t size, size_t start, uint16_t stateVersion, bool ique, uint32_t& out) {
+bool FindRng(const uint8_t* data, size_t size, size_t start, uint16_t stateVersion, bool ique, size_t& out) {
     for (size_t pos = size - 4; pos-- > start;) {
         if (TailEnd(data, size, pos, stateVersion, ique) == size) {
-            out = ReadU32(data + pos);
+            out = pos;
             return true;
         }
     }
@@ -346,6 +347,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     const uint8_t* play = data + pos;
     s.sceneId = (int16_t)ReadU16(play + PLAY_SCENE_ID);
     s.roomNum = (int8_t)play[PLAY_ROOM_CTX];
+    s.stateFrames = ReadU32(play + PLAY_STATE_FRAMES);
     s.gameplayFrames = ReadU32(play + PLAY_GAMEPLAY_FRAMES);
     const uint8_t* cameraPos = play + PLAY_MAIN_CAMERA + CAMERA_PLAYER_POS_ROT;
     s.cameraPlayerPos = ReadVec3f(cameraPos);
@@ -369,7 +371,17 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     s.linkFound = FindLink(data, size, pos, cameraPos, s.link);
     s.kankyos = FindKankyos(data, size, pos);
     s.actors = FindActors(data, size, pos);
-    s.rngFound = FindRng(data, size, pos, s.stateVersion, s.version == (uint16_t)GzVersion::OotIQueC, s.rng);
+    size_t rngPos;
+    s.rngFound = FindRng(data, size, pos, s.stateVersion, s.version == (uint16_t)GzVersion::OotIQueC, rngPos);
+    if (s.rngFound) {
+        s.rng = ReadU32(data + rngPos);
+        // After the rng, din's fire (in older states) and farore's wind, as in TailEnd
+        const uint8_t* floor = data + rngPos + 4 + (s.stateVersion < 0x0004 ? 4 + 2 + 4 + 4 + 4 : 0) + 4 + 4;
+        s.floorYNear = ReadF32(floor);
+        s.floorYFar = ReadF32(floor + 4);
+        s.floorFarPos = ReadVec3f(floor + 8);
+        s.floorFarNorm = ReadVec3f(floor + 20);
+    }
 
     out = std::move(s);
     return true;

@@ -52,10 +52,12 @@ struct Playback {
 
 Playback sPlayback;
 
-// Macros come from the N64, whose random floats differ from the GameCube versions SoH is built from
+// Macros come from the N64, whose random floats differ from the GameCube versions SoH is built from, and whose
+// sinf and cosf round differently from the C library's
 void SetPlaying(bool playing) {
     sPlayback.playing = playing;
     Rand_SetN64Floats(playing);
+    Math_SetN64Trig(playing);
 }
 
 // The rng to use where gz's would come from the state but can't (the state's couldn't be found, or the scene an
