@@ -102,6 +102,8 @@ struct ActorState {
     int16_t id = 0;
     int16_t params = 0;
     Vec3fBE homePos = {};
+    // Where it was in the N64's RAM, from the actor lists, so pointers to it can be followed; 0 if not known
+    uint32_t address = 0;
     std::vector<uint8_t> data;
 };
 

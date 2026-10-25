@@ -53,6 +53,9 @@ for actor_id, info in sorted(rom.items(), key=lambda x: int(x[0])):
         for rom_off, soh_name in zip(info["initVars"], init_names):
             if rom_off is None or soh_name in ("NULL", "0"):
                 continue
+            # A shared function from code (Actor_Noop as a destroy, say) is outside the overlay on both sides
+            if rom_off not in info["functions"] and soh_name not in funcs:
+                continue
             if rom_off not in info["functions"] or soh_name not in funcs or info["functions"].index(rom_off) != funcs.index(soh_name):
                 ok = False
     entry["paired"] = ok

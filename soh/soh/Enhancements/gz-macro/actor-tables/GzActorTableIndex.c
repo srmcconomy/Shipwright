@@ -381,6 +381,10 @@ extern const GzActorSpan gGzEnArowTrapSpans[];
 extern const size_t gGzEnArowTrapSpanCount;
 extern const GzActorFunction gGzEnArowTrapFunctions[];
 extern const size_t gGzEnArowTrapFunctionCount;
+extern const GzActorSpan gGzEnVaseSpans[];
+extern const size_t gGzEnVaseSpanCount;
+extern const GzActorFunction gGzEnVaseFunctions[];
+extern const size_t gGzEnVaseFunctionCount;
 extern const GzActorSpan gGzEnTaSpans[];
 extern const size_t gGzEnTaSpanCount;
 extern const GzActorFunction gGzEnTaFunctions[];
@@ -1057,6 +1061,10 @@ extern const GzActorSpan gGzObjLightswitchSpans[];
 extern const size_t gGzObjLightswitchSpanCount;
 extern const GzActorFunction gGzObjLightswitchFunctions[];
 extern const size_t gGzObjLightswitchFunctionCount;
+extern const GzActorSpan gGzObjMure2Spans[];
+extern const size_t gGzObjMure2SpanCount;
+extern const GzActorFunction gGzObjMure2Functions[];
+extern const size_t gGzObjMure2FunctionCount;
 extern const GzActorSpan gGzEnGoSpans[];
 extern const size_t gGzEnGoSpanCount;
 extern const GzActorFunction gGzEnGoFunctions[];
@@ -1201,6 +1209,10 @@ extern const GzActorSpan gGzEnKakasiSpans[];
 extern const size_t gGzEnKakasiSpanCount;
 extern const GzActorFunction gGzEnKakasiFunctions[];
 extern const size_t gGzEnKakasiFunctionCount;
+extern const GzActorSpan gGzObjMakeoshihikiSpans[];
+extern const size_t gGzObjMakeoshihikiSpanCount;
+extern const GzActorFunction gGzObjMakeoshihikiFunctions[];
+extern const size_t gGzObjMakeoshihikiFunctionCount;
 extern const GzActorSpan gGzOceffSpotSpans[];
 extern const size_t gGzOceffSpotSpanCount;
 extern const GzActorFunction gGzOceffSpotFunctions[];
@@ -1453,6 +1465,10 @@ extern const GzActorSpan gGzDoorKillerSpans[];
 extern const size_t gGzDoorKillerSpanCount;
 extern const GzActorFunction gGzDoorKillerFunctions[];
 extern const size_t gGzDoorKillerFunctionCount;
+extern const GzActorSpan gGzBgSpot11OasisSpans[];
+extern const size_t gGzBgSpot11OasisSpanCount;
+extern const GzActorFunction gGzBgSpot11OasisFunctions[];
+extern const size_t gGzBgSpot11OasisFunctionCount;
 extern const GzActorSpan gGzBgSpot18FutaSpans[];
 extern const size_t gGzBgSpot18FutaSpanCount;
 extern const GzActorFunction gGzBgSpot18FutaFunctions[];
@@ -1501,6 +1517,10 @@ extern const GzActorSpan gGzEnZoSpans[];
 extern const size_t gGzEnZoSpanCount;
 extern const GzActorFunction gGzEnZoFunctions[];
 extern const size_t gGzEnZoFunctionCount;
+extern const GzActorSpan gGzObjMakekinsutaSpans[];
+extern const size_t gGzObjMakekinsutaSpanCount;
+extern const GzActorFunction gGzObjMakekinsutaFunctions[];
+extern const size_t gGzObjMakekinsutaFunctionCount;
 extern const GzActorSpan gGzEnGe3Spans[];
 extern const size_t gGzEnGe3SpanCount;
 extern const GzActorFunction gGzEnGe3Functions[];
@@ -1625,6 +1645,7 @@ const GzActorTable gGzActorTables[] = {
     { ACTOR_EN_PU_BOX, 0x158, gGzEnPuboxSpans, &gGzEnPuboxSpanCount, gGzEnPuboxFunctions, &gGzEnPuboxFunctionCount, 1 },
     { ACTOR_EN_TRAP, 0x1dc, gGzEnTrapSpans, &gGzEnTrapSpanCount, gGzEnTrapFunctions, &gGzEnTrapFunctionCount, 1 },
     { ACTOR_EN_AROW_TRAP, 0x144, gGzEnArowTrapSpans, &gGzEnArowTrapSpanCount, gGzEnArowTrapFunctions, &gGzEnArowTrapFunctionCount, 1 },
+    { ACTOR_EN_VASE, 0x13c, gGzEnVaseSpans, &gGzEnVaseSpanCount, gGzEnVaseFunctions, &gGzEnVaseFunctionCount, 1 },
     { ACTOR_EN_TA, 0x2d8, gGzEnTaSpans, &gGzEnTaSpanCount, gGzEnTaFunctions, &gGzEnTaFunctionCount, 4 },
     { ACTOR_EN_TK, 0x760, gGzEnTkSpans, &gGzEnTkSpanCount, gGzEnTkFunctions, &gGzEnTkFunctionCount, 18 },
     { ACTOR_BG_MORI_BIGST, 0x15c, gGzBgMoriBigstSpans, &gGzBgMoriBigstSpanCount, gGzBgMoriBigstFunctions, &gGzBgMoriBigstFunctionCount, 3 },
@@ -1794,6 +1815,7 @@ const GzActorTable gGzActorTables[] = {
     { ACTOR_EN_ISHI, 0x18c, gGzEnIshiSpans, &gGzEnIshiSpanCount, gGzEnIshiFunctions, &gGzEnIshiFunctionCount, 11 },
     { ACTOR_OBJ_HANA, 0x188, gGzObjHanaSpans, &gGzObjHanaSpanCount, gGzObjHanaFunctions, &gGzObjHanaFunctionCount, 1 },
     { ACTOR_OBJ_LIGHTSWITCH, 0x1b4, gGzObjLightswitchSpans, &gGzObjLightswitchSpanCount, gGzObjLightswitchFunctions, &gGzObjLightswitchFunctionCount, 5 },
+    { ACTOR_OBJ_MURE2, 0x178, gGzObjMure2Spans, &gGzObjMure2SpanCount, gGzObjMure2Functions, &gGzObjMure2FunctionCount, -1 },
     { ACTOR_EN_GO, 0x6b8, gGzEnGoSpans, &gGzEnGoSpanCount, gGzEnGoFunctions, &gGzEnGoFunctionCount, 18 },
     { ACTOR_EN_FU, 0x2a0, gGzEnFuSpans, &gGzEnFuSpanCount, gGzEnFuFunctions, &gGzEnFuFunctionCount, 1 },
     { ACTOR_EN_CHANGER, 0x15c, gGzEnChangerSpans, &gGzEnChangerSpanCount, gGzEnChangerFunctions, &gGzEnChangerFunctionCount, 0 },
@@ -1830,6 +1852,7 @@ const GzActorTable gGzActorTables[] = {
     { ACTOR_EN_ZL3, 0x410, gGzEnZl3Spans, &gGzEnZl3SpanCount, gGzEnZl3Functions, &gGzEnZl3FunctionCount, 2 },
     { ACTOR_BOSS_GANON2, 0x8d4, gGzBossGanon2Spans, &gGzBossGanon2SpanCount, gGzBossGanon2Functions, &gGzBossGanon2FunctionCount, 7 },
     { ACTOR_EN_KAKASI, 0x1fc, gGzEnKakasiSpans, &gGzEnKakasiSpanCount, gGzEnKakasiFunctions, &gGzEnKakasiFunctionCount, 0 },
+    { ACTOR_OBJ_MAKEOSHIHIKI, 0x13c, gGzObjMakeoshihikiSpans, &gGzObjMakeoshihikiSpanCount, gGzObjMakeoshihikiFunctions, &gGzObjMakeoshihikiFunctionCount, -1 },
     { ACTOR_OCEFF_SPOT, 0x170, gGzOceffSpotSpans, &gGzOceffSpotSpanCount, gGzOceffSpotFunctions, &gGzOceffSpotFunctionCount, 2 },
     { ACTOR_END_TITLE, 0x140, gGzEndTitleSpans, &gGzEndTitleSpanCount, gGzEndTitleFunctions, &gGzEndTitleFunctionCount, 1 },
     { ACTOR_EN_TORCH, 0x13c, gGzEnTorchSpans, &gGzEnTorchSpanCount, gGzEnTorchFunctions, &gGzEnTorchFunctionCount, -1 },
@@ -1893,6 +1916,7 @@ const GzActorTable gGzActorTables[] = {
     { ACTOR_EN_PO_DESERT, 0x274, gGzEnPoDesertSpans, &gGzEnPoDesertSpanCount, gGzEnPoDesertFunctions, &gGzEnPoDesertFunctionCount, 1 },
     { ACTOR_EN_CROW, 0x288, gGzEnCrowSpans, &gGzEnCrowSpanCount, gGzEnCrowFunctions, &gGzEnCrowFunctionCount, 1 },
     { ACTOR_DOOR_KILLER, 0x274, gGzDoorKillerSpans, &gGzDoorKillerSpanCount, gGzDoorKillerFunctions, &gGzDoorKillerFunctionCount, 1 },
+    { ACTOR_BG_SPOT11_OASIS, 0x144, gGzBgSpot11OasisSpans, &gGzBgSpot11OasisSpanCount, gGzBgSpot11OasisFunctions, &gGzBgSpot11OasisFunctionCount, -1 },
     { ACTOR_BG_SPOT18_FUTA, 0x154, gGzBgSpot18FutaSpans, &gGzBgSpot18FutaSpanCount, gGzBgSpot18FutaFunctions, &gGzBgSpot18FutaFunctionCount, 1 },
     { ACTOR_BG_SPOT18_SHUTTER, 0x158, gGzBgSpot18ShutterSpans, &gGzBgSpot18ShutterSpanCount, gGzBgSpot18ShutterFunctions, &gGzBgSpot18ShutterFunctionCount, 1 },
     { ACTOR_EN_MA3, 0x274, gGzEnMa3Spans, &gGzEnMa3SpanCount, gGzEnMa3Functions, &gGzEnMa3FunctionCount, 8 },
@@ -1905,6 +1929,7 @@ const GzActorTable gGzActorTables[] = {
     { ACTOR_EN_EG, 0x140, gGzEnEgSpans, &gGzEnEgSpanCount, gGzEnEgFunctions, &gGzEnEgFunctionCount, 1 },
     { ACTOR_BG_MENKURI_NISEKABE, 0x13c, gGzBgMenkuriNisekabeSpans, &gGzBgMenkuriNisekabeSpanCount, gGzBgMenkuriNisekabeFunctions, &gGzBgMenkuriNisekabeFunctionCount, 1 },
     { ACTOR_EN_ZO, 0x698, gGzEnZoSpans, &gGzEnZoSpanCount, gGzEnZoFunctions, &gGzEnZoFunctionCount, 18 },
+    { ACTOR_OBJ_MAKEKINSUTA, 0x144, gGzObjMakekinsutaSpans, &gGzObjMakekinsutaSpanCount, gGzObjMakekinsutaFunctions, &gGzObjMakekinsutaFunctionCount, -1 },
     { ACTOR_EN_GE3, 0x304, gGzEnGe3Spans, &gGzEnGe3SpanCount, gGzEnGe3Functions, &gGzEnGe3FunctionCount, 2 },
     { ACTOR_OBJ_TIMEBLOCK, 0x16c, gGzObjTimeblockSpans, &gGzObjTimeblockSpanCount, gGzObjTimeblockFunctions, &gGzObjTimeblockFunctionCount, 4 },
     { ACTOR_OBJ_HAMISHI, 0x198, gGzObjHamishiSpans, &gGzObjHamishiSpanCount, gGzObjHamishiFunctions, &gGzObjHamishiFunctionCount, 4 },

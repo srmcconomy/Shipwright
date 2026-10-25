@@ -183,6 +183,37 @@ std::vector<ActorState> FindActors(const uint8_t* data, size_t size, size_t star
     return found;
 }
 
+// The play state's actor lists: for each category, how many actors and the address of the first
+constexpr size_t PLAY_ACTOR_LISTS = 0x01C30;
+constexpr size_t ACTOR_PREV = 0x120;
+constexpr size_t ACTOR_NEXT = 0x124;
+
+// Gives each actor its N64 address by walking the actor lists: a list's head is the actor in that category with no
+// previous one, and each actor's next is the address of the actor whose previous one it is
+void FindActorAddresses(const uint8_t* play, std::vector<ActorState>& actors) {
+    for (uint8_t category = 0; category < ACTORCAT_MAX; category++) {
+        uint32_t address = ReadU32(play + PLAY_ACTOR_LISTS + category * 8 + 4);
+        uint32_t prev = 0;
+        while (address != 0) {
+            ActorState* next = nullptr;
+            for (ActorState& actor : actors) {
+                const uint8_t* p = actor.data.data();
+                if (actor.address == 0 && p[ACTOR_CATEGORY] == category && ReadU32(p + ACTOR_PREV) == prev) {
+                    next = &actor;
+                    break;
+                }
+            }
+            // Link is a player actor but not one of these, so his category's list goes on past him
+            if (next == nullptr) {
+                break;
+            }
+            next->address = address;
+            prev = address;
+            address = ReadU32(next->data.data() + ACTOR_NEXT);
+        }
+    }
+}
+
 // The display lists gz saves: its four buffers' sizes in Gfx (work, opaque, translucent, overlay), which the state
 // only gives offsets into.
 constexpr uint32_t DISP_BUFFER_SIZES[4] = { 0x80, 0x17E0, 0x800, 0x400 };
@@ -385,6 +416,7 @@ bool ParseState(const uint8_t* data, size_t size, StateFile& out, std::string& e
     s.linkFound = FindLink(data, size, pos, cameraPos, s.link);
     s.kankyos = FindKankyos(data, size, pos);
     s.actors = FindActors(data, size, pos);
+    FindActorAddresses(play, s.actors);
     size_t rngPos;
     s.rngFound = FindRng(data, size, pos, s.stateVersion, s.version == (uint16_t)GzVersion::OotIQueC, rngPos);
     if (s.rngFound) {

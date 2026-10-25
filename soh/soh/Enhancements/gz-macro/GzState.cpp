@@ -585,7 +585,19 @@ bool RestoreOwnFields(Actor* actor, const std::vector<uint8_t>& data) {
     uint32_t destroy = GzMacro::ReadU32(n64 + N64_ACTOR_DESTROY);
     bool haveBase = table->destroyIndex >= 0 && destroy != 0;
     uint32_t base = haveBase ? destroy - table->functions[table->destroyIndex].n64Offset : 0;
-    if (table->destroyIndex < 0) {
+    if (!haveBase) {
+        // Its update function, when that is in its own code (Actor_Noop as a destroy is in code)
+        constexpr size_t N64_ACTOR_UPDATE = 0x130;
+        uint32_t update = GzMacro::ReadU32(n64 + N64_ACTOR_UPDATE);
+        for (size_t i = 0; i < *table->functionCount && update >= N64_CODE_END; i++) {
+            if (table->functions[i].function != nullptr && table->functions[i].function == (void*)actor->update) {
+                base = update - table->functions[i].n64Offset;
+                haveBase = true;
+                break;
+            }
+        }
+    }
+    if (!haveBase) {
         // Without a destroy function in its own code (Player's are in code), the overlay's address is the one that
         // makes the most of the actor's function pointers land on its functions
         std::unordered_map<uint32_t, int> votes;
@@ -779,6 +791,70 @@ std::vector<Actor*> RestoreActors(const std::vector<GzMacro::ActorState>& saved)
     return into;
 }
 
+// Points the restored actors' own pointer fields that held another saved actor (such as a rock circle's rocks) at
+// that actor here. An actor the scene doesn't have yet, because something spawned it after the scene loaded, is
+// spawned as the state has it, so whatever spawned it doesn't spawn it again (drawing random numbers the N64 didn't).
+void LinkSavedActors(const std::vector<GzMacro::ActorState>& saved, std::vector<Actor*>& into) {
+    std::unordered_map<uint32_t, size_t> byAddress;
+    for (size_t j = 0; j < saved.size(); j++) {
+        if (saved[j].address != 0) {
+            byAddress[saved[j].address] = j;
+        }
+    }
+    auto liveActor = [&](size_t k) -> Actor* {
+        if (into[k] != nullptr) {
+            return into[k];
+        }
+        const GzMacro::ActorState& state = saved[k];
+        const uint8_t* n64 = state.data.data();
+        const Vec3f pos = ToVec3f(GzMacro::ReadVec3f(n64 + 0x24));
+        // Its own rotation, which also keeps an actor that picks a random one when spawned without from drawing it
+        Actor* actor = Actor_Spawn(&gPlayState->actorCtx, gPlayState, state.id, pos.x, pos.y, pos.z,
+                                   (s16)GzMacro::ReadU16(n64 + 0x30), (s16)GzMacro::ReadU16(n64 + 0x32),
+                                   (s16)GzMacro::ReadU16(n64 + 0x34), state.params);
+        if (actor == nullptr) {
+            return nullptr;
+        }
+        actor->room = (s8)n64[0x003];
+        InitActorNow(actor);
+        // An actor that kills itself in its init (its flag was set) is gone again at the next actor update
+        if (actor->update != nullptr) {
+            RestoreActor(actor, state);
+        }
+        into[k] = actor;
+        return actor;
+    };
+    int linked = 0;
+    for (size_t j = 0; j < saved.size(); j++) {
+        Actor* actor = into[j];
+        const GzActorTable* table = actor != nullptr ? FindActorTable(actor->id) : nullptr;
+        if (table == nullptr || saved[j].data.size() < table->n64Size) {
+            continue;
+        }
+        for (size_t s = 0; s < *table->spanCount; s++) {
+            const GzActorSpan& span = table->spans[s];
+            if (span.kind != GZ_SPAN_POINTER || span.size != 4) {
+                continue;
+            }
+            for (size_t i = 0; i < span.count; i++) {
+                auto it = byAddress.find(GzMacro::ReadU32(saved[j].data.data() + span.n64Offset + i * span.n64Stride));
+                // A pointer to the actor itself (its collider's, say) is right already
+                if (it == byAddress.end() || it->second == j) {
+                    continue;
+                }
+                Actor* target = liveActor(it->second);
+                if (target != nullptr) {
+                    memcpy((uint8_t*)into[j] + span.sohOffset + i * span.sohStride, &target, sizeof(target));
+                    linked++;
+                }
+            }
+        }
+    }
+    if (linked > 0) {
+        SPDLOG_INFO("[gz state] linked {} actor pointers", linked);
+    }
+}
+
 // Gives Link back the actor he had as his child, such as the hookshot's hook, which he spawns himself when he takes
 // the hookshot out, so a fresh scene doesn't have it. Without the hook, Link waits for it to come back and never
 // moves again. The state's actor whose parent is Link is his child; it is spawned if no live actor matched it.
@@ -907,6 +983,9 @@ void ApplyArrival() {
         // gz saves it partway through a frame, before that frame counts it up, which this one does as it ends
         gPlayState->state.frames = sPending.stateFrames;
         std::vector<Actor*> restoredInto = RestoreActors(sPending.actors);
+        if (sPending.actorTablesApply) {
+            LinkSavedActors(sPending.actors, restoredInto);
+        }
         // Link, the same way, once his arrival is done
         if (sPending.hasLink && sPending.link.data.size() >= GzMacro::N64_PLAYER_SIZE && GET_PLAYER(gPlayState) != nullptr) {
             Player* player = GET_PLAYER(gPlayState);
