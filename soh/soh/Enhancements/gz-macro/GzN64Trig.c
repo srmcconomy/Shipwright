@@ -65,7 +65,8 @@ static f32 N64_cosf(f32 x) {
     return x != x ? NAN : 0.0f;
 }
 
-static u8 sN64Trig = false;
+// On by default, as this build plays N64 gz macros
+static u8 sN64Trig = true;
 
 void Math_SetN64Trig(u8 n64) {
     sN64Trig = n64;

@@ -29,8 +29,8 @@ u32 Rand_GetSeed(void) {
 }
 
 // The N64 versions make a float from the lowest 23 bits of the random number, where the GameCube versions SoH comes
-// from use the highest. Same sequence, different floats. Set while a gz macro from the N64 plays.
-static u8 sRandN64Floats = false;
+// from use the highest. Same sequence, different floats. On by default, as this build plays N64 gz macros.
+static u8 sRandN64Floats = true;
 
 void Rand_SetN64Floats(u8 n64) {
     sRandN64Floats = n64;

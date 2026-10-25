@@ -18,7 +18,8 @@ AnimationHeaderCommon* ResourceMgr_LoadAnimByName(const char* path);
 }
 
 #define CVAR_NAME CVAR_ENHANCEMENT("N64WeirdFrames")
-#define CVAR_DEFAULT 0
+// On by default: this build plays N64 gz macros, and weirdshots and weirdslides need it
+#define CVAR_DEFAULT 1
 #define CVAR_VALUE CVarGetInteger(CVAR_NAME, CVAR_DEFAULT)
 
 // A list of weird animations to contruct. These can either be an index out of bounds before

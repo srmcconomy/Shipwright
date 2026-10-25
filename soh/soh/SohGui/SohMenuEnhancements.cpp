@@ -1373,7 +1373,7 @@ void SohMenu::AddMenuEnhancements() {
             "Restore a bug from NTSC 1.0 that allows casting the Fishing Rod while using the Hover Boots."));
     AddWidget(path, "N64 Weird Frames", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("N64WeirdFrames"))
-        .Options(CheckboxOptions().Tooltip(
+        .Options(CheckboxOptions().DefaultValue(true).Tooltip(
             "Restores N64 Weird Frames allowing weirdshots and weirdslides to behave the same as N64."));
     AddWidget(path, "Bombchus Out of Bounds", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("BombchusOOB"))
