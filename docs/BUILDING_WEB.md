@@ -20,107 +20,19 @@ emcmake cmake -S . -B build-web -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_OPENGL
 ninja -C build-web
 ```
 
-`build-web/soh/` then holds everything to serve:
+`build-web/soh/` then holds the game:
 
-- `soh.js`, `soh.wasm` and `soh.o2r`: the game
-- `soh-runtime.js`: loads the game into a page and drives it. The pages below are built on it.
-- `index.html`: the start page, which runs the game full window
-- `soh-player.js` and `player-demo.html`: the embeddable macro player and a page to try it
-- `rom-convert-worker.js`, `soh-extract.js`, `soh-extract.wasm` and `soh-extract-yml.tar.gz`:
-  the ROM converter, which is SoH's own torch extractor built for the browser. It runs in a
-  worker and turns a ROM into the same `oot.o2r` the desktop version makes, in a few seconds.
+- `soh.js` and `soh.wasm`: the game, and `soh.o2r` copied from the repository root
+- `soh-extract.js`, `soh-extract.wasm` and `soh-extract-yml.tar.gz`: the ROM converter, which is
+  SoH's own torch extractor built for the browser. It turns a ROM into the same `oot.o2r` the
+  desktop version makes, in a few seconds.
 
-## Run
+## Playing it
 
-```sh
-python3 -m http.server 8123 --directory build-web/soh
-```
-
-Open <http://127.0.0.1:8123/>, choose your Ocarina of Time ROM (`.z64`, `.n64` or `.v64`) or an
-`oot.o2r` from the desktop version, and press Play. The converted archive, mods, saves and
-settings are kept in the browser's IndexedDB, so you only do this once. "Download saves"
-exports the save files.
-
-Files dropped on the page, or chosen with a Browse button in the game (such as in gz Tools),
-are copied into the browser's storage under `/ship/dropped` and handed to the game like a
-desktop drag-and-drop. Because they are stored, a path the game remembers still loads after a reload.
-
-For local testing you can copy `oot.o2r` next to the page and open
-`/?archive=oot.o2r` to skip the file picker. Never host a ROM archive publicly.
-
-## Playing gz macros
-
-The start page takes a gz savestate (`.gzs`) and, optionally, the macro (`.gzm`) recorded from
-it, picked with its buttons or dropped anywhere on the page. Play then boots straight into the
-savestate and plays the macro: no title screen, file select or save file. The game runs on a
-temporary file that is never written to disk.
-
-`soh-runtime.js` exposes the same through JavaScript. A page has one game, so
-`SohRuntime.load()` always returns the same runtime, loading it the first time; the first call's
-options win. The start page also sets it as `window.SohWeb`.
-
-```js
-const runtime = await SohRuntime.load({ input: false });  // input: false only watches
-someElement.append(runtime.canvas);   // the game renders at the canvas's size
-if (!runtime.archives().length) await runtime.importArchive(romFile);
-await runtime.start();
-await runtime.playGz({ state, macro, speed });  // File, Blob, ArrayBuffer, Uint8Array or URL
-runtime.status();      // { macro: { playing, frame, frameCount, rngMismatches }, scene, room, pos, ... }
-runtime.setSpeed(2);   // a multiple of the game's speed: 0.5 is half, 2 double; silent away from 1
-runtime.stopMacro();
-runtime.pause();       // stops running frames while nothing shows the game; resume() continues
-```
-
-With `input: false` the game ignores the keyboard, mouse and gamepads, so the page around it
-scrolls and types as usual. It hides gamepads from the whole page to do that.
-
-## Embedding macro players
-
-`soh-player.js` defines `<soh-player>`, for pages that show tricks or routes:
-
-```html
-<script src="soh-player.js"></script>
-<soh-player src="tricks/bomb-hover.json" poster="bomb-hover.jpg">
-  Bomb hover onto the Fire Temple ledge
-</soh-player>
-```
-
-`src` is a JSON file naming what to play, with paths relative to it, and optionally speed
-changes, pauses and notes at macro frames (the frame numbers the player shows):
-
-```json
-{
-  "savestate": "bomb-hover.gzs",
-  "macro": "bomb-hover.gzm",
-  "speeds": [{ "frame": 120, "speed": 0.5 }, { "frame": 200, "speed": 1 }],
-  "pauses": [{ "frame": 150, "seconds": 2 }],
-  "annotations": [{ "frame": 120, "until": 200, "text": "Z-target the wall here" }]
-}
-```
-
-A speed holds from its frame on. A pause stops the game on exactly its frame for that many
-seconds; pressing play goes on early. An annotation shows beside the game (under it, in a
-narrow player) from its frame until `until`, or until the next annotation starts. A red line
-in the game follows where Link has been since the macro started; `"trail": false` turns it off.
-
-`poster` (an image), `speed` (0.5, 1, 1.5 or 2, multiplying the file's speeds) and
-`inputs="off"` are optional. The element's content is the caption on its poster. It loads the
-game on the first Play, and asks for the visitor's ROM once if the browser has no archive.
-Each player has play/pause, next frame, Restart, speed, mute (on to start with) and the macro's
-progress, which can be clicked or dragged to go to a frame: the game replays the macro there as
-fast as it runs (from the savestate again to go back), so it lands on exactly that frame. Its
-⋮ menu downloads the macro and savestate, and its camera button draws the game from overhead
-instead of the game's camera. Only the picture changes: the game logic, and the screen positions
-actors work out while being drawn, still see the game's camera, so the macro plays the same. Beside the game, above the notes, it shows the macro's controller inputs a frame
-ahead (what is held going into the next frame), unless `inputs="off"`. When the macro ends, it pauses on the last frame and offers to replay it.
-
-All players share the page's one game, so one plays at a time: playing another moves the game
-to it and sends the first back to its poster. Removing the playing element pauses the game.
-`soh-runtime.js` must sit next to `soh-player.js`.
-
-`player-demo.html` lists players from its URL, one `p` per player:
-`player-demo.html?p=trick.json,Caption&p=other.json,Another`. Add
-`&archive=oot.o2r` to test locally as above.
+The pages and scripts that run the build live in **soh-player**, a JavaScript library with this
+repository as a submodule. Its build runs both builds above and puts the game next to its modules:
+`<soh-player>` and `<soh-route>` for showing gz macros on a page, the runtime they share, the ROM
+converter's worker, and a launcher page that runs the whole game. Its README covers using them.
 
 ## How it differs from the desktop build
 

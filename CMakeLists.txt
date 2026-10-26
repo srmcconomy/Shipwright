@@ -304,7 +304,7 @@ target_link_libraries(soh-torch PRIVATE torch)
 
 if(EMSCRIPTEN)
     # The browser build converts the visitor's ROM to oot.o2r with this same CLI, run in a web
-    # worker (soh/web/rom-convert-worker.js). It is built with the game and lands next to it.
+    # worker (soh-player's rom-convert-worker.js). It is built with the game and lands next to it.
     set_target_properties(soh-torch PROPERTIES
         EXCLUDE_FROM_ALL FALSE
         OUTPUT_NAME soh-extract
@@ -343,8 +343,6 @@ if(EMSCRIPTEN)
         DEPENDS ${SOH_EXTRACT_YML}
         COMMENT "Packing asset ymls for the browser ROM converter..."
     )
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/soh/web/rom-convert-worker.js
-                   ${CMAKE_BINARY_DIR}/soh/rom-convert-worker.js @ONLY)
     add_custom_target(SohExtractYml ALL DEPENDS ${CMAKE_BINARY_DIR}/soh/soh-extract-yml.tar.gz)
 endif()
 

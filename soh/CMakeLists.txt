@@ -583,8 +583,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             $<$<COMPILE_LANGUAGE:CXX>:-Wno-c++11-narrowing -Wno-deprecated-enum-enum-conversion>
         )
 
-        # soh/web/soh-runtime.js loads soh.js into the page, writes oot.o2r and soh.o2r into /ship
-        # before main runs and keeps /ship in IndexedDB so saves and settings persist.
+        # soh-player's runtime.js loads soh.js into the page, writes oot.o2r
+        # and soh.o2r into /ship before main runs and keeps /ship in IndexedDB so saves and settings persist.
         target_link_options(${PROJECT_NAME} PRIVATE
             -sALLOW_MEMORY_GROWTH=1
             -sINITIAL_MEMORY=512MB
@@ -605,9 +605,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             -sOFFSCREENCANVAS_SUPPORT=0
         )
         set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".js")
-        foreach(WEB_FILE index.html soh-runtime.js soh-player.js soh-route.js player-demo.html)
-            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/web/${WEB_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${WEB_FILE} COPYONLY)
-        endforeach()
         # soh.o2r can't be packed in the browser build (it needs torch), so serve the one a
         # native build left in the source root next to the page
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
