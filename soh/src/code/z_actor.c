@@ -3044,6 +3044,9 @@ s32 Ship_CalcShouldDrawAndUpdate(PlayState* play, Actor* actor, Vec3f* projected
 }
 // #endregion
 
+// SOH [Web] (GzView.h)
+s32 GzView_IsFrozen(void);
+
 void Actor_DrawAll(PlayState* play, ActorContext* actorCtx) {
     s32 invisibleActorCounter;
     Actor* invisibleActors[INVISIBLE_ACTOR_MAX];
@@ -3151,7 +3154,8 @@ void Actor_DrawAll(PlayState* play, ActorContext* actorCtx) {
         Lights_DrawGlow(play);
     }
 
-    if ((HREG(64) != 1) || (HREG(75) != 0)) {
+    // SOH [Web] A frozen gz macro shows the scene without the area's title card (GzView.h)
+    if (((HREG(64) != 1) || (HREG(75) != 0)) && !GzView_IsFrozen()) {
         TitleCard_Draw(play, &actorCtx->titleCtx);
     }
 

@@ -1400,7 +1400,8 @@ void Play_Draw(PlayState* play) {
 
         gSPSegment(POLY_OPA_DISP++, 0x01, play->billboardMtx);
 
-        if ((HREG(80) != 10) || (HREG(92) != 0)) {
+        // SOH [Web] A frozen gz macro shows the scene itself, without the transition or fade it may be in (GzView.h)
+        if (((HREG(80) != 10) || (HREG(92) != 0)) && !GzView_IsFrozen()) {
             Gfx* gfxP;
             Gfx* sp1CC = POLY_OPA_DISP;
 
@@ -1532,7 +1533,8 @@ void Play_Draw(PlayState* play) {
             Environment_DrawRain(play, &play->view, gfxCtx);
         }
 
-        if ((HREG(80) != 10) || (HREG(84) != 0)) {
+        // SOH [Web] Nor a frozen gz macro's screen fills (GzView.h)
+        if (((HREG(80) != 10) || (HREG(84) != 0)) && !GzView_IsFrozen()) {
             Environment_FillScreen(gfxCtx, 0, 0, 0, play->bgCoverAlpha, FILL_SCREEN_OPA);
         }
 
@@ -1550,7 +1552,7 @@ void Play_Draw(PlayState* play) {
             Environment_DrawCustomLensFlare(play);
         }
 
-        if ((HREG(80) != 10) || (HREG(87) != 0)) {
+        if (((HREG(80) != 10) || (HREG(87) != 0)) && !GzView_IsFrozen()) {
             if (MREG(64) != 0) {
                 Environment_FillScreen(gfxCtx, MREG(65), MREG(66), MREG(67), MREG(68),
                                        FILL_SCREEN_OPA | FILL_SCREEN_XLU);

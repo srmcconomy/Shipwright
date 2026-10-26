@@ -31,7 +31,14 @@ void ShrinkWindow_SetCurrentVal(s32 currentVal) {
     sShrinkWindowCurrentVal = currentVal;
 }
 
+// SOH [Web] (GzView.h)
+s32 GzView_IsFrozen(void);
+
 u32 ShrinkWindow_GetCurrentVal(void) {
+    // SOH [Web] A frozen gz macro is drawn without a cutscene's black bars (GzView.h)
+    if (GzView_IsFrozen()) {
+        return 0;
+    }
     return sShrinkWindowCurrentVal;
 }
 
