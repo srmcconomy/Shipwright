@@ -7,6 +7,8 @@
 
 #include "soh/frame_interpolation.h"
 
+void GzView_Project(View* view, Mtx* projection, f32 aspect);
+
 vu32 D_8012ABF0 = true;
 
 void View_ViewportToVp(Vp* dest, Viewport* src) {
@@ -417,6 +419,7 @@ s32 func_800AAA9C(View* view) {
     } else {
         guPerspective(projection, &view->normal, view->fovy, aspect, view->zNear, view->zFar, view->scale);
     }
+    GzView_Project(view, projection, aspect);
 
     if (QREG(88) & 1) {
         s32 i;

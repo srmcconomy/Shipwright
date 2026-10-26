@@ -204,14 +204,52 @@
       else audio?.resume();
     },
 
-    // Which camera draws the game: "game" (its own) or "overhead". Only the picture changes, not the play.
+    // Which camera draws the game: "game" (its own), "overhead", or "free" (wherever setFreeCamera puts it). Only the
+    // picture changes, not the play.
     setView(view) {
-      Module.ccall("SohWeb_SetView", null, ["number"], [["game", "overhead"].indexOf(view)]);
+      Module.ccall("SohWeb_SetView", null, ["number"], [Math.max(0, ["game", "overhead", "free"].indexOf(view))]);
     },
 
-    // A red line through where Link has been while the macro plays
-    setTrail(visible) {
-      Module.ccall("SohWeb_SetTrail", null, ["boolean"], [visible]);
+    // Where the "free" camera looks from and at, as [x, y, z] in game units. With orthoHeight it draws a frozen game
+    // without perspective (as in an isometric view), showing that many game units above and below what it looks at.
+    setFreeCamera(eye, at, orthoHeight = 0) {
+      Module.ccall("SohWeb_SetFreeCamera", null, Array(7).fill("number"), [...eye, ...at, orthoHeight]);
+    },
+
+    // Freezes the game on the frame it is on: from then on each step() only draws that frame again (to look around it
+    // with the free camera), without the HUD, and with these rooms of the scene drawn too. It can't play on from there
+    // as it would have, so load a savestate again after unfreezing.
+    setFrozen(frozen, rooms = []) {
+      Module.ccall("SohWeb_SetFrozenRooms", "boolean", ["string"], [JSON.stringify(rooms)]);
+      Module.ccall("SohWeb_SetFrozen", null, ["boolean"], [frozen]);
+    },
+
+    // Builds frames without drawing them, to run a macro ahead as fast as the game can
+    setSkipRender(skip) {
+      Module.ccall("SohWeb_SetSkipRender", null, ["boolean"], [skip]);
+    },
+
+    // Where Link was on each macro frame while the trail was on, as [{ frame, scene, room, pos: [x, y, z] }, ...]
+    trailPoints() {
+      return JSON.parse(Module.ccall("SohWeb_GetTrail", "string", [], [])).map(([frame, scene, room, x, y, z]) => ({
+        frame, scene, room, pos: [x, y, z],
+      }));
+    },
+
+    // A line through where Link has been while the macro plays: true for a red one throughout, false for none, or
+    // changes on macro frames, [[frame, on, [r, g, b]], ...] (the color optional, red by default). Each holds from
+    // its frame on, and it is off before the first. Off hides the line, and on again starts it afresh.
+    setTrail(trail) {
+      const changes = trail === true ? [[0, true]] : Array.isArray(trail) ? trail : [];
+      Module.ccall("SohWeb_SetTrailChanges", "boolean", ["string"], [JSON.stringify(changes)]);
+      Module.ccall("SohWeb_SetTrail", null, ["boolean"], [changes.length > 0]);
+    },
+
+    // Markers in the game world on chosen macro frames, each
+    //   { from, until, shape: "circle" | "arrow", pos: [x, y, z], size, color: [r, g, b] }
+    // shown while the macro's frame is in [from, until). An empty list clears them.
+    setMarkers(markers) {
+      Module.ccall("SohWeb_SetMarkers", "boolean", ["string"], [JSON.stringify(markers)]);
     },
 
     // Holds the game when the playing macro reaches this frame, until it is moved on; -1 lets it run
@@ -221,6 +259,22 @@
 
     stopMacro() {
       Module.ccall("SohWeb_GzStop", null, [], []);
+    },
+
+    // The element showing the game. A page has one game, so an element that takes it calls claim(this), and the one
+    // that had it is asked to let it go (its release()), putting back anything it changed.
+    owner: null,
+
+    claim(owner) {
+      if (this.owner === owner) return;
+      const previous = this.owner;
+      this.owner = owner;
+      previous?.release();
+    },
+
+    // An element done with the game, as when it leaves the page
+    unclaim(owner) {
+      if (this.owner === owner) this.owner = null;
     },
 
     // Stops running frames while nothing shows the game, and picks up again where it was

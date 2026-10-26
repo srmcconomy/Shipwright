@@ -4,6 +4,7 @@
 // plays the macro from it, and polls the status.
 
 #include "GzMacro.h"
+#include "GzMarkers.h"
 #include "GzState.h"
 #include "GzTrail.h"
 #include "GzView.h"
@@ -29,6 +30,7 @@ void Graph_SetWebSpeed(f32 speed);
 void Graph_WebStep(void);
 u32 Rand_GetSeed(void);
 void OTRAudio_SetWebMuted(bool muted);
+void OTRGlobals_SetWebSkipRender(bool skip);
 }
 
 namespace {
@@ -111,9 +113,46 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetTrail(bool visible) {
     GzTrail_SetEnabled(visible);
 }
 
+// Turns the line on and off on macro frames (see GzTrail.h); "[]" leaves it on throughout.
+EMSCRIPTEN_KEEPALIVE bool SohWeb_SetTrailChanges(const char* json) {
+    return GzTrail_SetChanges(json);
+}
+
+// Shows markers in the game world on chosen macro frames (see GzMarkers.h); "[]" clears them.
+EMSCRIPTEN_KEEPALIVE bool SohWeb_SetMarkers(const char* json) {
+    return GzMarkers_Set(json);
+}
+
 // Draws the game from another camera angle (GzViewMode), leaving the game's own camera, and so the macro, alone.
 EMSCRIPTEN_KEEPALIVE void SohWeb_SetView(int mode) {
     GzView_SetMode((GzViewMode)mode);
+}
+
+// Where the free camera (GZ_VIEW_FREE) looks from and at, in game units.
+// With an orthoHeight above 0 it draws without perspective, that many units above and below what it looks at.
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetFreeCamera(float eyeX, float eyeY, float eyeZ, float atX, float atY, float atZ,
+                                               float orthoHeight) {
+    GzView_SetFreeCamera(eyeX, eyeY, eyeZ, atX, atY, atZ, orthoHeight);
+}
+
+// Freezes the game on its frame, so each frame after only draws it again (see GzView.h).
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetFrozen(bool frozen) {
+    GzView_SetFrozen(frozen);
+}
+
+// Rooms of the scene drawn while frozen, as JSON, [0, 3, ...].
+EMSCRIPTEN_KEEPALIVE bool SohWeb_SetFrozenRooms(const char* json) {
+    return GzView_SetRooms(json);
+}
+
+// Builds frames without drawing them, for running a macro ahead as fast as the game can.
+EMSCRIPTEN_KEEPALIVE void SohWeb_SetSkipRender(bool skip) {
+    OTRGlobals_SetWebSkipRender(skip);
+}
+
+// Where Link was on each macro frame the trail recorded, as JSON (see GzTrail_GetPoints).
+EMSCRIPTEN_KEEPALIVE const char* SohWeb_GetTrail() {
+    return GzTrail_GetPoints();
 }
 
 // Silences the game, or brings its sound back.
@@ -128,7 +167,7 @@ EMSCRIPTEN_KEEPALIVE void SohWeb_SetSpeed(float speed) {
 
 // The macro and where Link is, as JSON. The string lives until the next call.
 EMSCRIPTEN_KEEPALIVE const char* SohWeb_GzStatus() {
-    static char json[768];
+    static char json[1024];
     GzMacroStatus macro = GzMacro_GetStatus();
     int written = snprintf(json, sizeof(json),
                            "{\"macro\":{\"loaded\":%s,\"playing\":%s,\"frame\":%d,\"frameCount\":%d,"
@@ -146,6 +185,10 @@ EMSCRIPTEN_KEEPALIVE const char* SohWeb_GzStatus() {
                             gPlayState->gameplayFrames, player->actor.world.pos.x, player->actor.world.pos.y,
                             player->actor.world.pos.z, player->actor.shape.rot.y, player->linearVelocity,
                             gPlayState->pauseCtx.state, player->stateFlags1, player->stateFlags2, gSaveContext.health);
+        const View& view = gPlayState->view;
+        written += snprintf(json + written, sizeof(json) - written,
+                            ",\"camera\":{\"eye\":[%.2f,%.2f,%.2f],\"at\":[%.2f,%.2f,%.2f],\"fovy\":%.2f}",
+                            view.eye.x, view.eye.y, view.eye.z, view.lookAt.x, view.lookAt.y, view.lookAt.z, view.fovy);
     }
     int stateScene, stateRoom;
     float statePos[3];

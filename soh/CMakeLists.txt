@@ -605,7 +605,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             -sOFFSCREENCANVAS_SUPPORT=0
         )
         set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".js")
-        foreach(WEB_FILE index.html soh-runtime.js soh-player.js player-demo.html)
+        foreach(WEB_FILE index.html soh-runtime.js soh-player.js soh-route.js player-demo.html)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/web/${WEB_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${WEB_FILE} COPYONLY)
         endforeach()
         # soh.o2r can't be packed in the browser build (it needs torch), so serve the one a

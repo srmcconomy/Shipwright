@@ -1310,6 +1310,9 @@ void Play_DrawOverlayElements(PlayState* play) {
 void GzView_BeginDraw(PlayState* play);
 void GzView_KeepGameProjection(PlayState* play);
 void GzView_EndDraw(PlayState* play);
+void GzView_RedoCamera(PlayState* play);
+void GzView_DrawRooms(PlayState* play, u32 flags);
+s32 GzView_IsFrozen(void);
 
 void Play_Draw(PlayState* play) {
     GraphicsContext* gfxCtx = play->state.gfxCtx;
@@ -1511,6 +1514,7 @@ void Play_Draw(PlayState* play) {
                 Scene_Draw(play);
                 Room_Draw(play, &play->roomCtx.curRoom, roomDrawFlags & 3);
                 Room_Draw(play, &play->roomCtx.prevRoom, roomDrawFlags & 3);
+                GzView_DrawRooms(play, roomDrawFlags & 3);
             }
         }
 
@@ -1618,7 +1622,8 @@ void Play_Draw(PlayState* play) {
         GameInteractor_ExecuteOnPlayDrawEnd();
 
     Play_Draw_DrawOverlayElements:
-        if ((HREG(80) != 10) || (HREG(89) != 0)) {
+        // SOH [Web] A frozen gz macro is shown without the HUD
+        if (((HREG(80) != 10) || (HREG(89) != 0)) && !GzView_IsFrozen()) {
             Play_DrawOverlayElements(play);
         }
 
@@ -1639,6 +1644,7 @@ Play_Draw_skip:
         if (play->skyboxId && (play->skyboxId != SKYBOX_UNSET_1D) && !play->envCtx.skyboxDisabled) {
             SkyboxDraw_UpdateMatrix(&play->skyboxCtx, play->view.eye.x, play->view.eye.y, play->view.eye.z);
         }
+        GzView_RedoCamera(play);
     }
 
     Camera_Finish(GET_ACTIVE_CAM(play));
@@ -1691,7 +1697,8 @@ void Play_Main(GameState* thisx) {
         HREG(94) = 10;
     }
 
-    if ((HREG(80) != 10) || (HREG(81) != 0)) {
+    // SOH [Web] A frozen gz macro only draws its last frame again (GzView.h)
+    if (((HREG(80) != 10) || (HREG(81) != 0)) && !GzView_IsFrozen()) {
         Play_Update(play);
     }
 

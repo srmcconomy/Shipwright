@@ -1871,10 +1871,24 @@ void RunCommands(Gfx* Commands, int time, int step, int denom, int count) {
 }
 
 // C->C++ Bridge
+#ifdef __EMSCRIPTEN__
+// Set while the page runs a gz macro ahead as fast as it can, with nothing shown until it is done
+static bool sWebSkipRender = false;
+
+extern "C" void OTRGlobals_SetWebSkipRender(bool skip) {
+    sWebSkipRender = skip;
+}
+#endif
+
 extern "C" void Graph_ProcessGfxCommands(Gfx* commands) {
 #ifdef __EMSCRIPTEN__
     // No audio thread in the browser: mix this frame's audio before drawing it
     OTRAudio_ProcessFrame();
+    // The frame's display lists are still built, as the game builds them, but not drawn. Except around the pause
+    // menu: it waits for a copy of the screen to be drawn before it sets itself up.
+    if (sWebSkipRender && R_PAUSE_MENU_MODE == 0) {
+        return;
+    }
 #else
     {
         std::unique_lock<std::mutex> Lock(audio.mutex);

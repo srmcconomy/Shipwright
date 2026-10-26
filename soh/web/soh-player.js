@@ -13,13 +13,21 @@
 //     "speeds": [{ "frame": 120, "speed": 0.5 }, { "frame": 200, "speed": 1 }],
 //     "pauses": [{ "frame": 150, "seconds": 2 }],
 //     "annotations": [{ "frame": 120, "until": 200, "text": "Z-target the wall..." }],
-//     "trail": false
+//     "markers": [{ "frame": 120, "until": 200, "shape": "circle", "pos": [-1067, 8, 316] }],
+//     "trail": true
 //   }
 //
 // macro and the lists are optional. Frames are the macro's, as the player counts them. A speed holds from its
 // frame on. A pause stops on its frame for that long, then plays on. An annotation shows beside the game from
-// its frame until "until", or until the next annotation starts. A red line follows where Link has been, unless
-// "trail" is false.
+// its frame until "until", or until the next annotation starts. "trail": true draws a red line through where Link
+// has been. It can instead turn the line on and off on chosen frames, in a color of its own, as
+// [{ "frame": 40, "on": true, "color": "#33ccff" }, { "frame": 290, "on": false }]: like a speed, each holds from its
+// frame on, and there is no line before the first. Off hides the line; on again, it starts afresh from where Link
+// is. A change that leaves it on with another color carries it on in that color.
+//
+// A marker shows in the game from its frame until "until", or until a marker starts on a later frame: a "circle" on the ground
+// around pos, or an "arrow" pointing down at it (seen through walls). pos is in game units, as Link's position is.
+// "size" is the circle's radius or the arrow's height (25 and 30 by default), "color" a CSS hex color.
 //
 // poster is an image shown until it plays. speed is the playback speed, 0.5, 1 (the default), 1.5 or 2, which
 // multiplies the file's speeds. inputs="off" hides the macro's inputs, which are shown beside the game.
@@ -93,18 +101,39 @@
     if (!data.savestate) throw new Error(name + " names no savestate");
     const byFrame = (list) => (Array.isArray(list) ? [...list] : []).sort((a, b) => a.frame - b.frame);
     const annotations = byFrame(data.annotations);
+    const markers = byFrame(data.markers).filter((marker) => Array.isArray(marker.pos) && marker.pos.length === 3);
     return {
       savestate: new URL(data.savestate, url).href,
       macro: data.macro ? new URL(data.macro, url).href : null,
       speeds: byFrame(data.speeds),
       pauses: byFrame(data.pauses),
-      trail: data.trail !== false,
+      // As the game takes it
+      trail: data.trail === true ? true : Array.isArray(data.trail)
+        ? byFrame(data.trail).map((change) => [change.frame, change.on !== false, ...(hexColor(change.color) ? [hexColor(change.color)] : [])])
+        : false,
       annotations: annotations.map((note, i) => ({
         frame: note.frame,
         until: note.until ?? annotations[i + 1]?.frame ?? Infinity,
         text: String(note.text ?? ""),
       })),
+      // As the game takes them
+      markers: markers.map((marker, i) => ({
+        from: marker.frame,
+        until: marker.until ?? markers.slice(i + 1).find((next) => next.frame > marker.frame)?.frame ?? 2147483647,
+        shape: marker.shape === "arrow" ? "arrow" : "circle",
+        pos: marker.pos.map(Number),
+        ...(marker.size != null ? { size: Number(marker.size) } : {}),
+        ...(hexColor(marker.color) ? { color: hexColor(marker.color) } : {}),
+      })),
     };
+  }
+
+  // "#ffd23f" or "#fd3" as [r, g, b], or null
+  function hexColor(color) {
+    const match = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(color ?? ""));
+    if (!match) return null;
+    const hex = match[1].length === 3 ? [...match[1]].map((c) => c + c).join("") : match[1];
+    return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
   }
 
   const PLAY = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
@@ -425,6 +454,7 @@
       this.loaded = timeline;
       if (!this.started) return;
       this.runtime.setTrail(timeline.trail);
+      this.runtime.setMarkers(timeline.markers);
       this.scriptedSpeed = this.scriptedSpeedAt(this.frame);
       this.applySpeed();
       this.showAnnotations(this.frame);
@@ -577,7 +607,8 @@
       this.romPicker.hidden = true;
 
       if (SohPlayer.active !== this) {
-        SohPlayer.active?.deactivate();
+        // Whatever had the game (another player, or a route view) lets it go
+        this.runtime.claim(this);
         SohPlayer.active = this;
         // The game renders at the canvas's size, so it moves in before the game starts
         this.runtime.canvas.slot = "screen";
@@ -596,6 +627,7 @@
         this.setPaused(false);
         this.runtime.setMuted(SohPlayer.muted);
         this.runtime.setTrail(this.loaded.trail);
+        this.runtime.setMarkers(this.loaded.markers);
         this.runtime.setView(this.view);
         await this.runtime.playGz({
           state: this.loaded.savestate,
@@ -757,12 +789,19 @@
       }
     }
 
+    // For the runtime, when something else takes the game
+    release() {
+      this.deactivate();
+    }
+
     // Another player took the game, or this one left the page; go back to the poster
     deactivate() {
+      this.runtime.unclaim(this);
       this.unwatch();
       this.closeMenu();
       clearTimeout(this.resumeTimer);
       this.runtime.setBreakFrame(-1);
+      this.runtime.setMarkers([]);
       this.runtime.stopMacro();
       this.frame = 0;
       // Notes show while a macro plays
