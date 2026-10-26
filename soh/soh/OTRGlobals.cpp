@@ -1880,6 +1880,10 @@ extern "C" void OTRGlobals_SetWebSkipRender(bool skip) {
 }
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 extern "C" void Graph_ProcessGfxCommands(Gfx* commands) {
 #ifdef __EMSCRIPTEN__
     // No audio thread in the browser: mix this frame's audio before drawing it
@@ -1938,6 +1942,11 @@ extern "C" void Graph_ProcessGfxCommands(Gfx* commands) {
     }
 
     RunCommands(commands, start_time, step, next_original_frame, count);
+#ifdef __EMSCRIPTEN__
+    // The frame is drawn, and the page can copy it until it hands control back to the browser, which shows the
+    // canvas and clears it (soh-player's runtime keeps the last frame this way, for posters)
+    EM_ASM({ if (Module.onFrameDrawn) Module.onFrameDrawn(); });
+#endif
 
     last_fps = fps;
     last_update_rate = R_UPDATE_RATE;
